@@ -1,0 +1,288 @@
+import { useState } from "react"
+import { ArrowLeft, User, Building, MapPin, FileText, Mail, Phone, FileEdit, Calendar, BarChart3 } from "lucide-react"
+
+export default function AddCustomer() {
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    title: "",
+    phoneNumber: "",
+    companyName: "",
+    website: "",
+    taxId: "",
+    primaryAddress: "",
+    billingAddress: "",
+    shippingAddress: "",
+  })
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+const handleSaveCustomer = async () => {
+  try {
+    console.log("[v1] Saving customer as FormData:", formData)
+
+    const token = localStorage.getItem("token")
+
+    // build formData object with correct backend field names
+    const formDataToSend = new FormData()
+    formDataToSend.append("name", formData.fullName)
+    formDataToSend.append("company_name", formData.companyName)
+    formDataToSend.append("email", formData.email)
+    formDataToSend.append("phone", formData.phoneNumber)
+    formDataToSend.append("title", formData.title)
+    formDataToSend.append("website", formData.website)
+    formDataToSend.append("gst_number", formData.taxId)
+    formDataToSend.append("primary_address", formData.primaryAddress)
+    formDataToSend.append("billing_address", formData.billingAddress)
+    formDataToSend.append("shipping_address", formData.shippingAddress)
+
+    const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/create/", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`, // ✅ send token
+
+      },
+      body: formDataToSend,
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`)
+    }
+
+    const result = await response.json()
+    console.log("✅ Customer saved successfully:", result)
+    alert("Customer saved successfully!")
+  } catch (error) {
+    console.error("❌ Error saving customer:", error)
+    alert("Error saving customer")
+  }
+}
+
+
+
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                <User className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900">New Customer</h1>
+                <p className="text-gray-600">Add a new customer to your database</p>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={handleSaveCustomer}
+            className="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
+          >
+            <User className="w-4 h-4" />
+            Save Customer
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+        {/* Left Column - Form */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Basic Information */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <User className="w-5 h-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name / Contact Person *</label>
+                <input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  placeholder="Enter full name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title / Position</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Manager, Director"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="customer@company.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                <input
+                  type="tel"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                  placeholder="+1 (555) 123-4567"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Company Information */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <Building className="w-5 h-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Company Information </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
+                <input
+                  type="text"
+                  name="companyName"
+                  value={formData.companyName}
+                  onChange={handleInputChange}
+                  placeholder="Enter company name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                <input
+                  type="url"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleInputChange}
+                  placeholder="https://www.company.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tax ID / VAT Number</label>
+                <input
+                  type="text"
+                  name="taxId"
+                  value={formData.taxId}
+                  onChange={handleInputChange}
+                  placeholder="Enter tax ID"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Address Information */}
+          {/* Address Information */}
+<div className="bg-white rounded-lg border border-gray-200 p-6">
+  <div className="flex items-center gap-2 mb-6">
+    <MapPin className="w-5 h-5 text-gray-600" />
+    <h2 className="text-lg font-semibold text-gray-900">Address Information</h2>
+  </div>
+
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Primary Address *</label>
+      <textarea
+        name="primaryAddress"
+        value={formData.primaryAddress}
+        onChange={handleInputChange}
+        placeholder="Enter primary address..."
+        rows={3}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+      />
+    </div>
+
+    {/* ✅ Checkbox for same address */}
+    <div className="flex items-center gap-2">
+      <input
+        type="checkbox"
+        id="sameAddress"
+        checked={formData.billingAddress === formData.primaryAddress && formData.shippingAddress === formData.primaryAddress && formData.primaryAddress !== ""}
+        onChange={(e) => {
+          if (e.target.checked) {
+            setFormData((prev) => ({
+              ...prev,
+              billingAddress: prev.primaryAddress,
+              shippingAddress: prev.primaryAddress,
+            }))
+          } else {
+            setFormData((prev) => ({
+              ...prev,
+              billingAddress: "",
+              shippingAddress: "",
+            }))
+          }
+        }}
+        className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+      />
+      <label htmlFor="sameAddress" className="text-sm text-gray-700">
+        Billing & Shipping same as Primary Address
+      </label>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Billing Address</label>
+        <textarea
+          name="billingAddress"
+          value={formData.billingAddress}
+          onChange={handleInputChange}
+          placeholder="Enter billing address (if different)..."
+          rows={3}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Address</label>
+        <textarea
+          name="shippingAddress"
+          value={formData.shippingAddress}
+          onChange={handleInputChange}
+          placeholder="Enter shipping address (if different)..."
+          rows={3}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
+         
+        </div>
+      </div>
+    </div>
+  )
+}
