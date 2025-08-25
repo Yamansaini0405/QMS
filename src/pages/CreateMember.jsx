@@ -15,27 +15,15 @@ import {
   Lock,
 } from "lucide-react"
 
-export default function CreateAdmin() {
+export default function CreateMember() {
   const [formData, setFormData] = useState({
-    fullName: "",
     email: "",
     username: "",
-    role: "ADMIN",
-    department: "",
+    role: "",
     phoneNumber: "",
     password: "",
     confirmPassword: "",
-    permissions: {
-      manageUsers: true,
-      manageProducts: true,
-      manageCustomers: true,
-      manageQuotations: true,
-      viewReports: true,
-      systemSettings: false,
-    },
-    status: "Active",
     address: "",
-    adminNotes: "",
   })
 
   const handleInputChange = (e) => {
@@ -46,24 +34,15 @@ export default function CreateAdmin() {
     }))
   }
 
-  const handlePermissionChange = (permission) => {
-    setFormData((prev) => ({
-      ...prev,
-      permissions: {
-        ...prev.permissions,
-        [permission]: !prev.permissions[permission],
-      },
-    }))
-  }
 
-  const handleSaveAdmin = async () => {
+  const handleSaveMember = async () => {
     try {
-      console.log("[v0] Saving admin:", formData)
+      console.log("[v0] Saving member:", formData)
       // Here you would typically send the data to your backend
-      alert("Admin saved successfully!")
+      alert("Member saved successfully!")
     } catch (error) {
-      console.log("[v0] Error saving admin:", error)
-      alert("Error saving admin")
+      console.log("[v0] Error saving member:", error)
+      alert("Error saving member")
     }
   }
 
@@ -79,17 +58,17 @@ export default function CreateAdmin() {
                 <UserCog className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">New Admin</h1>
-                <p className="text-gray-600">Add a new admin to your system</p>
+                <h1 className="text-2xl font-semibold text-gray-900">New Member</h1>
+                <p className="text-gray-600">Add a new member to your system</p>
               </div>
             </div>
           </div>
           <button
-            onClick={handleSaveAdmin}
+            onClick={handleSaveMember}
             className="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
           >
             <UserCog className="w-4 h-4" />
-            Save Admin
+            Save Member
           </button>
         </div>
       </div>
@@ -105,17 +84,7 @@ export default function CreateAdmin() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                <input
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  placeholder="Enter full name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+            
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Username *</label>
@@ -136,7 +105,7 @@ export default function CreateAdmin() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="admin@company.com"
+                  placeholder="example@company.com"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -154,8 +123,17 @@ export default function CreateAdmin() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                <input type="text" name="role" value={formData.role} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+  <select
+    name="role"
+    value={formData.role}
+    onChange={handleInputChange}
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  >
+    <option value="" disabled>Select a role</option>
+    <option value="ADMIN">Admin</option>
+    <option value="SALESPERSON">Salesperson</option>
+  </select>
                 
               </div>
             </div>

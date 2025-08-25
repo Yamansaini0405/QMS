@@ -56,7 +56,7 @@ const Sidebar = () => {
       hasSubmenu: true,
       subItems: [
         { title: "Create Lead", path: "/leads/create", icon: Plus },
-        { title: "Leads Dashboard", path: "/leads", icon: LayoutDashboard },
+        { title: "All Leads", path: "/leads", icon: LayoutDashboard },
       ],
     },
     {
@@ -65,8 +65,9 @@ const Sidebar = () => {
       icon: Users,
       hasSubmenu: true,
       subItems: [
-        { title: "View Customers", path: "/customers", icon: Eye },
+        
         { title: "Create Customer", path: "/customers/create", icon: UserPlus },
+        { title: "View Customers", path: "/customers", icon: Eye },
       ],
     },
     {
@@ -80,13 +81,13 @@ const Sidebar = () => {
       ],
     },
     {
-      key: "admin",
-      title: "Admin",
+      key: "members",
+      title: "Members",
       icon: Shield,
       hasSubmenu: true,
       subItems: [
-        { title: "Create Admin", path: "/admin/create", icon: UserPlus },
-        // { title: "View Admins", path: "/admin", icon: Eye },
+        { title: "Create Member", path: "/members/create", icon: UserPlus },
+        { title: "View Members", path: "/members", icon: Eye },
       ],
     },
     {
@@ -95,14 +96,14 @@ const Sidebar = () => {
       icon: ScrollText,
       hasSubmenu: true,
       subItems: [
-        { title: "Create Terms", path: "/terms/create", icon: PlusCircle },
-
+        { title: "Create Terms", path: "/terms/create", icon: Plus },
+        { title: "View Terms", path: "/terms", icon: Eye },
       ],
     }
   ]
 
   return (
-    <div className="w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col">
+    <div className="w-72 bg-white shadow-lg border-r border-gray-200 flex flex-col">
       {/* Logo */}
       <div className="px-6 py-4.5 border-b border-gray-200">
         <div className="flex items-center space-x-3">
@@ -117,7 +118,7 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+      <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto no-scrollbar">
         {menuItems.map((item) => (
           <div key={item.key}>
             {item.hasSubmenu ? (

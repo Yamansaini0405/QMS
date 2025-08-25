@@ -1,16 +1,21 @@
 
 
 import { useState, useEffect } from "react"
-import { Users, Building2, Phone, Star, Search, Download, Eye, Edit, MoreHorizontal } from "lucide-react"
+import { Users, Building2, Phone, Star, Search, Download, Eye, Edit, Trash2 } from "lucide-react"
+import CustomerViewModal from "@/components/CustomerViewModal"
+import CustomerEditModal from "@/components/CustomerEditModal"
 
 export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [customerType, setCustomerType] = useState("All Types")
   const [customers, setCustomers] = useState([])
-    const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
+  const [viewModalOpen, setViewModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [selectedCustomer, setSelectedCustomer] = useState(null)
 
   // Sample customer data
- useEffect(() => {
+  useEffect(() => {
     const fetchCustomers = async () => {
       try {
         const token = localStorage.getItem("token")
@@ -39,7 +44,7 @@ export default function CustomersPage() {
     fetchCustomers()
   }, [])
 
-    // calculate stats
+  // calculate stats
   const totalCustomers = customers.length
   const withCompany = customers.filter((c) => c.company_name).length
   const withPhone = customers.filter((c) => c.phone).length
@@ -75,7 +80,7 @@ export default function CustomersPage() {
     },
     {
       title: "Recently Added",
-      value:    recentlyAdded.toString(),
+      value: recentlyAdded.toString(),
       icon: Star,
       color: "text-amber-600",
       bgColor: "bg-amber-50",
@@ -89,6 +94,54 @@ export default function CustomersPage() {
       customer.company.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
+  const handleViewCustomer = (customer) => {
+    console.log("[v0] Opening view modal for customer:", customer.name)
+    setSelectedCustomer(customer)
+    setViewModalOpen(true)
+  }
+
+  const handleEditCustomer = (customer) => {
+    console.log("[v0] Opening edit modal for customer:", customer.name)
+    setSelectedCustomer(customer)
+    setEditModalOpen(true)
+  }
+
+  const handleSaveCustomer = (updatedCustomer) => {
+    console.log("[v0] Saving customer:", updatedCustomer.name)
+    setCustomers((prev) => prev.map((customer) => (customer.id === updatedCustomer.id ? updatedCustomer : customer)))
+    setEditModalOpen(false)
+  }
+
+  const handleDeleteCustomer = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this customer?")) return
+
+  try {
+    const token = localStorage.getItem("token")
+    const response = await fetch(
+      `https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/create/?id=${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete customer: ${response.statusText}`)
+    }
+
+    // ✅ Update local state so UI reflects the deletion
+    setCustomers((prev) => prev.filter((customer) => customer.id !== id))
+
+    alert("Customer deleted successfully ✅")
+  } catch (error) {
+    console.error("❌ Error deleting customer:", error)
+    alert("Could not delete customer")
+  }
+}
+
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -99,9 +152,9 @@ export default function CustomersPage() {
               <Users className="w-6 h-6 text-white" />
             </div>
             <div>
-                <h1 className="text-2xl font-semibold text-gray-900">All Customers</h1>
-                <p className="text-gray-600">Manage your customer database</p>
-             
+              <h1 className="text-2xl font-semibold text-gray-900">All Customers</h1>
+              <p className="text-gray-600">Manage your customer database</p>
+
             </div>
           </div>
         </div>
@@ -194,8 +247,8 @@ export default function CustomersPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8  bg-green-600 rounded-lg flex items-center justify-center">
-              <Users className="w-4 h-4 text-white" />
-            </div>
+                        <Users className="w-4 h-4 text-white" />
+                      </div>
                       <div>
                         <p className="font-semibold text-gray-900">{cust.name}</p>
                         <p className="text-sm text-gray-500">{cust.email}</p>
@@ -222,15 +275,28 @@ export default function CustomersPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                      <button
+                        onClick={() => handleViewCustomer(cust)}
+                        className="p-1 text-gray-400 hover:text-green-600 transition-colors duration-200"
+                        title="View Customer"
+                      >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                      <button
+                        onClick={() => handleEditCustomer(cust)}
+                        className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                        title="Edit Customer"
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                        <MoreHorizontal className="w-4 h-4" />
+                      <button
+                        onClick={() => handleDeleteCustomer(cust.id)}
+                        className="p-1text-red-600 transition-colors duration-200"
+                        title="Delete Customer"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
+
                     </div>
                   </td>
                 </tr>
@@ -239,6 +305,14 @@ export default function CustomersPage() {
           </table>
         </div>
       </div>
+      <CustomerViewModal customer={selectedCustomer} isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} />
+
+      <CustomerEditModal
+        customer={selectedCustomer}
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onSave={handleSaveCustomer}
+      />
     </div>
   )
 }

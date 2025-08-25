@@ -12,8 +12,10 @@ import {
   Download,
   Eye,
   Edit,
-  MoreHorizontal,
+  Trash2,
 } from "lucide-react"
+import ProductViewModal from "../components/ProductViewModel"
+import ProductEditModal from "../components/ProductEditModel"
 
 export default function Products() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -23,10 +25,14 @@ export default function Products() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Sample product data
-  
+  const [viewModalOpen, setViewModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState(null)
 
-    useEffect(() => {
+  // Sample product data
+
+
+  useEffect(() => {
     const fetchProducts = async () => {
       try {
         const token = localStorage.getItem("token") // 👈 ensure token exists
@@ -60,28 +66,28 @@ export default function Products() {
 
   const totalProducts = products.length
 
-const activeProducts = products.filter((p) => p.active).length
+  const activeProducts = products.filter((p) => p.active).length
 
-const uniqueCategories = [...new Set(products.map((p) => p.category))].length
+  const uniqueCategories = [...new Set(products.map((p) => p.category))].length
 
-const avgPrice =
-  products.reduce((sum, p) => sum + Number(p.selling_price || 0), 0) /
-  (products.length || 1)
+  const avgPrice =
+    products.reduce((sum, p) => sum + Number(p.selling_price || 0), 0) /
+    (products.length || 1)
 
-// Monthly sales calculation
-const monthlySales = products.reduce((acc, p) => {
-  const date = new Date(p.created_at)
-  const month = date.toLocaleString("default", { month: "short", year: "numeric" }) // e.g., "Aug 2025"
-  if (!acc[month]) acc[month] = 0
-  acc[month] += Number(p.selling_price || 0)
-  return acc
-}, {})
-const totalMonthlySales = Object.values(monthlySales).reduce((sum, val) => sum + val, 0);
+  // Monthly sales calculation
+  const monthlySales = products.reduce((acc, p) => {
+    const date = new Date(p.created_at)
+    const month = date.toLocaleString("default", { month: "short", year: "numeric" }) // e.g., "Aug 2025"
+    if (!acc[month]) acc[month] = 0
+    acc[month] += Number(p.selling_price || 0)
+    return acc
+  }, {})
+  const totalMonthlySales = Object.values(monthlySales).reduce((sum, val) => sum + val, 0);
 
-const stats = [
+  const stats = [
     {
       title: "Total Products",
-      value:totalProducts,
+      value: totalProducts,
       icon: Grid3X3,
       color: "text-blue-500",
       bgColor: "bg-blue-100",
@@ -113,24 +119,75 @@ const stats = [
       icon: TrendingUp,
       color: "text-pink-500",
       bgColor: "bg-pink-100",
-    },    
+    },
   ]
 
   const filteredProducts = products.filter((product) => {
-  // Search filter
-  const matchesSearch =
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase());
+    // Search filter
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchTerm.toLowerCase());
 
-  // Category filter
-  const matchesCategory = categoryFilter === "All Categories" || product.category === categoryFilter;
+    // Category filter
+    const matchesCategory = categoryFilter === "All Categories" || product.category === categoryFilter;
 
-  // Status filter
-  const matchesStatus = statusFilter === "All Status" || product.status === statusFilter;
+    // Status filter
+    const matchesStatus = statusFilter === "All Status" || product.status === statusFilter;
 
-  return matchesSearch && matchesCategory && matchesStatus;
-});
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  const handleViewProduct = (product) => {
+    setSelectedProduct(product)
+    setViewModalOpen(true)
+  }
+
+  const handleEditProduct = (product) => {
+    setSelectedProduct(product)
+    setEditModalOpen(true)
+  }
+
+  const handleSaveProduct = (updatedProduct) => {
+    setProducts(products.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)))
+  }
+
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) {
+      return
+    }
+    console.log("Deleting product with id:", id)
+
+    try {
+      const token = localStorage.getItem("token")
+
+      const res = await fetch(
+        `https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/products/create/?id=${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      if (!res.ok) throw new Error("Failed to delete product")
+
+      // ✅ Remove from local state
+      setProducts(products.filter((p) => p.id !== id))
+
+      alert("Product deleted successfully")
+    } catch (err) {
+      console.error(err)
+      alert("Could not delete product")
+    }
+  }
+
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-64">Loading products...</div>
+  }
 
 
   return (
@@ -143,9 +200,9 @@ const stats = [
               <Package className="w-6 h-6 text-white" />
             </div>
             <div>
-                <h1 className="text-2xl font-semibold text-gray-900">Products Catalog</h1>
-                <p className="text-gray-600">Manage your product inventory and pricing</p>
-              
+              <h1 className="text-2xl font-semibold text-gray-900">Products Catalog</h1>
+              <p className="text-gray-600">Manage your product inventory and pricing</p>
+
             </div>
           </div>
         </div>
@@ -255,7 +312,7 @@ const stats = [
                       <div
                         className={`w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center text-white font-medium`}
                       >
-                       <Package className="w-5 h-5" />
+                        <Package className="w-5 h-5" />
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900">{product.name}</p>
@@ -265,8 +322,7 @@ const stats = [
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        product.category === "services"
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.category === "services"
                           ? "bg-blue-100 text-blue-800"
                           : product.category === "support"
                             ? "bg-purple-100 text-purple-800"
@@ -275,7 +331,7 @@ const stats = [
                               : product.category === "consulting"
                                 ? "bg-green-100 text-green-800"
                                 : "bg-gray-100 text-gray-800"
-                      }`}
+                        }`}
                     >
                       {product.category}
                     </span>
@@ -288,9 +344,8 @@ const stats = [
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        product.status === "Active" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-800"
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.status === "Active" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-800"
+                        }`}
                     >
                       {product.active ? "Active" : "Inactive"}
                     </span>
@@ -300,15 +355,28 @@ const stats = [
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                      <button
+                        onClick={() => handleViewProduct(product)}
+                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-200"
+                        title="View product details"
+                      >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                      <button
+                        onClick={() => handleEditProduct(product)}
+                        className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                        title="Edit product"
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                        <MoreHorizontal className="w-4 h-4" />
+                      <button
+                        onClick={() => handleDeleteProduct(product.id)}
+                        className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
+                        title="Delete product"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
+
                     </div>
                   </td>
                 </tr>
@@ -317,6 +385,14 @@ const stats = [
           </table>
         </div>
       </div>
+      <ProductViewModal product={selectedProduct} isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} />
+
+      <ProductEditModal
+        product={selectedProduct}
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onSave={handleSaveProduct}
+      />
     </div>
   )
 }

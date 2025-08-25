@@ -9,8 +9,12 @@ import AddCustomer from "./pages/AddCustomer"
 import Customer from "./pages/Customer"
 import AddProduct from "./pages/AddProduct"
 import Products from "./pages/Product"
-import CreateAdmin from "./pages/CreateAdmin"
+import CreateMember from "./pages/CreateMember"
 import AddTermsConditions from "./pages/AddTermAndConditions"
+import Leads from "./pages/Leads"
+import AddLeads from "./pages/AddLeads"
+import ViewTermsAndCondition from "./pages/ViewTermsAndCondition"
+import ViewMembers from "./pages/ViewMembers"
 
 function App() {
   return (
@@ -30,8 +34,12 @@ function App() {
                 <Route path="/customers" element={<Customer />} />
                 <Route path="/products/create" element={<AddProduct />} />
                 <Route path="/products" element={<Products />} />
-                <Route path="/admin/create" element={<CreateAdmin />} />
+                <Route path="/members/create" element={<CreateMember />} />
                 <Route path="/terms/create" element={<AddTermsConditions />} />
+                <Route path="/leads" element={<Leads />} />
+                <Route path="/leads/create" element={<AddLeads />} />
+                <Route path="/members" element={<ViewMembers />} />
+                <Route path="/terms" element={<ViewTermsAndCondition />} />
               </Routes>
             </Layout>
           }

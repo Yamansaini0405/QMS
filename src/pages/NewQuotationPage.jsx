@@ -33,8 +33,8 @@ export default function NewQuotationPage() {
   const [productSearchResults, setProductSearchResults] = useState({})
   const [isSearchingProducts, setIsSearchingProducts] = useState({})
   const [formData, setFormData] = useState({
-    quotationDate: "23/08/2025",
-    validUntil: "21-09-2025",
+    quotationDate: "23-08-2025",
+    validUntil: "2025-10-13",
     customerName: "",
     companyName: "",
     email: "",
@@ -196,7 +196,7 @@ export default function NewQuotationPage() {
     }, 0)
 
     const tax = subtotal * 0.18 // 18% tax
-    const discount = Number.parseFloat(formData.discount) || 0
+    const discount = subtotal*(Number.parseFloat(formData.discount))/10 || 0
     const totalAmount = subtotal + tax - discount
 
     setFormData((prev) => ({
@@ -204,6 +204,7 @@ export default function NewQuotationPage() {
       subtotal: subtotal.toFixed(2),
       tax: tax.toFixed(2),
       totalAmount: totalAmount.toFixed(2),
+      discount: prev.discount,
     }))
   }
 
@@ -279,6 +280,7 @@ export default function NewQuotationPage() {
       auto_assign: false,
       status: "PENDING",
       email_template: 1,
+      follow_up_date: formData.validUntil,
       // follow_up_date: formData.validUntil,
       terms: selectedTerms,
       items: formData.products.map((p) => ({
@@ -286,7 +288,7 @@ export default function NewQuotationPage() {
         // description: p.description || p.name || "",
         quantity: p.quantity,
         // name: p.name,
-        // unit_price: p.selling_price ? String(p.selling_price) : "0.00",
+        unit_price: p.selling_price ? Number(p.selling_price) : 0,
         // tax_rate: p.tax_rate ? String(p.tax_rate) : "0.00",
       })),
     };
@@ -594,30 +596,6 @@ export default function NewQuotationPage() {
             {/* Quotation Details */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                {/* Basic Information */}
-                {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Quotation Number</label>
-                      <input
-                        value={formData.quotationNumber}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        readOnly
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Quotation Date</label>
-                      <div className="relative">
-                        <input
-                          value={formData.quotationDate}
-                          onChange={(e) => updateFormData("quotationDate", e.target.value)}
-                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        <Calendar className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2" />
-                      </div>
-                    </div>
-                  </div>
-                </div> */}
 
                 {/* Customer Information */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
