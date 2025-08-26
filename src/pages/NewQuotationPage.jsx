@@ -848,12 +848,6 @@ export default function NewQuotationPage() {
                     </button>
                   </div>
 
-                  <div className="mt-4">
-                    <button className="flex items-center space-x-2 px-4 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-md transition-colors">
-                      <Plus className="w-4 h-4" />
-                      <span>Add All Products</span>
-                    </button>
-                  </div>
                 </div>
 
                 {/* Quotation Summary */}

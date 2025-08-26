@@ -286,47 +286,50 @@ const updateProduct = (product, productIndex) => {
     setSelectedTerms((prev) => (prev.includes(termId) ? prev.filter((id) => id !== termId) : [...prev, termId]))
   }
 
-  const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault()
+    console.log("Submitting form data:", formData.products)
 
-    // map back to backend structure
+    // construct payload exactly as backend expects
     const payload = {
-      ...quotation,
+      id: quotation.id,
       customer: {
-        ...quotation.customer,
+        id: quotation.customer?.id, // must keep existing customer id
         name: formData.customerName,
         company_name: formData.companyName,
         email: formData.email,
         phone: formData.phone,
         address: formData.address,
+        // gst_number: quotation.customer?.gst_number || "",
+        // title: quotation.customer?.title || "",
+        // website: quotation.customer?.website || "",
+        // primary_address: quotation.customer?.primary_address || "",
+        // billing_address: quotation.customer?.billing_address || "",
+        // shipping_address: quotation.customer?.shipping_address || "",
       },
-      products: formData.products.map((p) => ({
-        id: p.id,
-        name: p.name,
-        quantity: p.quantity,
-        unit_price: p.selling_price,
-        tax_rate: p.tax_rate,
-        description: p.name,
-      })),
-      subtotal: Number(formData.subtotal),
-      discount: Number(formData.discount) || 0,
-      tax_total: Number(formData.tax),
-      total: Number(formData.totalAmount),
       status: formData.status.toUpperCase(),
+      items: formData.products
+        .filter((p) => p.id) // only include valid selected products
+        .map((p) => ({
+          product: p.id,
+          quantity: p.quantity,
+          unit_price: p.selling_price,
+          tax_rate: p.tax_rate || 0,
+        })),
+      terms: selectedTerms,
+      discount: Number(formData.discount) || 0,
       follow_up_date: formData.validUntil || null,
-      created_at: formData.quotationDate,
-      terms: selectedTerms, 
-
+      send_immediately: true,
+      auto_assign: true,
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token")
 
-
-      console.log("Final payload to backend:", payload);
+      console.log("Final payload to backend:", payload)
 
       const response = await fetch(
-        "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/",
+        `https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/`,
         {
           method: "PUT",
           headers: {
@@ -335,27 +338,25 @@ const updateProduct = (product, productIndex) => {
           },
           body: JSON.stringify(payload),
         }
-      );
+      )
+      console.log("sending data", payload)
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Failed to create quotation: ${response.status} - ${errorText}`
-        );
+        const errorText = await response.text()
+        throw new Error(`Failed to update quotation: ${response.status} - ${errorText}`)
       }
 
-      const result = await response.json();
-      console.log("Quotation Updated successfully:", result);
-
-      alert("Quotation updated successfully!");
+      const result = await response.json()
+      console.log("Quotation updated successfully:", result)
+      alert("Quotation updated successfully!")
+      onSave?.(result)
+      onClose()
     } catch (error) {
-      console.error("Error sending quotation:", error);
-      alert("Error updating quotation. Please try again.");
+      console.error("Error updating quotation:", error)
+      alert("Error updating quotation. Please try again.")
     }
-    console.log("Submitting updated quotation:", payload)
-    // onSave(payload)
-    onClose()
   }
+
 
   if (!isOpen || !quotation) return null
 

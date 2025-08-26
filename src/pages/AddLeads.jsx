@@ -1,15 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { Target, User, FileText, DollarSign, Mail, Phone, Calendar, MessageSquare } from "lucide-react"
+import { Target, User, FileText, DollarSign, Mail, Phone, Search, MessageSquare } from "lucide-react"
 
 export default function AddLeads() {
   const [formData, setFormData] = useState({
-    customer_name: "",
-    contact_person: "",
+    customerName: "",
+    companyName: "",
     email: "",
     phone: "",
-    company_name: "",
     address: "",
     lead_status: "New",
     lead_source: "website",
@@ -22,12 +21,83 @@ export default function AddLeads() {
     additional_notes: "",
   })
 
+  const [showCustomerSearch, setShowCustomerSearch] = useState(false)
+  const [customerSearchQuery, setCustomerSearchQuery] = useState("")
+  const [customerSearchResults, setCustomerSearchResults] = useState([])
+  const [isSearchingCustomers, setIsSearchingCustomers] = useState(false)
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }))
+  }
+  const updateFormData = (field, value) => {
+  setFormData((prev) => ({
+    ...prev,
+    [field]: value,
+  }))
+}
+
+  const searchCustomers = async (query) => {
+    if (!query.trim()) {
+      setCustomerSearchResults([])
+      return
+    }
+
+    setIsSearchingCustomers(true)
+    // /api/customers?search=${encodeURIComponent(query)}
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      })
+      const data = await response.json()
+
+      if (data) {
+        setCustomerSearchResults(data.data)
+      } else {
+        console.error("Failed to search customers:", data.error)
+        setCustomerSearchResults([])
+      }
+    } catch (error) {
+      console.error("Error searching customers:", error)
+      setCustomerSearchResults([])
+    } finally {
+      setIsSearchingCustomers(false)
+    }
+  }
+
+  const selectCustomer = (customer) => {
+    setFormData((prev) => ({
+      ...prev,
+      customerId: customer.id, // ✅ backend customer ID
+      customerName: customer.name,
+      companyName: customer.company_name,
+      email: customer.email,
+      phone: customer.phone,
+      address: customer.address,
+    }));
+
+    setCustomerSearchQuery(customer.name);
+    setShowCustomerSearch(false);
+    setCustomerSearchResults([]);
+  };
+
+
+  const handleCustomerSearchChange = (e) => {
+    const query = e.target.value
+    setCustomerSearchQuery(query)
+
+    if (query.trim()) {
+      setShowCustomerSearch(true)
+      searchCustomers(query)
+    } else {
+      setShowCustomerSearch(false)
+      setCustomerSearchResults([])
+    }
   }
 
   const handleSaveLead = async () => {
@@ -86,86 +156,107 @@ export default function AddLeads() {
         {/* Left Column - Form */}
         <div className="lg:col-span-2 space-y-6">
           {/* Contact Information */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <User className="w-5 h-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Contact Information</h2>
-            </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="flex items-center space-x-2 mb-6">
+                    <User className="w-5 h-5 text-gray-600" />
+                    <h2 className="text-lg font-semibold text-gray-900">Customer Information</h2>
+                  </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name *</label>
-                <input
-                  type="text"
-                  name="customer_name"
-                  value={formData.customer_name}
-                  onChange={handleInputChange}
-                  placeholder="Enter customer name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Select Customer</label>
+                      <div className="relative">
+                        <input
+                          placeholder="Search and select customer..."
+                          value={customerSearchQuery}
+                          onChange={handleCustomerSearchChange}
+                          onFocus={() => {
+                            if (customerSearchQuery.trim()) {
+                              setShowCustomerSearch(true)
+                            }
+                          }}
+                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2" />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Contact Person Name *</label>
-                <input
-                  type="text"
-                  name="contact_person"
-                  value={formData.contact_person}
-                  onChange={handleInputChange}
-                  placeholder="Enter contact person name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+                        {showCustomerSearch && (
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                            {isSearchingCustomers ? (
+                              <div className="px-4 py-3 text-sm text-gray-500">Searching customers...</div>
+                            ) : customerSearchResults.length > 0 ? (
+                              customerSearchResults.map((customer) => (
+                                <div
+                                  key={customer.id}
+                                  onClick={() => selectCustomer(customer)}
+                                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                >
+                                  <div className="font-medium text-gray-900">{customer.name}</div>
+                                  <div className="text-sm text-gray-600">{customer.company}</div>
+                                  <div className="text-sm text-gray-500">{customer.email}</div>
+                                </div>
+                              ))
+                            ) : customerSearchQuery.trim() ? (
+                              <div className="px-4 py-3 text-sm text-gray-500">No customers found</div>
+                            ) : null}
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="customer@company.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name *</label>
+                        <input
+                          placeholder="Enter customer name"
+                          value={formData.customerName}
+                          onChange={(e) => updateFormData("customerName", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
+                        <input
+                          placeholder="Enter company name"
+                          value={formData.companyName}
+                          onChange={(e) => updateFormData("companyName", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="1234567890"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                        <input
+                          type="email"
+                          placeholder="email@example.com"
+                          value={formData.email}
+                          onChange={(e) => updateFormData("email", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                        <input
+                          placeholder="+1 234567890 (10 digits)"
+                          value={formData.phone}
+                          onChange={(e) => updateFormData("phone", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
-                <input
-                  type="text"
-                  name="company_name"
-                  value={formData.company_name}
-                  onChange={handleInputChange}
-                  placeholder="Enter company name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  placeholder="Enter address"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-          </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                      <input
+                        placeholder="Enter address"
+                        value={formData.address}
+                        onChange={(e) => updateFormData("address", e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                </div>
 
           {/* Lead Details */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
