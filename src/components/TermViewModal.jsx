@@ -94,7 +94,7 @@ export default function TermViewModal({ term, isOpen, onClose }) {
                 <div className="space-y-4">
                   {points.map((point, index) => (
                     <div key={index} className="flex gap-3">
-                      <span className="flex-shrink-0 text-gray-600 font-medium">{index + 1}.</span>
+                      <span className="flex-shrink-0 text-gray-600 font-medium">{index}.</span>
                       <p className="text-gray-700 leading-relaxed">{point.trim()}</p>
                     </div>
                   ))}

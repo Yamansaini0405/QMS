@@ -9,11 +9,11 @@ import {
   Search,
   Download,
   Eye,
-  Edit,
-  MoreHorizontal,
+  Trash,
 } from "lucide-react"
 import LeadViewModal from "../components/LeadViewModal"
-import LeadEditModal from "../components/LeadEditModal"
+import QuotationEditModal from "@/components/QuotationEditModel"
+
 
 export default function Leads() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -25,75 +25,37 @@ export default function Leads() {
   const [viewModalOpen, setViewModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [selectedLead, setSelectedLead] = useState(null)
+  const [editQuotationOpen, setEditQuotationOpen] = useState(false)
+  const [selectedQuotation, setSelectedQuotation] = useState(null)
+
+
+
 
   useEffect(() => {
     const fetchLeads = async () => {
       try {
-        console.log("[v0] Fetching leads...")
+        console.log("[v0] Fetching leads from backend...")
+        const token = localStorage.getItem("token") // 🔑 get token
 
-        // Mock data for demonstration
-        const mockLeads = [
+        const res = await fetch(
+          "https://qms-2h5c.onrender.com/quotations/api/leads/",
           {
-            id: 1,
-            customer_name: "Sarah Johnson",
-            contact_person: "Sarah Johnson",
-            email: "sarah@techsolutions.com",
-            phone: "9876543211",
-            company_name: "Tech Solutions Ltd",
-            address: "123 Tech Street, Mumbai",
-            lead_status: "New",
-            lead_source: "referral",
-            priority: "Medium",
-            assigned_to: "u2",
-            lead_score: 25000,
-            estimated_value: 25000,
-            follow_up_date: "2024-02-01",
-            description: "Interested in web development services for their new product launch.",
-            additional_notes: "Follow up next week for detailed requirements.",
-            created_at: "2024-01-20T10:30:00Z",
-          },
-          {
-            id: 2,
-            customer_name: "John Smith",
-            contact_person: "John Smith",
-            email: "john.smith@acme.com",
-            phone: "9876543210",
-            company_name: "Acme Corporation",
-            address: "456 Business Ave, Delhi",
-            lead_status: "Qualified",
-            lead_source: "website",
-            priority: "High",
-            assigned_to: "u1",
-            lead_score: 50000,
-            estimated_value: 50000,
-            follow_up_date: "2024-01-25",
-            description: "Looking for complete digital transformation solution.",
-            additional_notes: "Very interested, ready to move forward quickly.",
-            created_at: "2024-01-15T14:15:00Z",
-          },
-          {
-            id: 3,
-            customer_name: "Mike Wilson",
-            contact_person: "Mike Wilson",
-            email: "mike@startupco.com",
-            phone: "9876543212",
-            company_name: "StartupCo",
-            address: "789 Innovation Hub, Bangalore",
-            lead_status: "Proposal",
-            lead_source: "quotation",
-            priority: "High",
-            assigned_to: "u1",
-            lead_score: 75000,
-            estimated_value: 75000,
-            follow_up_date: "2024-01-30",
-            description: "Startup looking for MVP development and ongoing support.",
-            additional_notes: "Proposal sent, waiting for feedback.",
-            created_at: "2024-01-10T09:45:00Z",
-          },
-        ]
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
 
-        console.log("[v0] Mock leads loaded:", mockLeads)
-        setLeads(mockLeads)
+        if (!res.ok) {
+          throw new Error("Failed to fetch leads")
+        }
+
+        const data = await res.json()
+        console.log("[v0] Leads loaded:", data)
+
+        // backend may return {data: [...]} or [...]
+        setLeads(data.data || data)
       } catch (error) {
         console.error("❌ Error fetching leads:", error)
       } finally {
@@ -105,9 +67,9 @@ export default function Leads() {
   }, [])
 
   const totalLeads = leads.length
-  const newLeads = leads.filter((l) => l.lead_status === "New").length
-  const qualifiedLeads = leads.filter((l) => l.lead_status === "Qualified").length
-  const convertedLeads = leads.filter((l) => l.lead_status === "Converted").length
+  const newLeads = leads.filter((l) => l.status === "PENDING").length
+  const qualifiedLeads = leads.filter((l) => l.status === "QUALIFIED").length
+  const convertedLeads = leads.filter((l) => l.status === "CONVERTED").length
   const pipelineValue = leads.reduce((sum, l) => sum + (l.estimated_value || 0), 0)
 
   const stats = [
@@ -139,24 +101,34 @@ export default function Leads() {
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
-    {
-      title: "Pipeline Value",
-      value: `Rs. ${pipelineValue.toLocaleString()}`,
-      icon: DollarSign,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-    },
+    // {
+    //   title: "Pipeline Value",
+    //   value: `Rs. ${pipelineValue.toLocaleString()}`,
+    //   icon: DollarSign,
+    //   color: "text-blue-600",
+    //   bgColor: "bg-blue-50",
+    // },
   ]
 
-  const filteredLeads = leads.filter(
-    (lead) =>
-      (lead.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (lead.company_name || "").toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (statusFilter === "All Status" || lead.lead_status === statusFilter) &&
-      (sourceFilter === "All Sources" || lead.lead_source === sourceFilter) &&
-      (assigneeFilter === "All Assignees" || lead.assigned_to === assigneeFilter),
-  )
+ const filteredLeads = leads.filter((lead) => {
+  const matchesSearch =
+    lead.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lead.customer?.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
+
+  const matchesStatus =
+    statusFilter === "All Status" || lead.status === statusFilter.toUpperCase()
+
+  const matchesSource =
+    sourceFilter === "All Sources" || lead.source?.toLowerCase() === sourceFilter.toLowerCase()
+
+  const matchesAssignee =
+    assigneeFilter === "All Assignees" ||
+    lead.assigned_to?.name?.toLowerCase() === assigneeFilter.toLowerCase()
+
+  return matchesSearch && matchesStatus && matchesSource && matchesAssignee
+})
+
 
   const handleViewLead = (lead) => {
     console.log("[v0] Opening view modal for lead:", lead.customer_name)
@@ -169,6 +141,108 @@ export default function Leads() {
     setSelectedLead(lead)
     setEditModalOpen(true)
   }
+
+  const handleDeleteLead = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this lead?")) return;
+
+    try {
+      // 🔹 call backend API
+      const res = await fetch(`/api/leads/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to delete lead from server");
+      }
+
+      // 🔹 update UI
+      setLeads((prev) => prev.filter((lead) => lead.id !== id));
+      console.log("[v0] Lead deleted from backend:", id);
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting lead. Please try again.");
+    }
+  };
+
+
+
+  const handleCreateQuotation = async (quotationId) => {
+    try {
+      const token = localStorage.getItem("token")
+
+      console.log("[v0] Fetching quotation for lead:", quotationId)
+
+      const res = await fetch(
+        `https://qms-2h5c.onrender.com/quotations/api/quotations/${quotationId}/`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch quotation for this lead")
+      }
+
+      const data = await res.json()
+      console.log("[v0] Quotation loaded:", data.data)
+
+      // 🔹 open modal with fetched quotation
+      setSelectedQuotation(data.data)
+      setEditQuotationOpen(true)
+    } catch (error) {
+      console.error("❌ Error fetching quotation:", error)
+      alert("Error loading quotation. Please try again.")
+    }
+  }
+
+
+
+  const handleStatusChange = async (lead, id, newStatus) => {
+    const payload = { 
+      customer_name: lead.customer.name,
+      customer_email: lead.customer.email,
+      customer_phone: lead.customer.phone,
+      status: newStatus,
+      priority: lead.priority
+
+    }
+    console.log("sending payload:", payload)
+    try {
+      const res = await fetch(`https://qms-2h5c.onrender.com/quotations/api/leads/${id}/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update status on server");
+      }
+
+      // ✅ Update UI
+      setLeads((prev) =>
+        prev.map((lead) =>
+          lead.id === id ? { ...lead, status: newStatus } : lead
+        )
+      );
+
+      console.log("[v0] Status updated in backend:", id, newStatus);
+    } catch (err) {
+      console.error(err);
+      alert("Error updating status. Please try again.");
+    }
+  };
+
+
 
   const handleSaveLead = async (updatedLead) => {
     try {
@@ -229,7 +303,7 @@ export default function Leads() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
@@ -274,7 +348,7 @@ export default function Leads() {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
             >
               <option>All Status</option>
-              <option>New</option>
+              <option value="PENDING">New</option>
               <option>Qualified</option>
               <option>Proposal</option>
               <option>Converted</option>
@@ -324,19 +398,19 @@ export default function Leads() {
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Company</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Source</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Value</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Assigned To</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Created</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Quotation</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredLeads.map((lead, index) => (
                 <tr key={index} className="hover:bg-gray-50 transition-colors duration-200">
-                    <td className="px-6 py-4">
+                  <td className="px-6 py-4">
                     <div>
-                      <p className="font-medium text-gray-900">{index+1}</p>
-                      
+                      <p className="font-medium text-gray-900">{index + 1}</p>
+
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -345,49 +419,63 @@ export default function Leads() {
                         <Target className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900">{lead.customer_name}</p>
-                        <p className="text-sm text-gray-500">{lead.email}</p>
+                        <p className="font-semibold text-gray-900">{lead.customer.name}</p>
+                        <p className="text-sm text-gray-500">{ }</p>
                         <p className="text-sm text-gray-500">{lead.phone}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div>
-                      <p className="font-medium text-gray-900">{lead.company_name}</p>
+                      <p className=" text-gray-800 ">{lead.customer.company_name}</p>
                       <p className="text-sm text-gray-500">{lead.contact_person}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        lead.lead_status === "New"
-                          ? "bg-blue-100 text-blue-800"
-                          : lead.lead_status === "Qualified"
-                            ? "bg-purple-100 text-purple-800"
-                            : lead.lead_status === "Proposal"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : lead.lead_status === "Converted"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
-                      }`}
+                    <select
+                      value={lead.status}
+                      onChange={(e) => handleStatusChange(lead, lead.id, e.target.value)}
+                      className="text-sm  text-white px-3 py-1 bg-blue-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
-                      {lead.lead_status}
-                    </span>
+                      <option value="NEW">New</option>
+                      <option value="QUALIFIED">Qualified</option>
+                      <option value="PROPOSAL">Proposal</option>
+                      <option value="CONVERTED">Converted</option>
+                    </select>
                   </td>
+
+
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{lead.lead_source}</span>
+                    <span className="text-sm text-gray-600">{lead.source}</span>
                   </td>
+
                   <td className="px-6 py-4">
-                    <span className="text-sm font-medium text-green-600">
-                      Rs. {lead.estimated_value?.toLocaleString()}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{lead.assigned_to}</span>
+                    <span className="text-sm text-gray-600">{lead.assigned_to.name}</span>
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-sm text-gray-600">{new Date(lead.created_at).toLocaleDateString()}</span>
                   </td>
+                  <td className="px-6 py-4">
+                    {  lead.file_url !== null ? (
+                      <a
+                        href={lead.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1 text-sm text-white bg-green-600 rounded hover:bg-green-700 transition"
+                      >
+                        Download
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => handleCreateQuotation(lead.quotation)}
+                        className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700 transition"
+                      >
+                        Create
+                      </button>
+                    )}
+                  </td>
+
+
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                       <button
@@ -397,15 +485,13 @@ export default function Leads() {
                       >
                         <Eye className="w-4 h-4" />
                       </button>
+                      {/* Delete */}
                       <button
-                        onClick={() => handleEditLead(lead)}
-                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-200"
-                        title="Edit Lead"
+                        onClick={() => handleDeleteLead(lead.id)}
+                        className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
+                        title="Delete Lead"
                       >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                        <MoreHorizontal className="w-4 h-4" />
+                        <Trash className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
@@ -417,12 +503,15 @@ export default function Leads() {
       </div>
 
       <LeadViewModal lead={selectedLead} isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} />
-
-      <LeadEditModal
-        lead={selectedLead}
-        isOpen={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        onSave={handleSaveLead}
+      <QuotationEditModal
+        quotation={selectedQuotation}
+        isOpen={editQuotationOpen}
+        onClose={() => setEditQuotationOpen(false)}
+        onSave={(updatedQuotation) => {
+          console.log("✅ Quotation saved:", updatedQuotation)
+          setEditQuotationOpen(false)
+          
+        }}
       />
     </div>
   )

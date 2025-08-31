@@ -37,7 +37,7 @@ export default function Products() {
       try {
         const token = localStorage.getItem("token") // 👈 ensure token exists
         const res = await fetch(
-          "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/products/",
+          "https://qms-2h5c.onrender.com/quotations/api/products/",
           {
             method: "GET",
             headers: {
@@ -162,7 +162,7 @@ export default function Products() {
       const token = localStorage.getItem("token")
 
       const res = await fetch(
-        `https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/products/create/?id=${id}`,
+        `https://qms-2h5c.onrender.com/quotations/api/products/create/?id=${id}`,
         {
           method: "DELETE",
           headers: {
@@ -186,7 +186,14 @@ export default function Products() {
 
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading products...</div>
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading Products...</p>
+        </div>
+      </div>
+    )
   }
 
 

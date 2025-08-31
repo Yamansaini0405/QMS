@@ -33,27 +33,27 @@ export default function LeadViewModal({ lead, isOpen, onClose }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
-                <p className="text-gray-900">{lead.customer_name}</p>
+                <p className="text-gray-900">{lead.customer.name}</p>
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Contact Person</label>
                 <p className="text-gray-900">{lead.contact_person}</p>
-              </div>
+              </div> */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <p className="text-gray-900">{lead.email}</p>
+                <p className="text-gray-900">{lead.customer.email}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <p className="text-gray-900">{lead.phone}</p>
+                <p className="text-gray-900">{lead.customer.phone}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
-                <p className="text-gray-900">{lead.company_name}</p>
+                <p className="text-gray-900">{lead.customer.company_name}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <p className="text-gray-900">{lead.address}</p>
+                <p className="text-gray-900">{lead.customer.primary_address}</p>
               </div>
             </div>
           </div>
@@ -78,12 +78,12 @@ export default function LeadViewModal({ lead, isOpen, onClose }) {
                           : "bg-green-100 text-green-800"
                   }`}
                 >
-                  {lead.lead_status}
+                  {lead.status}
                 </span>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
-                <p className="text-gray-900">{lead.lead_source}</p>
+                <p className="text-gray-900">{lead.source}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
@@ -91,36 +91,17 @@ export default function LeadViewModal({ lead, isOpen, onClose }) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
-                <p className="text-gray-900">{lead.assigned_to}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Lead Score</label>
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">{lead.lead_score}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Sales Information */}
-          <div className="bg-gray-50 rounded-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <DollarSign className="w-5 h-5 text-gray-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Sales Information</h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Value</label>
-                <p className="text-green-600 font-medium">Rs. {lead.estimated_value?.toLocaleString()}</p>
+                <p className="text-gray-900">{lead.assigned_to.name}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Follow-up Date</label>
                 <p className="text-gray-900">{lead.follow_up_date}</p>
               </div>
+              
             </div>
           </div>
+
+
 
           {/* Notes & Comments */}
           <div className="bg-gray-50 rounded-lg p-6">

@@ -25,31 +25,34 @@ export default function AddCustomer() {
 
 const handleSaveCustomer = async () => {
   try {
-    console.log("[v1] Saving customer as FormData:", formData)
+    
 
     const token = localStorage.getItem("token")
 
     // build formData object with correct backend field names
-    const formDataToSend = new FormData()
-    formDataToSend.append("name", formData.fullName)
-    formDataToSend.append("company_name", formData.companyName)
-    formDataToSend.append("email", formData.email)
-    formDataToSend.append("phone", formData.phoneNumber)
-    formDataToSend.append("title", formData.title)
-    formDataToSend.append("website", formData.website)
-    formDataToSend.append("gst_number", formData.taxId)
-    formDataToSend.append("primary_address", formData.primaryAddress)
-    formDataToSend.append("billing_address", formData.billingAddress)
-    formDataToSend.append("shipping_address", formData.shippingAddress)
+   const dataToSend = {
+      name: formData.fullName,
+      company_name: formData.companyName,
+      email: formData.email,
+      phone: formData.phoneNumber,
+      title: formData.title,
+      website: formData.website,
+      gst_number: formData.taxId,
+      primary_address: formData.primaryAddress,
+      billing_address: formData.billingAddress,
+      shipping_address: formData.shippingAddress,
+    }
 
-    const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/create/", {
+    const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/create/", {
       method: "POST",
       headers: {
+        "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`, // ✅ send token
 
       },
-      body: formDataToSend,
+      body: JSON.stringify(dataToSend),
     })
+    console.log("[v1] Saving customer as FormData:", dataToSend)
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`)

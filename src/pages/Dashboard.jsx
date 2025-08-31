@@ -1,11 +1,58 @@
 import { FileText, Clock, Target, TrendingUp, Download, Plus, Eye, Edit, MoreHorizontal } from "lucide-react"
+import { useState, useEffect } from "react"
 
 const Dashboard = () => {
+
+  const [quotations, setQuotations] = useState([])
+  const [leads, setLeads] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const token = localStorage.getItem("token")
+
+        // fetch quotations
+        const qRes = await fetch("https://qms-2h5c.onrender.com/quotations/api/quotations/", {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        const qData = await qRes.json()
+        setQuotations(qData.data || qData)
+
+
+        // fetch leads
+        const lRes = await fetch("https://qms-2h5c.onrender.com/quotations/api/leads/", {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        const lData = await lRes.json()
+        setLeads(lData.data || lData)
+      } catch (err) {
+        setError("Failed to load dashboard data")
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  console.log(quotations)
+  console.log(leads)
+   const totalQuotations = quotations.length
+  const pendingQuotations = quotations.filter(q => q.status?.toLowerCase() === "pending").length
+  const totalRevenue = quotations
+    .filter(q => q.status?.toLowerCase() === "accepted")
+    .reduce((sum, q) => sum + (Number(q.total) || 0), 0)
+  const activeLeads = leads.filter(l => l.status?.toLowerCase() !== "closed").length
+
   const stats = [
     {
       title: "Total Quotations",
-      value: "3",
-      subtitle: "0 this month",
+      value: totalQuotations,
+      subtitle: `${quotations.filter(q => new Date(q.created_at).getMonth() === new Date().getMonth()).length} this month`,
       icon: FileText,
       color: "border-l-purple-500",
       bgColor: "bg-purple-50",
@@ -13,7 +60,7 @@ const Dashboard = () => {
     },
     {
       title: "Pending Quotations",
-      value: "1",
+      value: pendingQuotations,
       subtitle: "Awaiting customer response",
       icon: Clock,
       color: "border-l-amber-500",
@@ -22,7 +69,7 @@ const Dashboard = () => {
     },
     {
       title: "Total Revenue",
-      value: "Rs. 885.00",
+      value: `Rs. ${totalRevenue.toFixed(2)}`,
       subtitle: "From accepted quotations",
       icon: TrendingUp,
       color: "border-l-emerald-500",
@@ -31,8 +78,8 @@ const Dashboard = () => {
     },
     {
       title: "Active Leads",
-      value: "3",
-      subtitle: "5 customers total",
+      value: activeLeads,
+      subtitle: `${leads.length} customers total`,
       icon: Target,
       color: "border-l-blue-500",
       bgColor: "bg-blue-50",
@@ -40,59 +87,13 @@ const Dashboard = () => {
     },
   ]
 
-  const recentQuotations = [
-    {
-      id: "QT-NK-0001",
-      company: "Acme Corporation",
-      date: "15/01/2024",
-      amount: "Rs. 2950.00",
-      status: "pending",
-      statusColor: "bg-amber-100 text-amber-800",
-    },
-    {
-      id: "QT-NK-0002",
-      company: "Tech Solutions Ltd",
-      date: "20/01/2024",
-      amount: "Rs. 885.00",
-      status: "accepted",
-      statusColor: "bg-emerald-100 text-emerald-800",
-    },
-    {
-      id: "QT-NK-0003",
-      company: "StartupCo",
-      date: "10/01/2024",
-      amount: "Rs. 590.00",
-      status: "rejected",
-      statusColor: "bg-red-100 text-red-800",
-    },
-  ]
 
-  const recentLeads = [
-    {
-      name: "John Smith",
-      source: "website",
-      date: "15/01/2024",
-      value: "Rs. 50000.00",
-      status: "qualified",
-      statusColor: "bg-emerald-100 text-emerald-800",
-    },
-    {
-      name: "Sarah Johnson",
-      source: "referral",
-      date: "20/01/2024",
-      value: "Rs. 25000.00",
-      status: "new",
-      statusColor: "bg-blue-100 text-blue-800",
-    },
-    {
-      name: "Mike Wilson",
-      source: "quotation",
-      date: "10/01/2024",
-      value: "Rs. 75000.00",
-      status: "proposal",
-      statusColor: "bg-gray-100 text-gray-800",
-    },
-  ]
+    const recentQuotations = quotations.slice(-3).reverse() // last 3
+  const recentLeads = leads.slice(-3).reverse()
+
+    if (loading) return <p className="text-gray-500">Loading dashboard...</p>
+  if (error) return <p className="text-red-500">{error}</p>
+
 
   return (
     <div className="space-y-6">
@@ -145,26 +146,22 @@ const Dashboard = () => {
                 >
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="font-semibold text-gray-900">{quotation.id}</h3>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${quotation.statusColor}`}>
+                      <h3 className="font-semibold text-gray-900">{quotation.quotation_number}</h3>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800`}>
                         {quotation.status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-1">{quotation.company}</p>
-                    <p className="text-xs text-gray-500">{quotation.date}</p>
+                    <p className="text-sm text-gray-600 mb-1">{quotation.customer.company_name}</p>
+                    <p className="text-xs text-gray-500">{quotation.follow_up_date}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-gray-900 mb-2">{quotation.amount}</p>
-                    <div className="flex items-center space-x-2">
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                    <p className="font-bold text-gray-900 mb-2">Rs {quotation.total.toFixed(2)}</p>
+                    <div className="flex items-center justify-center space-x-2 bg-blue-700 rounded-lg w-12 ml-8 ">
+                      <button className="p-1 text-white hover:text-gray-600 transition-colors duration-200 flex items-center justify-center gap-2 ">
                         <Eye className="w-4 h-4" />
+                        {/* <span className="text-lg">see</span> */}
                       </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
+                      
                     </div>
                   </div>
                 </div>
@@ -199,16 +196,18 @@ const Dashboard = () => {
                 >
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="font-semibold text-gray-900">{lead.name}</h3>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${lead.statusColor}`}>
+                      <h3 className="font-semibold text-gray-900">{lead.customer.name}</h3>
+                      
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-800`}>
                         {lead.status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-1">{lead.source}</p>
-                    <p className="text-xs text-gray-500">{lead.date}</p>
+                    <h3 className="ftext-sm text-gray-600">{lead.customer.company_name}</h3>
+                    
+                    <p className="text-xs text-gray-500">{lead.follow_up_date}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-gray-900 mb-2">{lead.value}</p>
+                    <p className="text-sm text-gray-600 mb-1">{lead.source}</p>
                     <div className="flex items-center space-x-2">
                       <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
                         <Eye className="w-4 h-4" />

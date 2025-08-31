@@ -18,50 +18,18 @@ export default function ViewTermsAndCondition() {
     const fetchTerms = async () => {
       try {
         console.log("[v0] Fetching terms and conditions...")
-
-        // Mock data for demonstration
-        const mockTerms = [
-          {
-            id: 1,
-            title: "Service Agreement Terms",
-            content_html:
-              "*Payment must be made within 30 days of invoice date* *All services are subject to availability* *Cancellation requires 48 hours notice* *Refunds are processed within 5-7 business days*",
-            status: "Active",
-            created_by: "Admin User",
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: 2,
-            title: "Product Warranty Terms",
-            content_html:
-              "*Warranty covers manufacturing defects only* *Warranty period is 12 months from purchase date* *Customer must provide proof of purchase* *Warranty does not cover damage from misuse*",
-            status: "Active",
-            created_by: "Manager",
-            created_at: new Date(Date.now() - 86400000).toISOString(),
-            updated_at: new Date(Date.now() - 86400000).toISOString(),
-          },
-          {
-            id: 3,
-            title: "Privacy Policy Terms",
-            content_html:
-              "*We collect personal information for service delivery* *Data is stored securely and encrypted* *Information is not shared with third parties* *Users can request data deletion at any time*",
-            status: "Draft",
-            created_by: "Legal Team",
-            created_at: new Date(Date.now() - 172800000).toISOString(),
-            updated_at: new Date(Date.now() - 172800000).toISOString(),
-          },
-        ]
-
-        console.log("[v0] Mock terms loaded:", mockTerms)
-        setTerms(mockTerms)
+        const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/terms/`)
+        if (!response.ok) throw new Error("Failed to fetch terms")
+        const data = await response.json()
+      console.log("[v0] Fetched terms:", data)
+        setTerms(data)
       } catch (error) {
         console.error("❌ Error fetching terms:", error)
+        alert("Error fetching terms. Please try again.")
       } finally {
         setLoading(false)
       }
     }
-
     fetchTerms()
   }, [])
 
@@ -183,10 +151,9 @@ export default function ViewTermsAndCondition() {
               <tr>
                 <th className="px-6 py-4 text-left  font-semibold text-gray-900">S.No.</th>
                 <th className="px-6 py-4 text-left  font-semibold text-gray-900">Title</th>
-                <th className="px-6 py-4 text-left  font-semibold text-gray-900">Status</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-900">Created By</th>
+                {/* <th className="px-6 py-4 text-left font-semibold text-gray-900">Created By</th>
                 <th className="px-6 py-4 text-left font-semibold text-gray-900">Created</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-900">Updated</th>
+                <th className="px-6 py-4 text-left font-semibold text-gray-900">Updated</th> */}
                 <th className="px-6 py-4 text-left font-semibold text-gray-900">Actions</th>
               </tr>
             </thead>
@@ -209,16 +176,8 @@ export default function ViewTermsAndCondition() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        term.status === "Active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {term.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
+          
+                  {/* <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                       <User className="w-4 h-4 text-gray-400" />
                       <span className="text-sm text-gray-900">{term.created_by}</span>
@@ -229,7 +188,7 @@ export default function ViewTermsAndCondition() {
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-sm text-gray-600">{new Date(term.updated_at).toLocaleDateString()}</span>
-                  </td>
+                  </td> */}
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                       <button

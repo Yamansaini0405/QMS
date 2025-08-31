@@ -1,6 +1,7 @@
 
 
-function QuotationTemplate({ formData, forPrint = false }) {
+function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
+  console.log("Rendering QuotationTemplate with formData:", formData)
   return (
     <div
       className={`bg-white p-8 rounded-lg ${forPrint ? "" : "shadow-sm border"} max-w-4xl mx-auto`}
@@ -12,9 +13,7 @@ function QuotationTemplate({ formData, forPrint = false }) {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">QUOTATION</h1>
             <div className="text-sm text-gray-600 space-y-1">
-              <p>
-                <strong>Quotation No:</strong> {formData.quotationNumber || "QT-NK-0001"}
-              </p>
+
               <p>
                 <strong>Date:</strong> {formData.quotationDate || "23/08/2025"}
               </p>
@@ -62,32 +61,49 @@ function QuotationTemplate({ formData, forPrint = false }) {
               <th className="border border-gray-300 p-3 text-left">Product/Service</th>
               <th className="border border-gray-300 p-3 text-center">Quantity</th>
               <th className="border border-gray-300 p-3 text-right">Rate</th>
+
+              <th className="border border-gray-300 p-3 text-right">Discount</th>
               <th className="border border-gray-300 p-3 text-right">Amount</th>
             </tr>
           </thead>
           <tbody>
             {formData.products && formData.products.length > 0 ? (
-              formData.products.map((product, index) => (
-                <tr key={index}>
-                  <td className="border border-gray-300 p-3">{index + 1}</td>
-                  <td className="border border-gray-300 p-3">{product.name || "[Product/Service]"}</td>
-                  <td className="border border-gray-300 p-3 text-center">{product.quantity || 1}</td>
-                  <td className="border border-gray-300 p-3 text-right">Rs. {product.rate || "0.00"}</td>
-                  <td className="border border-gray-300 p-3 text-right">
-                    Rs. {((product.quantity || 1) * (product.rate || 0)).toFixed(2)}
-                  </td>
-                </tr>
-              ))
+              formData.products.map((product, index) => {
+                const qty = product.quantity || 1
+                const rate = product.selling_price || 0
+                const discountPct = product.percentage_discount || 0
+
+                const baseAmount = qty * rate
+                const discountAmount = (baseAmount * discountPct) / 100
+                const finalAmount = baseAmount - discountAmount
+
+                return (
+                  <tr key={index}>
+                    <td className="border border-gray-300 p-3">{index + 1}</td>
+                    <td className="border border-gray-300 p-3">{product.name || "[Product/Service]"}</td>
+                    <td className="border border-gray-300 p-3 text-center">{qty}</td>
+                    <td className="border border-gray-300 p-3 text-right">Rs. {rate.toFixed(2)}</td>
+                    <td className="border border-gray-300 p-3 text-right">
+                      {discountPct > 0 ? `${discountPct}%` : "—"}
+                    </td>
+                    <td className="border border-gray-300 p-3 text-right">
+                      Rs. {finalAmount.toFixed(2)}
+                    </td>
+                  </tr>
+                )
+              })
             ) : (
               <tr>
                 <td className="border border-gray-300 p-3">1</td>
                 <td className="border border-gray-300 p-3">[Product/Service]</td>
                 <td className="border border-gray-300 p-3 text-center">1</td>
                 <td className="border border-gray-300 p-3 text-right">Rs. 0.00</td>
+                <td className="border border-gray-300 p-3 text-right">—</td>
                 <td className="border border-gray-300 p-3 text-right">Rs. 0.00</td>
               </tr>
             )}
           </tbody>
+
         </table>
       </div>
 
@@ -102,7 +118,13 @@ function QuotationTemplate({ formData, forPrint = false }) {
             {formData.discount && (
               <div className="flex justify-between">
                 <span>Discount:</span>
-                <span>Rs. {formData.discount}</span>
+                {formData.discountType === "percentage" ? (
+                  <span>
+                    {formData.discount}% (Rs. {(formData.subtotal * formData.discount / 100).toFixed(2)})
+                  </span>
+                ) : (
+                  <span>Rs. {formData.discount}</span>
+                )}  
               </div>
             )}
             <div className="flex justify-between">
@@ -117,22 +139,47 @@ function QuotationTemplate({ formData, forPrint = false }) {
         </div>
       </div>
 
+
       {/* Terms & Conditions */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Terms & Conditions:</h2>
-        <div className="text-sm text-gray-700 space-y-2">
-          <p>1. Payment terms: Net 30 days from invoice date.</p>
-          <p>2. All prices are in Indian Rupees (Rs.) and exclude applicable taxes unless specified.</p>
-          <p>3. Quotation is valid for 30 days from the date of issue.</p>
-          <p>4. Any changes to the scope of work may result in additional charges.</p>
-          <p>5. Delivery timeline will be confirmed upon order confirmation.</p>
-          {formData.additionalNotes && (
-            <p className="mt-4 p-3 bg-yellow-50 rounded border-l-4 border-yellow-400">
-              <strong>Additional Notes:</strong> {formData.additionalNotes}
-            </p>
-          )}
-        </div>
+
+        {formData.selectedTerms && formData.selectedTerms.length > 0 ? (
+          <div className="text-sm text-gray-700 space-y-4">
+            {formData.selectedTerms.map((termId, idx) => {
+              const term = availableTerms.find((t) => t.id === termId)
+              if (!term) return null
+
+              // Split content_html by "*" into bullet points
+              const items = term.content_html
+                ? term.content_html.split("*").filter((item) => item.trim())
+                : []
+
+              return (
+                <div key={termId} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <h4 className="font-medium text-gray-900 mb-2">
+                    {idx + 1}. {term.title}
+                  </h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    {items.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <p className="text-gray-400 italic">No terms & conditions selected</p>
+        )}
+
+        {formData.additionalNotes && (
+          <p className="mt-4 p-3 bg-yellow-50 rounded border-l-4 border-yellow-400">
+            <strong>Additional Notes:</strong> {formData.additionalNotes}
+          </p>
+        )}
       </div>
+
 
       {/* Signature */}
       <div className="flex justify-between items-end">

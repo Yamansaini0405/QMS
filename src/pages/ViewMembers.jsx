@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { UserCog, Plus, Search, Filter, Download, Trash2 } from "lucide-react"
 
 export default function ViewMembers() {
@@ -8,75 +8,80 @@ export default function ViewMembers() {
   const [statusFilter, setStatusFilter] = useState("All Status")
   const [roleFilter, setRoleFilter] = useState("All Roles")
   const [departmentFilter, setDepartmentFilter] = useState("All Departments")
+  const [isLoading, setIsLoading] = useState(true);
+  const [members, setMembers] = useState([]);
 
-  // Mock admin data
-  const [admins, setAdmins] = useState([
-    {
-      id: 1,
-      fullName: "John Smith",
-      username: "john.smith",
-      email: "john.smith@company.com",
-      role: "SALESPERSON",
-      department: "IT",
-      phoneNumber: "+1 (555) 123-4567",
-      status: "Active",
-      createdDate: "2024-01-15",
-      lastLogin: "2024-01-20",
-    },
-    {
-      id: 2,
-      fullName: "Sarah Johnson",
-      username: "sarah.johnson",
-      email: "sarah.johnson@company.com",
-      role: "ADMIN",
-      department: "Sales",
-      phoneNumber: "+1 (555) 234-5678",
-      status: "Active",
-      createdDate: "2024-01-10",
-      lastLogin: "2024-01-19",
-    },
-    {
-      id: 3,
-      fullName: "Mike Wilson",
-      username: "mike.wilson",
-      email: "mike.wilson@company.com",
-      role: "ADMIN",
-      department: "Marketing",
-      phoneNumber: "+1 (555) 345-6789",
-      status: "Inactive",
-      createdDate: "2024-01-05",
-      lastLogin: "2024-01-18",
-    },
-  ])
+  // Simulate loading delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
 
-  const handleDeleteAdmin = async (adminId) => {
-    if (window.confirm("Are you sure you want to delete this admin? This action cannot be undone.")) {
+    return () => clearTimeout(timer);
+  }, []);
+
+const fetchMembers = async () => {
+    try {
+      setIsLoading(true)
+      const res = await fetch("https://qms-2h5c.onrender.com/accounts/api/users/", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      }) // <-- your backend API endpoint
+      if (!res.ok) throw new Error("Failed to fetch members")
+      const data = await res.json()
+      setMembers(data.data)
+    } catch (error) {
+      console.error("Error fetching members:", error)
+      alert("Error loading members.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchMembers()
+  }, [])
+
+  const handleDeleteMember = async (memberId) => {
+    if (window.confirm("Are you sure you want to delete this member? This action cannot be undone.")) {
       try {
         // Simulate API call
-        console.log("[v0] Deleting admin:", adminId)
+        console.log("[v0] Deleting member:", memberId)
 
-        // Remove admin from local state
-        setAdmins((prevAdmins) => prevAdmins.filter((admin) => admin.id !== adminId))
+        // Remove member from local state
+        setMembers((prevMembers) => prevMembers.filter((member) => member.id !== memberId))
 
-        alert("Admin deleted successfully!")
+        alert("Member deleted successfully!")
       } catch (error) {
-        console.log("[v0] Error deleting admin:", error)
-        alert("Error deleting admin. Please try again.")
+        console.log("[v0] Error deleting member:", error)
+        alert("Error deleting member. Please try again.")
       }
     }
   }
 
-  const filteredAdmins = admins.filter((admin) => {
+  const filteredMembers = members.filter((member) => {
     const matchesSearch =
-      admin.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      admin.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      admin.username.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "All Status" || admin.status === statusFilter
-    const matchesRole = roleFilter === "All Roles" || admin.role === roleFilter
-    const matchesDepartment = departmentFilter === "All Departments" || admin.department === departmentFilter
+      // member.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      member.username.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === "All Status" || member.status === statusFilter
+    const matchesRole = roleFilter === "All Roles" || member.role === roleFilter
+    const matchesDepartment = departmentFilter === "All Departments" || member.department === departmentFilter
 
     return matchesSearch && matchesStatus && matchesRole && matchesDepartment
   })
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading members...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -106,8 +111,8 @@ export default function ViewMembers() {
           <h2 className="text-lg font-semibold text-gray-900">Filters & Search</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="relative">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="relative col-span-2">
             <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
@@ -119,16 +124,6 @@ export default function ViewMembers() {
           </div>
 
           <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          >
-            <option>All Status</option>
-            <option>Active</option>
-            <option>Inactive</option>
-          </select>
-
-          <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -138,38 +133,28 @@ export default function ViewMembers() {
             <option>SALESPERSON</option>
           </select>
 
-          <select
-            value={departmentFilter}
-            onChange={(e) => setDepartmentFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          >
-            <option>All Departments</option>
-            <option>IT</option>
-            <option>Sales</option>
-            <option>Marketing</option>
-            <option>HR</option>
-          </select>
+  
         </div>
 
         <div className="flex items-center justify-between mt-4">
           <p className="text-sm text-gray-600">
-            Showing {filteredAdmins.length} of {admins.length} members
+            Showing {filteredMembers.length} of {members.length} members
           </p>
           <button className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">
             <Download className="w-4 h-4" />
-            Export All ({admins.length})
+            Export All ({members.length})
           </button>
         </div>
       </div>
 
-      {/* Admins Table */}
+      {/* Members Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                  <th className="text-left py-3 px-6 font-medium text-gray-900">SNo.</th>
-                <th className="text-left py-3 px-6 font-medium text-gray-900">Admin</th>
+                <th className="text-left py-3 px-6 font-medium text-gray-900">Member</th>
                 <th className="text-left py-3 px-6 font-medium text-gray-900">Role</th>
                 <th className="text-left py-3 px-6 font-medium text-gray-900">Phone No.</th>
                 <th className="text-left py-3 px-6 font-medium text-gray-900">Status</th>
@@ -179,43 +164,46 @@ export default function ViewMembers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredAdmins.map((admin, index) => (
-                <tr key={admin.id} className="hover:bg-gray-50">
+              {filteredMembers.map((member, index) => (
+                <tr key={member.id} className="hover:bg-gray-50">
                   <td className="py-4 px-6 text-gray-900">{index + 1}</td>
                   <td className="py-4 px-6">
                     <div>
-                      <div className="font-medium text-gray-900">{admin.fullName}</div>
-                      <div className="text-sm text-gray-500">{admin.email}</div>
-                      <div className="text-sm text-gray-500">@{admin.username}</div>
+                      <div className="font-medium text-gray-900">
+                        {member.fullName}
+                      </div>
+                      <div className="text-sm text-black font-bold">{member.username}</div>
+                      <div className="text-sm text-gray-500">{member.email}</div>
+                      
                     </div>
                   </td>
                   <td className="py-4 px-6">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        admin.role === "SALESPERSON" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"
+                        member.role === "SALESPERSON" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"
                       }`}
                     >
-                      {admin.role}
+                      {member.role}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-gray-900">{admin.phoneNumber}</td>
+                  <td className="py-4 px-6 text-gray-900">{member.phone_number}</td>
                   <td className="py-4 px-6">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        admin.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                        member.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {admin.status}
+                      {member.is_active? "Active" : "Inactive"}
                     </span>
                   </td>
-                  
-                  <td className="py-4 px-6 text-gray-900">{admin.createdDate}</td>
+
+                  <td className="py-4 px-6 text-gray-900">{member.date_joined.split("T")[0]}</td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleDeleteAdmin(admin.id)}
+                        onClick={() => handleDeleteMember(member.id)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete Admin"
+                        title="Delete Member"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

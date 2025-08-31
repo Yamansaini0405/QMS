@@ -19,7 +19,7 @@ export default function CustomersPage() {
     const fetchCustomers = async () => {
       try {
         const token = localStorage.getItem("token")
-        const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/", {
+        const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/", {
           headers: {
             "Authorization": `Bearer ${token}`,
           },
@@ -118,7 +118,7 @@ export default function CustomersPage() {
   try {
     const token = localStorage.getItem("token")
     const response = await fetch(
-      `https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/create/?id=${id}`,
+      `https://qms-2h5c.onrender.com/quotations/api/customers/create/?id=${id}`,
       {
         method: "DELETE",
         headers: {
@@ -141,6 +141,16 @@ export default function CustomersPage() {
   }
 }
 
+if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading Customers...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

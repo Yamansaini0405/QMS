@@ -51,7 +51,7 @@ export default function CustomerEditModal({ customer, isOpen, onClose, onSave })
       console.log("[v1] Saving customer data:", formData)
 
     // Example API call (PUT or PATCH depending on your backend)
-    const response = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/create/?id=${customer.id}`, {
+    const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/customers/create/?id=${customer.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
