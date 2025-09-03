@@ -1,9 +1,10 @@
-
+"use client"
 
 import { useState, useEffect } from "react"
-import { Users, Building2, Phone, Star, Search, Download, Eye, Edit, Trash2 } from "lucide-react"
+import { Users, Building2, Phone, Star, Search, Download, Eye, Edit, Trash2, ArrowUp, ArrowDown } from "lucide-react"
 import CustomerViewModal from "@/components/CustomerViewModal"
 import CustomerEditModal from "@/components/CustomerEditModal"
+import {Link } from "react-router-dom"
 
 export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -13,15 +14,15 @@ export default function CustomersPage() {
   const [viewModalOpen, setViewModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState(null)
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
 
-  // Sample customer data
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
         const token = localStorage.getItem("token")
-        const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/", {
+        const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/", {
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         })
 
@@ -48,17 +49,11 @@ export default function CustomersPage() {
   const totalCustomers = customers.length
   const withCompany = customers.filter((c) => c.company_name).length
   const withPhone = customers.filter((c) => c.phone).length
-  const recentlyAdded = customers.filter((c) => {
-    const created = new Date(c.added)
-    const now = new Date()
-    const diffDays = (now - created) / (1000 * 60 * 60 * 24)
-    return diffDays <= 7
-  }).length
-
+  const withEmail = customers.filter((c) => c.email).length
 
   const stats = [
     {
-      title: "Total Customers",
+      title: "Total Customers", 
       value: totalCustomers.toString(),
       icon: Users,
       color: "text-green-600",
@@ -79,15 +74,41 @@ export default function CustomersPage() {
       bgColor: "bg-purple-50",
     },
     {
-      title: "Recently Added",
-      value: recentlyAdded.toString(),
+      title: "With Emial",
+      value: withEmail.toString(),
       icon: Star,
       color: "text-amber-600",
       bgColor: "bg-amber-50",
     },
   ]
 
-  const filteredCustomers = customers.filter(
+  const handleSort = (key) => {
+    let direction = "asc"
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc"
+    }
+    setSortConfig({ key, direction })
+  }
+
+  const SortIcon = ({ column }) => {
+    if (sortConfig.key !== column) return null
+    return sortConfig.direction === "asc" ? (
+      <ArrowUp className="inline w-4 h-4 ml-1" />
+    ) : (
+      <ArrowDown className="inline w-4 h-4 ml-1" />
+    )
+  }
+
+  const sortedCustomers = [...customers].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    const valueA = a[sortConfig.key] ?? ""
+    const valueB = b[sortConfig.key] ?? ""
+    if (valueA < valueB) return sortConfig.direction === "asc" ? -1 : 1
+    if (valueA > valueB) return sortConfig.direction === "asc" ? 1 : -1
+    return 0
+  })
+
+  const filteredCustomers = sortedCustomers.filter(
     (customer) =>
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -113,35 +134,32 @@ export default function CustomersPage() {
   }
 
   const handleDeleteCustomer = async (id) => {
-  if (!window.confirm("Are you sure you want to delete this customer?")) return
+    if (!window.confirm("Are you sure you want to delete this customer?")) return
 
-  try {
-    const token = localStorage.getItem("token")
-    const response = await fetch(
-      `https://qms-2h5c.onrender.com/quotations/api/customers/create/?id=${id}`,
-      {
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/create/?id=${id}`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete customer: ${response.statusText}`)
       }
-    )
 
-    if (!response.ok) {
-      throw new Error(`Failed to delete customer: ${response.statusText}`)
+      // ✅ Update local state so UI reflects the deletion
+      setCustomers((prev) => prev.filter((customer) => customer.id !== id))
+
+      alert("Customer deleted successfully ✅")
+    } catch (error) {
+      console.error("❌ Error deleting customer:", error)
+      alert("Could not delete customer")
     }
-
-    // ✅ Update local state so UI reflects the deletion
-    setCustomers((prev) => prev.filter((customer) => customer.id !== id))
-
-    alert("Customer deleted successfully ✅")
-  } catch (error) {
-    console.error("❌ Error deleting customer:", error)
-    alert("Could not delete customer")
   }
-}
 
-if (loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -164,14 +182,15 @@ if (loading) {
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">All Customers</h1>
               <p className="text-gray-600">Manage your customer database</p>
-
             </div>
           </div>
         </div>
+        <Link to="/customers/create">
         <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
           <span className="text-lg">+</span>
           <span>New Customer</span>
         </button>
+        </Link>
       </div>
 
       {/* Stats Grid */}
@@ -214,22 +233,7 @@ if (loading) {
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <select
-              value={customerType}
-              onChange={(e) => setCustomerType(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-            >
-              <option>All Types</option>
-              <option>Individual</option>
-              <option>Company</option>
-            </select>
-
-            <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200">
-              <Download className="w-4 h-4" />
-              <span>Export All (5)</span>
-            </button>
-          </div>
+         
         </div>
       </div>
 
@@ -240,11 +244,36 @@ if (loading) {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">S.No.</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Customer</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Company</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Contact Info</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Address</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Added</th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("name")}
+                >
+                  Customer <SortIcon column="name" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("company_name")}
+                >
+                  Company <SortIcon column="company_name" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("email")}
+                >
+                  Contact Info <SortIcon column="email" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("address")}
+                >
+                  Address <SortIcon column="address" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("created_at")}
+                >
+                  Added <SortIcon column="created_at" />
+                </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
               </tr>
             </thead>
@@ -256,7 +285,7 @@ if (loading) {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8  bg-green-600 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
                         <Users className="w-4 h-4 text-white" />
                       </div>
                       <div>
@@ -301,12 +330,11 @@ if (loading) {
                       </button>
                       <button
                         onClick={() => handleDeleteCustomer(cust.id)}
-                        className="p-1text-red-600 transition-colors duration-200"
+                        className="p-1 text-red-600 transition-colors duration-200"
                         title="Delete Customer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-
                     </div>
                   </td>
                 </tr>

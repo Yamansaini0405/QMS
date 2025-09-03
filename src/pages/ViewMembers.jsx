@@ -1,33 +1,34 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { UserCog, Plus, Search, Filter, Download, Trash2 } from "lucide-react"
+import { UserCog, Plus, Search, Filter, Download, Trash2, ArrowUp, ArrowDown } from "lucide-react"
+import {Link} from "react-router-dom"
 
 export default function ViewMembers() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("All Status")
   const [roleFilter, setRoleFilter] = useState("All Roles")
   const [departmentFilter, setDepartmentFilter] = useState("All Departments")
-  const [isLoading, setIsLoading] = useState(true);
-  const [members, setMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true)
+  const [members, setMembers] = useState([])
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" }) // sorting state
 
-  // Simulate loading delay
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+      setIsLoading(false)
+    }, 2000)
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => clearTimeout(timer)
+  }, [])
 
-const fetchMembers = async () => {
+  const fetchMembers = async () => {
     try {
       setIsLoading(true)
-      const res = await fetch("https://qms-2h5c.onrender.com/accounts/api/users/", {
+      const res = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/users/", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      }) // <-- your backend API endpoint
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
       if (!res.ok) throw new Error("Failed to fetch members")
       const data = await res.json()
       setMembers(data.data)
@@ -46,12 +47,8 @@ const fetchMembers = async () => {
   const handleDeleteMember = async (memberId) => {
     if (window.confirm("Are you sure you want to delete this member? This action cannot be undone.")) {
       try {
-        // Simulate API call
         console.log("[v0] Deleting member:", memberId)
-
-        // Remove member from local state
         setMembers((prevMembers) => prevMembers.filter((member) => member.id !== memberId))
-
         alert("Member deleted successfully!")
       } catch (error) {
         console.log("[v0] Error deleting member:", error)
@@ -60,9 +57,26 @@ const fetchMembers = async () => {
     }
   }
 
-  const filteredMembers = members.filter((member) => {
+  // Handle sorting
+  const handleSort = (key) => {
+    let direction = "asc"
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc"
+    }
+    setSortConfig({ key, direction })
+  }
+
+  const sortedMembers = [...members].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    const valueA = a[sortConfig.key] ?? ""
+    const valueB = b[sortConfig.key] ?? ""
+    if (valueA < valueB) return sortConfig.direction === "asc" ? -1 : 1
+    if (valueA > valueB) return sortConfig.direction === "asc" ? 1 : -1
+    return 0
+  })
+
+  const filteredMembers = sortedMembers.filter((member) => {
     const matchesSearch =
-      // member.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.username.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "All Status" || member.status === statusFilter
@@ -83,6 +97,15 @@ const fetchMembers = async () => {
     )
   }
 
+  const SortIcon = ({ column }) => {
+    if (sortConfig.key !== column) return null
+    return sortConfig.direction === "asc" ? (
+      <ArrowUp className="inline w-4 h-4 ml-1" />
+    ) : (
+      <ArrowDown className="inline w-4 h-4 ml-1" />
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -96,13 +119,13 @@ const fetchMembers = async () => {
             <p className="text-gray-600">Manage and track system members</p>
           </div>
         </div>
+        <Link to="/members/create">
         <button className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2">
           <Plus className="w-4 h-4" />
           New Member
         </button>
+        </Link>
       </div>
-
-    
 
       {/* Filters & Search */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -132,18 +155,13 @@ const fetchMembers = async () => {
             <option>ADMIN</option>
             <option>SALESPERSON</option>
           </select>
-
-  
         </div>
 
         <div className="flex items-center justify-between mt-4">
           <p className="text-sm text-gray-600">
             Showing {filteredMembers.length} of {members.length} members
           </p>
-          <button className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">
-            <Download className="w-4 h-4" />
-            Export All ({members.length})
-          </button>
+         
         </div>
       </div>
 
@@ -153,13 +171,42 @@ const fetchMembers = async () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                 <th className="text-left py-3 px-6 font-medium text-gray-900">SNo.</th>
-                <th className="text-left py-3 px-6 font-medium text-gray-900">Member</th>
-                <th className="text-left py-3 px-6 font-medium text-gray-900">Role</th>
-                <th className="text-left py-3 px-6 font-medium text-gray-900">Phone No.</th>
-                <th className="text-left py-3 px-6 font-medium text-gray-900">Status</th>
-                
-                <th className="text-left py-3 px-6 font-medium text-gray-900">Created</th>
+                <th
+                  className="text-left py-3 px-6 font-medium text-gray-900 cursor-pointer"
+                  // onClick={() => handleSort("id")}
+                >
+                  SNo. <SortIcon column="id" />
+                </th>
+                <th
+                  className="text-left py-3 px-6 font-medium text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("username")}
+                >
+                  Member <SortIcon column="username" />
+                </th>
+                <th
+                  className="text-left py-3 px-6 font-medium text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("role")}
+                >
+                  Role <SortIcon column="role" />
+                </th>
+                <th
+                  className="text-left py-3 px-6 font-medium text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("phone_number")}
+                >
+                  Phone No. <SortIcon column="phone_number" />
+                </th>
+                <th
+                  className="text-left py-3 px-6 font-medium text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("is_active")}
+                >
+                  Status <SortIcon column="is_active" />
+                </th>
+                <th
+                  className="text-left py-3 px-6 font-medium text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("date_joined")}
+                >
+                  Created at<SortIcon column="date_joined" />
+                </th>
                 <th className="text-left py-3 px-6 font-medium text-gray-900">Actions</th>
               </tr>
             </thead>
@@ -169,18 +216,17 @@ const fetchMembers = async () => {
                   <td className="py-4 px-6 text-gray-900">{index + 1}</td>
                   <td className="py-4 px-6">
                     <div>
-                      <div className="font-medium text-gray-900">
-                        {member.fullName}
-                      </div>
+                      <div className="font-medium text-gray-900">{member.fullName}</div>
                       <div className="text-sm text-black font-bold">{member.username}</div>
                       <div className="text-sm text-gray-500">{member.email}</div>
-                      
                     </div>
                   </td>
                   <td className="py-4 px-6">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        member.role === "SALESPERSON" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"
+                        member.role === "SALESPERSON"
+                          ? "bg-purple-100 text-purple-800"
+                          : "bg-blue-100 text-blue-800"
                       }`}
                     >
                       {member.role}
@@ -193,10 +239,9 @@ const fetchMembers = async () => {
                         member.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {member.is_active? "Active" : "Inactive"}
+                      {member.is_active ? "Active" : "Inactive"}
                     </span>
                   </td>
-
                   <td className="py-4 px-6 text-gray-900">{member.date_joined.split("T")[0]}</td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">

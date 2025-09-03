@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import {
@@ -10,10 +12,10 @@ import {
   Download,
   Plus,
   Eye,
-  Edit,
-  Trash2
+  Trash2,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react"
-import { Link } from "react-router-dom"
 import QuotationEditModel from "../components/QuotationEditModel"
 
 const Quotations = () => {
@@ -23,6 +25,7 @@ const Quotations = () => {
   const [loading, setLoading] = useState(true)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
 
   const navigate = useNavigate()
 
@@ -31,9 +34,9 @@ const Quotations = () => {
       setLoading(true)
       try {
         const token = localStorage.getItem("token")
-        const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/quotations/", {
+        const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/", {
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         })
@@ -51,14 +54,12 @@ const Quotations = () => {
 
   // Calculate stats dynamically
   const totalValue = quotations.reduce((sum, q) => {
-  const value = typeof q.total === "string" 
-    ? parseFloat(q.total.replace(/[^\d.]/g, "")) 
-    : Number(q.total) || 0
-  return sum + value
-}, 0)
+    const value = typeof q.total === "string" ? Number.parseFloat(q.total.replace(/[^\d.]/g, "")) : Number(q.total) || 0
+    return sum + value
+  }, 0)
 
-  const pendingCount = quotations.filter(q => q.status === "PENDING").length
-  const acceptedCount = quotations.filter(q => q.status === "ACCEPTED").length
+  const pendingCount = quotations.filter((q) => q.status === "PENDING").length
+  const acceptedCount = quotations.filter((q) => q.status === "ACCEPTED").length
 
   const stats = [
     {
@@ -100,11 +101,11 @@ const Quotations = () => {
   }
 
   // const handleDeleteQuotation = async (id) => {
-    
+
   //   try {
   //     const token = localStorage.getItem("token")
   //     await fetch(
-  //       `https://qms-2h5c.onrender.com/quotations/api/quotations/${id}/`,
+  //       `https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/${id}/`,
   //       {
   //         method: "DELETE",
   //         headers: {
@@ -120,14 +121,49 @@ const Quotations = () => {
   //   }
   // }
 
+  const handleSort = (key) => {
+    let direction = "asc"
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc"
+    }
+    setSortConfig({ key, direction })
+  }
+
+  const SortIcon = ({ column }) => {
+    if (sortConfig.key !== column) return null
+    return sortConfig.direction === "asc" ? (
+      <ArrowUp className="inline w-4 h-4 ml-1" />
+    ) : (
+      <ArrowDown className="inline w-4 h-4 ml-1" />
+    )
+  }
+
+  const sortedQuotations = [...quotations].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    let valueA, valueB
+
+    if (sortConfig.key === "customer_name") {
+      valueA = a.customer?.name ?? ""
+      valueB = b.customer?.name ?? ""
+    } else {
+      valueA = a[sortConfig.key] ?? ""
+      valueB = b[sortConfig.key] ?? ""
+    }
+
+    if (valueA < valueB) return sortConfig.direction === "asc" ? -1 : 1
+    if (valueA > valueB) return sortConfig.direction === "asc" ? 1 : -1
+    return 0
+  })
+
   // Filter quotations by search and status
-  const filteredQuotations = quotations.filter(q => {
+  const filteredQuotations = sortedQuotations.filter((q) => {
     const matchesSearch =
       q.customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       // q.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      q.id?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus =
-      statusFilter === "All Status" || q.status === statusFilter
+      q.id
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === "All Status" || q.status === statusFilter
     return matchesSearch && matchesStatus
   })
 
@@ -144,34 +180,26 @@ const Quotations = () => {
     const payload = {
       ...quotation,
       status: newStatus,
-      
     }
 
     console.log("Sending quotation status update:", payload)
 
     try {
-      const res = await fetch(
-        `https://qms-2h5c.onrender.com/quotations/api/quotations/create/`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      )
+      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      })
 
       if (!res.ok) {
         throw new Error("Failed to update quotation status")
       }
 
       // ✅ Update UI locally
-      setQuotations((prev) =>
-        prev.map((q) =>
-          q.id === id ? { ...q, status: newStatus } : q
-        )
-      )
+      setQuotations((prev) => prev.map((q) => (q.id === id ? { ...q, status: newStatus } : q)))
       alert("status updated")
 
       console.log("[v0] Quotation status updated:", id, newStatus)
@@ -180,9 +208,6 @@ const Quotations = () => {
       alert("Error updating status. Please try again.")
     }
   }
-
-
-
 
   if (loading) {
     return (
@@ -200,16 +225,13 @@ const Quotations = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
               <FileText className="w-6 h-6 text-white" />
             </div>
             <div>
-
               <h1 className="text-2xl font-semibold text-gray-900">All Quotations</h1>
               <p className="text-gray-600">Manage and track all quotations</p>
-
             </div>
           </div>
         </div>
@@ -266,7 +288,7 @@ const Quotations = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
             >
               <option>All Status</option>
-              <option >Pending</option>
+              <option>Pending</option>
               <option>Accepted</option>
               <option>Rejected</option>
             </select>
@@ -285,26 +307,50 @@ const Quotations = () => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left text-sm">
-
-                  Sno.
+                <th className="px-6 py-4 text-left text-sm">Sno.</th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("customer_name")}
+                >
+                  Customer <SortIcon column="customer_name" />
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Customer</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Quote ID</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Amount</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Created</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Valid Until</th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("id")}
+                >
+                  Quote ID <SortIcon column="id" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("total")}
+                >
+                  Amount <SortIcon column="total" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("status")}
+                >
+                  Status <SortIcon column="status" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("created_at")}
+                >
+                  Created <SortIcon column="created_at" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("follow_up_date")}
+                >
+                  Valid Until <SortIcon column="follow_up_date" />
+                </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredQuotations.map((quotation, index) => (
                 <tr key={index} className="hover:bg-gray-50 transition-colors duration-200">
-                  <td className="px-6 py-4">
-
-                    {index + 1}
-                  </td>
+                  <td className="px-6 py-4">{index + 1}</td>
                   <td className="px-6 py-4 flex items-center gap-3">
                     <div className="w-8 h-8  bg-green-600 rounded-lg flex items-center justify-center">
                       <Users className="w-4 h-4 text-white" />
@@ -351,9 +397,7 @@ const Quotations = () => {
                       >
                         <Edit className="w-4 h-4" />
                       </button> */}
-                      <button 
-                    //  onClick={handleDeleteQuotation(quotation.id)}
-                      className="p-1 text-gray-400 hover:text-red-500 transition-colors duration-200">
+                      <button className="p-1  text-gray-400 hover:text-red-500 transition-colors duration-200">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>

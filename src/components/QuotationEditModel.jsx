@@ -49,7 +49,7 @@ const [productSearchStates, setProductSearchStates] = useState({})
 
   const fetchTerms = async () => {
   try {
-    const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/terms/", {
+    const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/terms/", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -66,7 +66,7 @@ const [productSearchStates, setProductSearchStates] = useState({})
 const fetchProducts = async () => {
   try {
     const response = await fetch(
-      "https://qms-2h5c.onrender.com/quotations/api/products/",
+      "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/products/",
       {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       }
@@ -129,7 +129,7 @@ const filteredTerms = availableTerms.filter((term) =>
         setIsSearchingProducts((prev) => ({ ...prev, [productIndex]: true }));
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/products/", {
+            const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/products/", {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             const data = await response.json();
@@ -395,7 +395,7 @@ const filteredTerms = availableTerms.filter((term) =>
       console.log("Final payload to backend:", payload)
 
       const response = await fetch(
-        `https://qms-2h5c.onrender.com/quotations/api/quotations/create/`,
+        `https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/`,
         {
           method: "PUT",
           headers: {
@@ -427,8 +427,10 @@ const filteredTerms = availableTerms.filter((term) =>
   if (!isOpen || !quotation) return null
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto no-scrollbar">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+    onClick={onClose}>
+      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto no-scrollbar"
+      onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">Edit Quotation</h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">

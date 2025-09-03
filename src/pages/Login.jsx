@@ -59,8 +59,8 @@ const Login = () => {
     try {
       const apiEndpoint =
         formData.role === "admin"
-          ? "https://qms-2h5c.onrender.com/accounts/api/admin/login/"
-          : "https://qms-2h5c.onrender.com/accounts/api/salesperson/login/"
+          ? "https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/admin/login/"
+          : "https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/salesperson/login/"
 
       const response = await fetch(apiEndpoint, {
         method: "POST",
@@ -106,18 +106,7 @@ const Login = () => {
           <p className="text-gray-600">Sign in to your account</p>
         </div>
 
-        {/* Demo Credentials Card */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <h3 className="text-sm font-semibold text-blue-800 mb-2">Demo Credentials</h3>
-          <div className="text-sm text-blue-700">
-            <p>
-              <strong>Admin:</strong> admin@qms.com / admin123
-            </p>
-            <p>
-              <strong>Sales:</strong> sales@qms.com / sales123
-            </p>
-          </div>
-        </div>
+       
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">

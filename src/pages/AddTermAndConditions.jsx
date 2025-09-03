@@ -44,46 +44,63 @@ export default function AddTermsConditions() {
     }
   }
 
- const handleSaveTerms = async () => {
-  setIsLoading(true)
+const handleSaveTerms = async () => {
+  // Validation
+  if (!formData.title.trim()) {
+    alert("Please enter a title for Terms & Conditions.");
+    return;
+  }
+
+  // Check if at least one point is non-empty
+  const validPoints = formData.points.filter((p) => p.trim() !== "");
+  if (validPoints.length === 0) {
+    alert("Please add at least one term/condition point.");
+    return;
+  }
+
+  setIsLoading(true);
   try {
     // Convert points array into comma-separated string
-    const contentHtml = formData.points
-      .map((point) => `*${point}*`) // wrap each with *
+    const contentHtml = validPoints
+      .map((point) => `*${point}*`)
       .join(" "); // separate with space
 
     const formattedData = {
       title: formData.title,
       content_html: contentHtml,
-    }
+    };
 
-    console.log("[v0] Sending terms and conditions:", formattedData)
+    console.log("[v0] Sending terms and conditions:", formattedData);
 
     // Send to API
-    const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/terms/create/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("token")}`, 
-      },
-      body: JSON.stringify(formattedData),
-    })
+    const response = await fetch(
+      "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/terms/create/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(formattedData),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error("Failed to save terms and conditions")
+      throw new Error("Failed to save terms and conditions");
     }
 
-    const result = await response.json()
-    console.log("✅ Saved successfully:", result)
-    alert("Terms and Conditions saved successfully!")
-    setFormData({ title: "", points: [""] })
+    const result = await response.json();
+    console.log("✅ Saved successfully:", result);
+    alert("Terms and Conditions saved successfully!");
+    setFormData({ title: "", points: [""] });
   } catch (error) {
-    console.error("[v0] Error saving terms:", error)
-    alert("Error saving terms and conditions")
-  } finally{
-    setIsLoading(false)
+    console.error("[v0] Error saving terms:", error);
+    alert("Error saving terms and conditions");
+  } finally {
+    setIsLoading(false);
   }
-}
+};
+
 
 
   return (
@@ -103,10 +120,10 @@ export default function AddTermsConditions() {
               </div>
             </div>
           </div>
-           <button
+           {/* <button
             onClick={handleSaveTerms}
             disabled={isLoading}
-            className={`px-6 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+            className={`px-6 py-2 rounded-lg flex items-center gap-2 transition-colors cursor-pointer ${
               isLoading
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-gray-900 text-white hover:bg-gray-800"
@@ -142,7 +159,7 @@ export default function AddTermsConditions() {
                 Save Terms
               </>
             )}
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -178,7 +195,7 @@ export default function AddTermsConditions() {
               </div>
               <button
                 onClick={addNewPoint}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 text-sm"
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 text-sm cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Add More
@@ -238,6 +255,48 @@ export default function AddTermsConditions() {
                 ))}
               </div>
             </div>
+          </div>
+          <div className="flex items-center justify-center">
+            <button
+            onClick={handleSaveTerms}
+            disabled={isLoading}
+            className={`w-full py-3 text-lg rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer ${
+              isLoading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gray-900 text-white hover:bg-gray-800"
+            }`}
+          >
+            {isLoading ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                Save Terms
+              </>
+            )}
+          </button>
           </div>
         </div>
 

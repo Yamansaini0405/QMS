@@ -1,19 +1,9 @@
+"use client"
 
 import { useState, useEffect } from "react"
-import {
-  Target,
-  TrendingUp,
-  Users,
-  CheckCircle,
-  DollarSign,
-  Search,
-  Download,
-  Eye,
-  Trash,
-} from "lucide-react"
+import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown } from "lucide-react"
 import LeadViewModal from "../components/LeadViewModal"
 import QuotationEditModal from "@/components/QuotationEditModel"
-
 
 export default function Leads() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -27,9 +17,7 @@ export default function Leads() {
   const [selectedLead, setSelectedLead] = useState(null)
   const [editQuotationOpen, setEditQuotationOpen] = useState(false)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
-
-
-
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -37,15 +25,12 @@ export default function Leads() {
         console.log("[v0] Fetching leads from backend...")
         const token = localStorage.getItem("token") // 🔑 get token
 
-        const res = await fetch(
-          "https://qms-2h5c.onrender.com/quotations/api/leads/",
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
+        const res = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/leads/", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
         if (!res.ok) {
           throw new Error("Failed to fetch leads")
@@ -110,25 +95,61 @@ export default function Leads() {
     // },
   ]
 
- const filteredLeads = leads.filter((lead) => {
-  const matchesSearch =
-    lead.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.customer?.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleSort = (key) => {
+    let direction = "asc"
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc"
+    }
+    setSortConfig({ key, direction })
+  }
 
-  const matchesStatus =
-    statusFilter === "All Status" || lead.status === statusFilter.toUpperCase()
+  const SortIcon = ({ column }) => {
+    if (sortConfig.key !== column) return null
+    return sortConfig.direction === "asc" ? (
+      <ArrowUp className="inline w-4 h-4 ml-1" />
+    ) : (
+      <ArrowDown className="inline w-4 h-4 ml-1" />
+    )
+  }
 
-  const matchesSource =
-    sourceFilter === "All Sources" || lead.source?.toLowerCase() === sourceFilter.toLowerCase()
+  const sortedLeads = [...leads].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    let valueA, valueB
 
-  const matchesAssignee =
-    assigneeFilter === "All Assignees" ||
-    lead.assigned_to?.name?.toLowerCase() === assigneeFilter.toLowerCase()
+    if (sortConfig.key === "customer_name") {
+      valueA = a.customer?.name ?? ""
+      valueB = b.customer?.name ?? ""
+    } else if (sortConfig.key === "company_name") {
+      valueA = a.customer?.company_name ?? ""
+      valueB = b.customer?.company_name ?? ""
+    } else if (sortConfig.key === "assigned_to_name") {
+      valueA = a.assigned_to?.name ?? ""
+      valueB = b.assigned_to?.name ?? ""
+    } else {
+      valueA = a[sortConfig.key] ?? ""
+      valueB = b[sortConfig.key] ?? ""
+    }
 
-  return matchesSearch && matchesStatus && matchesSource && matchesAssignee
-})
+    if (valueA < valueB) return sortConfig.direction === "asc" ? -1 : 1
+    if (valueA > valueB) return sortConfig.direction === "asc" ? 1 : -1
+    return 0
+  })
 
+  const filteredLeads = sortedLeads.filter((lead) => {
+    const matchesSearch =
+      lead.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.customer?.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesStatus = statusFilter === "All Status" || lead.status === statusFilter.toUpperCase()
+
+    const matchesSource = sourceFilter === "All Sources" || lead.source?.toLowerCase() === sourceFilter.toLowerCase()
+
+    const matchesAssignee =
+      assigneeFilter === "All Assignees" || lead.assigned_to?.name?.toLowerCase() === assigneeFilter.toLowerCase()
+
+    return matchesSearch && matchesStatus && matchesSource && matchesAssignee
+  })
 
   const handleViewLead = (lead) => {
     console.log("[v0] Opening view modal for lead:", lead.customer_name)
@@ -143,32 +164,30 @@ export default function Leads() {
   }
 
   const handleDeleteLead = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this lead?")) return;
+    if (!window.confirm("Are you sure you want to delete this lead?")) return
 
     try {
-      // 🔹 call backend API
+      
       const res = await fetch(`/api/leads/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      });
+      })
 
       if (!res.ok) {
-        throw new Error("Failed to delete lead from server");
+        throw new Error("Failed to delete lead from server")
       }
 
       // 🔹 update UI
-      setLeads((prev) => prev.filter((lead) => lead.id !== id));
-      console.log("[v0] Lead deleted from backend:", id);
+      setLeads((prev) => prev.filter((lead) => lead.id !== id))
+      console.log("[v0] Lead deleted from backend:", id)
     } catch (err) {
-      console.error(err);
-      alert("Error deleting lead. Please try again.");
+      console.error(err)
+      alert("Error deleting lead. Please try again.")
     }
-  };
-
-
+  }
 
   const handleCreateQuotation = async (quotationId) => {
     try {
@@ -176,15 +195,12 @@ export default function Leads() {
 
       console.log("[v0] Fetching quotation for lead:", quotationId)
 
-      const res = await fetch(
-        `https://qms-2h5c.onrender.com/quotations/api/quotations/${quotationId}/`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/${quotationId}/`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
       if (!res.ok) {
         throw new Error("Failed to fetch quotation for this lead")
@@ -202,47 +218,38 @@ export default function Leads() {
     }
   }
 
-
-
   const handleStatusChange = async (lead, id, newStatus) => {
-    const payload = { 
+    const payload = {
       customer_name: lead.customer.name,
       customer_email: lead.customer.email,
       customer_phone: lead.customer.phone,
       status: newStatus,
-      priority: lead.priority
-
+      priority: lead.priority,
     }
     console.log("sending payload:", payload)
     try {
-      const res = await fetch(`https://qms-2h5c.onrender.com/quotations/api/leads/${id}/`, {
+      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/leads/${id}/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(payload),
-      });
+      })
 
       if (!res.ok) {
-        throw new Error("Failed to update status on server");
+        throw new Error("Failed to update status on server")
       }
 
       // ✅ Update UI
-      setLeads((prev) =>
-        prev.map((lead) =>
-          lead.id === id ? { ...lead, status: newStatus } : lead
-        )
-      );
+      setLeads((prev) => prev.map((lead) => (lead.id === id ? { ...lead, status: newStatus } : lead)))
 
-      console.log("[v0] Status updated in backend:", id, newStatus);
+      console.log("[v0] Status updated in backend:", id, newStatus)
     } catch (err) {
-      console.error(err);
-      alert("Error updating status. Please try again.");
+      console.error(err)
+      alert("Error updating status. Please try again.")
     }
-  };
-
-
+  }
 
   const handleSaveLead = async (updatedLead) => {
     try {
@@ -394,12 +401,42 @@ export default function Leads() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">SNo.</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Lead</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Company</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Source</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Assigned To</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Created</th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("customer_name")}
+                >
+                  Lead <SortIcon column="customer_name" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("company_name")}
+                >
+                  Company <SortIcon column="company_name" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("status")}
+                >
+                  Status <SortIcon column="status" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("source")}
+                >
+                  Source <SortIcon column="source" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("assigned_to_name")}
+                >
+                  Assigned To <SortIcon column="assigned_to_name" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("created_at")}
+                >
+                  Created <SortIcon column="created_at" />
+                </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Quotation</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
               </tr>
@@ -410,7 +447,6 @@ export default function Leads() {
                   <td className="px-6 py-4">
                     <div>
                       <p className="font-medium text-gray-900">{index + 1}</p>
-
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -420,7 +456,7 @@ export default function Leads() {
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900">{lead.customer.name}</p>
-                        <p className="text-sm text-gray-500">{ }</p>
+                        <p className="text-sm text-gray-500">{lead.email}</p>
                         <p className="text-sm text-gray-500">{lead.phone}</p>
                       </div>
                     </div>
@@ -443,12 +479,9 @@ export default function Leads() {
                       <option value="CONVERTED">Converted</option>
                     </select>
                   </td>
-
-
                   <td className="px-6 py-4">
                     <span className="text-sm text-gray-600">{lead.source}</span>
                   </td>
-
                   <td className="px-6 py-4">
                     <span className="text-sm text-gray-600">{lead.assigned_to.name}</span>
                   </td>
@@ -456,7 +489,7 @@ export default function Leads() {
                     <span className="text-sm text-gray-600">{new Date(lead.created_at).toLocaleDateString()}</span>
                   </td>
                   <td className="px-6 py-4">
-                    {  lead.file_url !== null ? (
+                    {lead.file_url.length > 0 ? (
                       <a
                         href={lead.file_url}
                         target="_blank"
@@ -474,8 +507,6 @@ export default function Leads() {
                       </button>
                     )}
                   </td>
-
-
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                       <button
@@ -510,7 +541,6 @@ export default function Leads() {
         onSave={(updatedQuotation) => {
           console.log("✅ Quotation saved:", updatedQuotation)
           setEditQuotationOpen(false)
-          
         }}
       />
     </div>

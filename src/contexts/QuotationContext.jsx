@@ -73,10 +73,10 @@ export const QuotationProvider = ({ children }) => {
         email: "",
         phone: "",
         address: "",
-        products: [{ id: "", name: "", quantity: 1, selling_price: 0, percentage_discount: 0 }],
+        products: [{ id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 }],
         subtotal: "0.00",
         discount: "",
-        tax: "0.00",
+        tax: "0.00",    
         taxRate: "18",
         discountType: "amount",
         totalAmount: "0.00",
@@ -89,7 +89,7 @@ export const QuotationProvider = ({ children }) => {
     useEffect(() => {
         const fetchTerms = async () => {
             try {
-                const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/terms/", {
+                const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/terms/", {
                     headers: {
                         "Authorization": `Bearer ${localStorage.getItem("token")}`,
                     },
@@ -115,7 +115,7 @@ export const QuotationProvider = ({ children }) => {
             console.log("Sending payload:", payload)
 
             const res = await fetch(
-                "https://qms-2h5c.onrender.com/quotations/api/products/create/",
+                "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/products/create/",
                 {
                     method: "POST",
 
@@ -150,6 +150,7 @@ export const QuotationProvider = ({ children }) => {
                         const id = await handleSaveProduct(p.name, p.selling_price);
                         return {
                             product: id,
+                            name: p.name,
                             quantity: p.quantity,
                             unit_price: p.selling_price ? Number(p.selling_price) : 0,
                             discount: p.percentage_discount ? Number(p.percentage_discount) : 0,
@@ -157,6 +158,7 @@ export const QuotationProvider = ({ children }) => {
                     } else {
                         return {
                             product: p.id,
+                            name: p.name,
                             quantity: p.quantity,
                             unit_price: p.selling_price ? Number(p.selling_price) : 0,
                             discount: p.percentage_discount ? Number(p.percentage_discount) : 0,
@@ -176,6 +178,7 @@ export const QuotationProvider = ({ children }) => {
                 auto_assign: true,
                 status: "PENDING",
                 discount: formData.discount ? Number.parseFloat(formData.discount) : 0,
+                tax_rate:formData.taxRate,
                 discount_type: formData.discountType,
                 follow_up_date: formatDateToBackend(formData.validUntil),
                 terms: selectedTerms,
@@ -183,7 +186,8 @@ export const QuotationProvider = ({ children }) => {
             };
             console.log("Creating quotation with payload:", payload);
             const response = await fetch(
-                "https://qms-2h5c.onrender.com/quotations/api/quotations/create/",
+                "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/",
+
                 {
                     method: "POST",
                     headers: {
@@ -247,7 +251,7 @@ export const QuotationProvider = ({ children }) => {
         setIsSearchingProducts((prev) => ({ ...prev, [productIndex]: true }));
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/products/", {
+            const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/products/", {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             const data = await response.json()
@@ -307,7 +311,7 @@ export const QuotationProvider = ({ children }) => {
             id: product.id,
             name: name || product.name,
             description: product.description ?? "",
-            selling_price: Number(product.selling_price ?? 0),
+            selling_price: Number(product.selling_price),
             cost_price: Number(product.cost_price ?? 0),
             tax_rate: Number(product.tax_rate ?? 0),
             unit: product.unit ?? "",
@@ -374,6 +378,14 @@ export const QuotationProvider = ({ children }) => {
                 showResults: query.trim().length > 0,
             },
         }));
+        setFormData((prev) => {
+            const updatedProducts = [...prev.products];
+            updatedProducts[productIndex] = {
+                ...updatedProducts[productIndex],
+                name: query,
+            };
+            return { ...prev, products: updatedProducts };
+        });
         if (query.trim()) {
             searchProducts(query, productIndex);
         } else {
@@ -453,7 +465,7 @@ export const QuotationProvider = ({ children }) => {
         setIsSearchingCustomers(true);
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/", {
+            const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/", {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             const data = await response.json();

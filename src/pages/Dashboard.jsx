@@ -1,5 +1,6 @@
 import { FileText, Clock, Target, TrendingUp, Download, Plus, Eye, Edit, MoreHorizontal } from "lucide-react"
 import { useState, useEffect } from "react"
+import DashboardSkeleton from "@/components/DashboardSkeleton"
 
 const Dashboard = () => {
 
@@ -15,7 +16,7 @@ const Dashboard = () => {
         const token = localStorage.getItem("token")
 
         // fetch quotations
-        const qRes = await fetch("https://qms-2h5c.onrender.com/quotations/api/quotations/", {
+        const qRes = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/", {
           headers: { Authorization: `Bearer ${token}` }
         })
         const qData = await qRes.json()
@@ -23,7 +24,7 @@ const Dashboard = () => {
 
 
         // fetch leads
-        const lRes = await fetch("https://qms-2h5c.onrender.com/quotations/api/leads/", {
+        const lRes = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/leads/", {
           headers: { Authorization: `Bearer ${token}` }
         })
         const lData = await lRes.json()
@@ -91,7 +92,8 @@ const Dashboard = () => {
     const recentQuotations = quotations.slice(-3).reverse() // last 3
   const recentLeads = leads.slice(-3).reverse()
 
-    if (loading) return <p className="text-gray-500">Loading dashboard...</p>
+if (loading) return <DashboardSkeleton />
+
   if (error) return <p className="text-red-500">{error}</p>
 
 

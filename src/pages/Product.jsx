@@ -1,4 +1,4 @@
-
+"use client"
 
 import { useState, useEffect } from "react"
 import {
@@ -13,9 +13,12 @@ import {
   Eye,
   Edit,
   Trash2,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react"
 import ProductViewModal from "../components/ProductViewModel"
 import ProductEditModal from "../components/ProductEditModel"
+import * as XLSX from "xlsx" 
 
 export default function Products() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -24,28 +27,22 @@ export default function Products() {
   const [products, setProducts] = useState([]) // ✅ real data here
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
   const [viewModalOpen, setViewModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
-
-  // Sample product data
-
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const token = localStorage.getItem("token") // 👈 ensure token exists
-        const res = await fetch(
-          "https://qms-2h5c.onrender.com/quotations/api/products/",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
+        const res = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/products/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
         if (!res.ok) throw new Error("Failed to fetch products")
 
@@ -70,9 +67,7 @@ export default function Products() {
 
   const uniqueCategories = [...new Set(products.map((p) => p.category))].length
 
-  const avgPrice =
-    products.reduce((sum, p) => sum + Number(p.selling_price || 0), 0) /
-    (products.length || 1)
+  const avgPrice = products.reduce((sum, p) => sum + Number(p.selling_price || 0), 0) / (products.length || 1)
 
   // Monthly sales calculation
   const monthlySales = products.reduce((acc, p) => {
@@ -82,7 +77,7 @@ export default function Products() {
     acc[month] += Number(p.selling_price || 0)
     return acc
   }, {})
-  const totalMonthlySales = Object.values(monthlySales).reduce((sum, val) => sum + val, 0);
+  const totalMonthlySales = Object.values(monthlySales).reduce((sum, val) => sum + val, 0)
 
   const stats = [
     {
@@ -122,21 +117,47 @@ export default function Products() {
     },
   ]
 
-  const filteredProducts = products.filter((product) => {
+  const handleSort = (key) => {
+    let direction = "asc"
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc"
+    }
+    setSortConfig({ key, direction })
+  }
+
+  const SortIcon = ({ column }) => {
+    if (sortConfig.key !== column) return null
+    return sortConfig.direction === "asc" ? (
+      <ArrowUp className="inline w-4 h-4 ml-1" />
+    ) : (
+      <ArrowDown className="inline w-4 h-4 ml-1" />
+    )
+  }
+
+  const sortedProducts = [...products].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    const valueA = a[sortConfig.key] ?? ""
+    const valueB = b[sortConfig.key] ?? ""
+    if (valueA < valueB) return sortConfig.direction === "asc" ? -1 : 1
+    if (valueA > valueB) return sortConfig.direction === "asc" ? 1 : -1
+    return 0
+  })
+
+  const filteredProducts = sortedProducts.filter((product) => {
     // Search filter
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase());
+      product.category.toLowerCase().includes(searchTerm.toLowerCase())
 
     // Category filter
-    const matchesCategory = categoryFilter === "All Categories" || product.category === categoryFilter;
+    const matchesCategory = categoryFilter === "All Categories" || product.category === categoryFilter
 
     // Status filter
-    const matchesStatus = statusFilter === "All Status" || product.status === statusFilter;
+    const matchesStatus = statusFilter === "All Status" || product.status === statusFilter
 
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
+    return matchesSearch && matchesCategory && matchesStatus
+  })
 
   const handleViewProduct = (product) => {
     setSelectedProduct(product)
@@ -161,16 +182,13 @@ export default function Products() {
     try {
       const token = localStorage.getItem("token")
 
-      const res = await fetch(
-        `https://qms-2h5c.onrender.com/quotations/api/products/create/?id=${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
+      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/products/create/?id=${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
       if (!res.ok) throw new Error("Failed to delete product")
 
@@ -182,6 +200,33 @@ export default function Products() {
       console.error(err)
       alert("Could not delete product")
     }
+  }
+
+   const handleExportExcel = () => {
+    if (!products.length) {
+      alert("No products available to export")
+      return
+    }
+
+    // Map only selected fields instead of entire raw object
+    const exportData = products.map((p, index) => ({
+      "S.No.": index + 1,
+      Name: p.name,
+      Description: p.description,
+      Category: p.category,
+      "Cost Price": p.cost_price,
+      "Selling Price": p.selling_price,
+      Unit: p.unit,
+      warrenty:p.warranty_months+" months",
+      Status: p.active ? "Active" : "Inactive",
+      "Created At": p.created_at ? p.created_at.split("T")[0] : "",
+    }))
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Products")
+
+    XLSX.writeFile(workbook, "products.xlsx")
   }
 
 
@@ -196,7 +241,6 @@ export default function Products() {
     )
   }
 
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -209,7 +253,6 @@ export default function Products() {
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Products Catalog</h1>
               <p className="text-gray-600">Manage your product inventory and pricing</p>
-
             </div>
           </div>
         </div>
@@ -278,11 +321,12 @@ export default function Products() {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
             >
               <option>All Status</option>
-              <option>Active</option>
-              <option>Inactive</option>
+              <option value="true">Active</option>
+              <option value ="false">Inactive</option>
             </select>
 
-            <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+            <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+            onClick={handleExportExcel}>
               <Download className="w-4 h-4" />
               <span>Export All (6)</span>
             </button>
@@ -299,12 +343,42 @@ export default function Products() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">S.No.</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Product</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Category</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Price</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Unit</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Created</th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("name")}
+                >
+                  Product <SortIcon column="name" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("category")}
+                >
+                  Category <SortIcon column="category" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("cost_price")}
+                >
+                  Price <SortIcon column="cost_price" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("unit")}
+                >
+                  Unit <SortIcon column="unit" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("active")}
+                >
+                  Status <SortIcon column="active" />
+                </th>
+                <th
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSort("created_at")}
+                >
+                  Created <SortIcon column="created_at" />
+                </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
               </tr>
             </thead>
@@ -329,7 +403,8 @@ export default function Products() {
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.category === "services"
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        product.category === "services"
                           ? "bg-blue-100 text-blue-800"
                           : product.category === "support"
                             ? "bg-purple-100 text-purple-800"
@@ -338,7 +413,7 @@ export default function Products() {
                               : product.category === "consulting"
                                 ? "bg-green-100 text-green-800"
                                 : "bg-gray-100 text-gray-800"
-                        }`}
+                      }`}
                     >
                       {product.category}
                     </span>
@@ -351,8 +426,9 @@ export default function Products() {
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.status === "Active" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-800"
-                        }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        product.status === "Active" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-800"
+                      }`}
                     >
                       {product.active ? "Active" : "Inactive"}
                     </span>
@@ -383,7 +459,6 @@ export default function Products() {
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-
                     </div>
                   </td>
                 </tr>

@@ -5,11 +5,18 @@ import { X, FileText, Calendar, User, Eye } from "lucide-react"
 export default function TermViewModal({ term, isOpen, onClose }) {
   if (!isOpen || !term) return null
 
-  const points = term.content_html.split("*").filter(Boolean)
+ const points = term.content_html
+  .split("*")
+  .map(p => p.trim())
+  .filter(p => p.length > 0)
+
+
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden"
+      onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-green-50">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
@@ -38,16 +45,7 @@ export default function TermViewModal({ term, isOpen, onClose }) {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                   <p className="text-gray-900 font-medium">{term.title}</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      term.status === "Active" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                    }`}
-                  >
-                    {term.status}
-                  </span>
-                </div>
+               
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Created By</label>
                   <div className="flex items-center space-x-2">
@@ -83,24 +81,7 @@ export default function TermViewModal({ term, isOpen, onClose }) {
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <FileText className="w-5 h-5 text-gray-600" />
-                <h3 className="text-lg font-semibold text-gray-900">Document Preview</h3>
-              </div>
-
-              <div className="border border-gray-200 rounded-lg p-6 bg-white">
-                <h4 className="text-xl font-semibold text-gray-900 mb-6 text-center">{term.title}</h4>
-                <div className="space-y-4">
-                  {points.map((point, index) => (
-                    <div key={index} className="flex gap-3">
-                      <span className="flex-shrink-0 text-gray-600 font-medium">{index}.</span>
-                      <p className="text-gray-700 leading-relaxed">{point.trim()}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+          
           </div>
         </div>
       </div>

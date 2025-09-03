@@ -64,7 +64,7 @@ export default function AddLeads() {
     // /api/customers?search=${encodeURIComponent(query)}
     try {
       const token = localStorage.getItem("token")
-      const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/", {
+      const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -126,7 +126,7 @@ export default function AddLeads() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://qms-2h5c.onrender.com/accounts/api/users/",
+        "https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/users/",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -208,7 +208,7 @@ export default function AddLeads() {
       customer_company: formData.companyName,
       customer_primary_address: formData.address,
       status: formData.lead_status,
-      source: formData.lead_source,
+      lead_source: formData.lead_source,
       follow_up_date: followUpDate,
       notes: formData.description,
       assigned_to: formData.assigned_to,
@@ -218,7 +218,7 @@ export default function AddLeads() {
     console.log("Saving lead payload:", payload)
 
     const response = await fetch(
-      "https://qms-2h5c.onrender.com/quotations/api/leads/create/",
+      "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/leads/create/",
       {
         method: "POST",
         headers: {
@@ -335,6 +335,7 @@ export default function AddLeads() {
                         setShowCustomerSearch(true)
                       }
                     }}
+                    onBlur={() => setTimeout(() => setShowCustomerSearch(false),150)}
                     className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2" />
@@ -347,7 +348,7 @@ export default function AddLeads() {
                         customerSearchResults.map((customer) => (
                           <div
                             key={customer.id}
-                            onClick={() => selectCustomer(customer)}
+                           onMouseDown={() => selectCustomer(customer)} 
                             className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                           >
                             <div className="font-medium text-gray-900">{customer.name}</div>

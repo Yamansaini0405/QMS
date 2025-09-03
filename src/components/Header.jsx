@@ -10,7 +10,7 @@ const Header = () => {
       const token = localStorage.getItem("refreshToken")
 
       if (token) {
-        await fetch("https://qms-2h5c.onrender.com/accounts/api/logout/", {
+        await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/logout/", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,

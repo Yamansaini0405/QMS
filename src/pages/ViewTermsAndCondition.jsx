@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FileText, Calendar, User, Eye, Edit, Trash2, Search, Download } from "lucide-react"
+import { FileText, Calendar, User, Eye, Edit, Trash2, Search, Download, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import TermViewModal from "../components/TermViewModal"
 import TermEditModal from "../components/TermEditModal"
+import { Link } from "react-router-dom"
 
 export default function ViewTermsAndCondition() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -13,12 +14,14 @@ export default function ViewTermsAndCondition() {
   const [viewModalOpen, setViewModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [selectedTerm, setSelectedTerm] = useState(null)
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
 
   useEffect(() => {
     const fetchTerms = async () => {
       try {
+        
         console.log("[v0] Fetching terms and conditions...")
-        const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/terms/`)
+        const response = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/terms/`)
         if (!response.ok) throw new Error("Failed to fetch terms")
         const data = await response.json()
       console.log("[v0] Fetched terms:", data)
@@ -33,12 +36,56 @@ export default function ViewTermsAndCondition() {
     fetchTerms()
   }, [])
 
-
   const filteredTerms = terms.filter(
     (term) =>
       term.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       term.created_by.toLowerCase().includes(searchTerm.toLowerCase()),
   )
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" }
+      }
+      return { key, direction: "asc" }
+    })
+  }
+
+  const SortIcon = ({ column }) => {
+    const inactive = sortConfig.key !== column
+    const direction = inactive ? "none" : sortConfig.direction
+    return (
+      <span className="inline-flex items-center">
+        {direction === "none" ? (
+          <ArrowUpDown className="ml-1 h-4 w-4 text-gray-300" />
+        ) : direction === "asc" ? (
+          <ArrowUp className="ml-1 h-4 w-4 text-gray-500" />
+        ) : (
+          <ArrowDown className="ml-1 h-4 w-4 text-gray-500" />
+        )}
+      </span>
+    )
+  }
+
+  const sortedTerms = [...filteredTerms].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    let aVal = a[sortConfig.key]
+    let bVal = b[sortConfig.key]
+
+    if (sortConfig.key === "created_at") {
+      aVal = new Date(aVal).getTime()
+      bVal = new Date(bVal).getTime()
+    } else {
+      aVal = aVal ?? ""
+      bVal = bVal ?? ""
+      if (typeof aVal === "string") aVal = aVal.toLowerCase()
+      if (typeof bVal === "string") bVal = bVal.toLowerCase()
+    }
+
+    if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1
+    if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1
+    return 0
+  })
 
   const handleViewTerm = (term) => {
     console.log("[v0] Opening view modal for term:", term.title)
@@ -95,15 +142,14 @@ export default function ViewTermsAndCondition() {
             </div>
           </div>
         </div>
+        <Link to="/terms/create">
         <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
           <span className="text-lg">+</span>
           <span>New Terms</span>
-        </button>
+        </button></Link>
       </div>
 
-     
-
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
             <Search className="w-5 h-5" />
@@ -124,25 +170,8 @@ export default function ViewTermsAndCondition() {
               />
             </div>
           </div>
-
-          <div className="flex items-center space-x-4">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-            >
-              <option>All Status</option>
-              <option>Active</option>
-              <option>Draft</option>
-            </select>
-
-            <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200">
-              <Download className="w-4 h-4" />
-              <span>Export All</span>
-            </button>
-          </div>
         </div>
-      </div>
+      </div> */}
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
@@ -150,15 +179,35 @@ export default function ViewTermsAndCondition() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-left  font-semibold text-gray-900">S.No.</th>
-                <th className="px-6 py-4 text-left  font-semibold text-gray-900">Title</th>
-                {/* <th className="px-6 py-4 text-left font-semibold text-gray-900">Created By</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-900">Created</th>
-                <th className="px-6 py-4 text-left font-semibold text-gray-900">Updated</th> */}
+                <th
+                  onClick={() => handleSort("title")}
+                  className="px-6 py-4 text-left font-semibold text-gray-900 cursor-pointer select-none"
+                >
+                  <span className="inline-flex items-center gap-1">
+                    Title <SortIcon column="title" />
+                  </span>
+                </th>
+                <th
+                  onClick={() => handleSort("created_by")}
+                  className="px-6 py-4 text-left font-semibold text-gray-900 cursor-pointer select-none"
+                >
+                  <span className="inline-flex items-center gap-1">
+                    Created By <SortIcon column="created_by" />
+                  </span>
+                </th>
+                <th
+                  onClick={() => handleSort("created_at")}
+                  className="px-6 py-4 text-left font-semibold text-gray-900 cursor-pointer select-none"
+                >
+                  <span className="inline-flex items-center gap-1">
+                    Created at <SortIcon column="created_at" />
+                  </span>
+                </th>
                 <th className="px-6 py-4 text-left font-semibold text-gray-900">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredTerms.map((term, index) => (
+              {sortedTerms.map((term, index) => (
                 <tr key={index} className="hover:bg-gray-50 transition-colors duration-200">
                   <td className="px-6 py-4">
                     <span className="font-semibold text-gray-900">{index + 1}</span>
@@ -176,8 +225,7 @@ export default function ViewTermsAndCondition() {
                       </div>
                     </div>
                   </td>
-          
-                  {/* <td className="px-6 py-4">
+                  <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                       <User className="w-4 h-4 text-gray-400" />
                       <span className="text-sm text-gray-900">{term.created_by}</span>
@@ -186,9 +234,6 @@ export default function ViewTermsAndCondition() {
                   <td className="px-6 py-4">
                     <span className="text-sm text-gray-600">{new Date(term.created_at).toLocaleDateString()}</span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{new Date(term.updated_at).toLocaleDateString()}</span>
-                  </td> */}
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                       <button

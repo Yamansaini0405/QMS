@@ -88,6 +88,13 @@ export default function ProductTable() {
                         }))
                       }
                     }}
+                    onBlur={() => setTimeout(() =>setProductSearchStates((prev) => ({
+                          ...prev,
+                          [index]: {
+                            ...prev[index],
+                            showResults: false,
+                          },
+                        })), 150 )}
                     
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -99,7 +106,7 @@ export default function ProductTable() {
                         productSearchResults[index].map((searchProduct) => (
                           <div
                             key={searchProduct.id}
-                            onClick={() => selectProduct(searchProduct, index)}
+                            onMouseDown={() => selectProduct(searchProduct, index)}
                             className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                           >
                             <div className="font-medium text-gray-900">{searchProduct.name}</div>
@@ -127,6 +134,7 @@ export default function ProductTable() {
                 <input
                   type="number"
                   value={product.selling_price}
+                  placeholder="0"
                   name="selling_price"
                   onChange={(e) => handleChangeProductDetail(e, index)}
                   className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"

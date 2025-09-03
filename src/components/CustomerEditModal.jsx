@@ -51,7 +51,7 @@ export default function CustomerEditModal({ customer, isOpen, onClose, onSave })
       console.log("[v1] Saving customer data:", formData)
 
     // Example API call (PUT or PATCH depending on your backend)
-    const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/customers/create/?id=${customer.id}`, {
+    const response = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/create/?id=${customer.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -82,8 +82,10 @@ export default function CustomerEditModal({ customer, isOpen, onClose, onSave })
   if (!isOpen || !customer) return null
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm  flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto no-scrollbar">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm  flex items-center justify-center z-50"
+    onClick={onClose}>
+      <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto no-scrollbar"
+      onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">

@@ -1,26 +1,28 @@
 
 import { useState, useEffect } from "react"
-import { Save, Package, DollarSign, FileText } from "lucide-react"
+import { Save, Package, DollarSign, FileText, IndianRupee } from "lucide-react"
 
 export default function AddProduct() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    category: "hardware",
+    category: "",
     brand: "",
     is_available: true,
     active: true,
-    cost_price: 100,
-    selling_price: 150,
+    cost_price: "",
+    selling_price: "",
     unit: "piece",
-    tax_rate: 18,
+    tax_rate: "",
     weight: 0.00,
-    dimensions: "10x5x3 cm",
-    warranty_months: "",   // backend expects this field
+    dimensions: "",
+    warranty_value: "",
+    warranty_unit: "months",
   })
 
-  const [categories, setCategories] = useState([])
-  const [newCategory, setNewCategory] = useState("")
+  const [categories, setCategories] = useState([]) // all fetched categories
+  const [filteredCategories, setFilteredCategories] = useState([]) // filtered while typing
+  const [showDropdown, setShowDropdown] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   // Fetch categories on mount
@@ -28,11 +30,12 @@ export default function AddProduct() {
     const fetchCategories = async () => {
       try {
         const token = localStorage.getItem("token")
-        const res = await fetch("https://qms-2h5c.onrender.com/quotations/api/categories/", {
+        const res = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/categories/", {
           headers: { "Authorization": `Bearer ${token}` }
         })
         const data = await res.json()
-        setCategories(data.data || [])
+        setCategories(data || [])
+        console.log("category", data);
       } catch (err) {
         console.error("Error fetching categories:", err)
       }
@@ -42,31 +45,31 @@ export default function AddProduct() {
 
   console.log(categories)
 
-  const handleAddCategory = async () => {
-    setIsLoading(true)
-    if (!newCategory.trim()) return
-    try {
-      const token = localStorage.getItem("token")
-      const res = await fetch("https://qms-2h5c.onrender.com/quotations/api/categories/", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: newCategory }),
-      })
-      if (!res.ok) throw new Error("Failed to add category")
+  const handleCategoryChange = (e) => {
+    const value = e.target.value
+    setFormData({ ...formData, category: value })
 
-      const data = await res.json()
-      setCategories((prev) => [...prev, data]) // add new category to list
-      setFormData((prev) => ({ ...prev, category: data.id })) // select it
-      setNewCategory("")
-      alert("Category added successfully!")
-    } catch (err) {
-      console.error("Error adding category:", err)
-    } finally {
-      setIsLoading(false)
+    if (value.trim() === "") {
+      setFilteredCategories(categories)
+    } else {
+      const filtered = categories.filter((cat) =>
+        cat.name.toLowerCase().includes(value.toLowerCase())
+      )
+      setFilteredCategories(filtered)
+
     }
+    setShowDropdown(true)
+  }
+
+  console.log("filtered category", filteredCategories)
+
+  // when selecting category from dropdown
+  const handleSelectCategory = (categoryName) => {
+    setFormData({
+      ...formData,
+      category: categoryName
+    })
+    setShowDropdown(false)
   }
 
 
@@ -90,26 +93,32 @@ export default function AddProduct() {
     try {
       const token = localStorage.getItem("token")
 
+      // Convert warranty to months before sending
+      let warrantyMonths = null
+      if (formData.warranty_value) {
+        warrantyMonths =
+          formData.warranty_unit === "years"
+            ? Number(formData.warranty_value) * 12
+            : Number(formData.warranty_value)
+      }
+
       const payload = {
         ...formData,
         cost_price: Number(formData.cost_price),
         selling_price: Number(formData.selling_price),
         tax_rate: Number(formData.tax_rate),
         weight: Number(formData.weight),
-        warranty_months: formData.warranty_months
-          ? Number(formData.warranty_months)
-          : null,
+        warranty_months: warrantyMonths,
       }
 
       console.log("Sending payload:", payload)
 
       const res = await fetch(
-        "https://qms-2h5c.onrender.com/quotations/api/products/create/",
+        "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/products/create/",
         {
           method: "POST",
-
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
@@ -121,15 +130,19 @@ export default function AddProduct() {
       const data = await res.json()
       alert("Product saved successfully!")
       console.log("Product saved:", data)
+
+      setFormData({
+           name: "",description: "",category: "",brand: "",is_available: true,active: true,cost_price: "",
+           selling_price: "",unit: "piece",tax_rate: "",weight: "",warranty_value: "",warranty_unit: "months",
+           })
+
     } catch (err) {
       console.error("Error saving product:", err)
     } finally {
       setIsLoading(false)
+     
     }
   }
-
-
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -147,45 +160,7 @@ export default function AddProduct() {
               </div>
             </div>
           </div>
-          <button
-            onClick={handleSaveProduct}
-            disabled={isLoading}
-            className={`px-6 py-2 rounded-lg flex items-center gap-2 transition-colors ${isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gray-900 text-white hover:bg-gray-800"
-              }`}
-          >
-            {isLoading ? (
-              <>
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  ></path>
-                </svg>
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                Save Product
-              </>
-            )}
-          </button>
+          
         </div>
       </div>
 
@@ -223,40 +198,39 @@ export default function AddProduct() {
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                <div className="flex gap-2">
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    className="flex-1 px-3 py-2  border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Select a category</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
+              <div className="mb-4 relative">
+                <label className="block text-sm font-medium mb-1">Category</label>
+                <input
+                  type="text"
+                  value={formData.category}
+                  onChange={handleCategoryChange}
+                  onFocus={() => setShowDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                  
+                  placeholder="Search category..."
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
 
-                  {/* Add New Category inline */}
-                  <input
-                    type="text"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    placeholder="New category"
-                    className="px-3 py-2 border border-gray-300 rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddCategory}
-                    className="bg-blue-600 text-white px-3 py-2 rounded-lg"
-                  >
-                    Add
-                  </button>
-                </div>
+                {/* Dropdown */}
+                {showDropdown && (
+                  <ul className="absolute z-10 bg-white border rounded-lg w-full max-h-40 overflow-y-auto mt-1 shadow-lg" >
+                    {filteredCategories.length > 0 ? (
+                      filteredCategories.map((cat, idx) => (
+                        <li
+                          key={idx}
+ onMouseDown={() => handleSelectCategory(cat.name)}                         
+                          className="px-3 py-2 cursor-pointer hover:bg-blue-100"
+                        >
+                          {cat.name}
+                        </li>
+                      ))
+                    ) : (
+                      <li className="px-3 py-2 text-gray-500 italic">No category found</li>
+                    )}
+                  </ul>
+                )}
               </div>
+
 
 
               <div>
@@ -288,7 +262,7 @@ export default function AddProduct() {
           {/* Pricing & Tax */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center gap-2 mb-6">
-              <DollarSign className="w-5 h-5 text-gray-600" />
+              <IndianRupee className="w-5 h-5 text-gray-600" />
               <h2 className="text-lg font-semibold text-gray-900">Pricing & Tax</h2>
             </div>
 
@@ -298,6 +272,7 @@ export default function AddProduct() {
                 <input
                   type="number"
                   name="cost_price"
+                  placeholder="100"
                   value={formData.cost_price}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -309,6 +284,7 @@ export default function AddProduct() {
                 <input
                   type="number"
                   name="selling_price"
+                  placeholder="150"
                   value={formData.selling_price}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -337,6 +313,7 @@ export default function AddProduct() {
                 <input
                   type="number"
                   name="tax_rate"
+                  placeholder="18"
                   value={formData.tax_rate}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -385,16 +362,31 @@ export default function AddProduct() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Warranty Period</label>
-                <input
-                  type="text"
-                  name="warranty_months"
-                  value={formData.warranty_months}
-                  onChange={handleInputChange}
-                  placeholder="e.g. 1 year, 6 months"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Warranty Period
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      name="warranty_value"
+                      value={formData.warranty_value}
+                      onChange={handleInputChange}
+                      placeholder="Enter number"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <select
+                      name="warranty_unit"
+                      value={formData.warranty_unit}
+                      onChange={handleInputChange}
+                      className="px-3 py-2 border border-gray-300 rounded-lg"
+                    >
+                      <option value="months">Months</option>
+                      <option value="years">Years</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -416,7 +408,7 @@ export default function AddProduct() {
 
               <div className="border-t border-gray-200 pt-4">
                 <div className="mb-2 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-gray-600" />
+                  <IndianRupee className="w-4 h-4 text-gray-600" />
                   <span className="text-sm font-medium text-gray-900">Pricing:</span>
                 </div>
                 <div className="space-y-2">
@@ -454,8 +446,50 @@ export default function AddProduct() {
             </div>
           </div>
         </div>
+        
 
       </div>
+      <div className="flex items-center justify-center">
+          <button
+            onClick={handleSaveProduct}
+            disabled={isLoading}
+            className={`w-full mt-4 py-3 text-lg rounded-lg flex items-center justify-center gap-2 transition-colors ${isLoading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-gray-900 text-white hover:bg-gray-800"
+              }`}
+          >
+            {isLoading ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                Save Product
+              </>
+            )}
+          </button>
+        </div>
     </div>
   )
 }

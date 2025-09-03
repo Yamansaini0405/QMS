@@ -36,6 +36,23 @@ export default function QuotationSummary() {
 
                 <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                        <span className="text-sm text-gray-600">Tax Rate:</span>
+                        <input
+                            className="w-12 h-7 px-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            type="text"
+                            value={formData.taxRate}
+                            onChange={(e) => {
+                                updateFormData("taxRate", e.target.value)
+                                calculateTotals(formData.products)
+                            }}
+                        />
+                        <span className="text-xs text-gray-500">%</span>
+                    </div>
+                    <span className="text-sm font-medium">Rs. {formData.tax}</span>
+                </div>
+                 <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
                         <input
                             type="checkbox"
                             id="special-discount"
@@ -89,24 +106,6 @@ export default function QuotationSummary() {
                             <span className="text-sm text-gray-600">Amount</span>
                         </label>
                     </div>
-                </div>
-
-                <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
-                        <span className="text-sm text-gray-600">Tax Rate:</span>
-                        <input
-                            className="w-12 h-7 px-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            type="text"
-                            value={formData.taxRate}
-                            onChange={(e) => {
-                                updateFormData("taxRate", e.target.value)
-                                calculateTotals(formData.products)
-                            }}
-                        />
-                        <span className="text-xs text-gray-500">%</span>
-                    </div>
-                    <span className="text-sm font-medium">Rs. {formData.tax}</span>
                 </div>
 
                 <div className="border-t border-gray-200 pt-4">

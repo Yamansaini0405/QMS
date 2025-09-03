@@ -24,6 +24,7 @@ export default function CustomerInfoForm() {
               onFocus={() => {
                 if (customerSearchQuery.trim()) setShowCustomerSearch(true);
               }}
+              onBlur={() => setTimeout(() => setShowCustomerSearch(false), 150)}
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2" />
@@ -35,7 +36,7 @@ export default function CustomerInfoForm() {
                   customerSearchResults.map((customer) => (
                     <div
                       key={customer.id}
-                      onClick={() => selectCustomer(customer)}
+                       onMouseDown={() => selectCustomer(customer)}
                       className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                     >
                       <div className="font-medium text-gray-900">{customer.name}</div>

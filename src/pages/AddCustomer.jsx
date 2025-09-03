@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ArrowLeft, User, Building, MapPin, FileText, Mail, Phone, FileEdit, Calendar, BarChart3 } from "lucide-react"
+import { UserCog, User, Building, MapPin, FileText, Mail, Phone, FileEdit, Calendar, BarChart3 } from "lucide-react"
 
 export default function AddCustomer() {
   const [formData, setFormData] = useState({
@@ -15,58 +15,141 @@ export default function AddCustomer() {
     shippingAddress: "",
   })
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+  const [errors, setErrors] = useState({})
+  const [touched, setTouched] = useState({})
+  const [isLoading, setIsLoading] = useState(false)
+
+  const validateField = (name, value, all = formData) => {
+    let msg = ""
+
+    switch (name) {
+      case "fullName":
+        if (!value.trim()) msg = "Full name is required"
+        break
+      case "email":
+        if (!value.trim()) msg = "Email is required"
+        else if (!/\S+@\S+\.\S+/.test(value)) msg = "Invalid email format"
+        break
+      case "phoneNumber": {
+        const digits = value.replace(/\D/g, "")
+        if (!digits) {
+          msg = "Phone number is required"
+        } else if (digits.length !== 10) {
+          msg = "Phone must be exactly 10 digits"
+        } else if (!/^[6-9]/.test(digits)) {
+          msg = "Phone must start with 6, 7, 8, or 9"
+        }
+        break
+      }
+      case "companyName":
+        if (!value.trim()) msg = "Company name is required"
+        break
+      case "primaryAddress":
+        if (!value.trim()) msg = "Primary address is required"
+        break
+      default:
+        break
+    }
+    return msg
   }
 
-const handleSaveCustomer = async () => {
-  try {
-    
-
-    const token = localStorage.getItem("token")
-
-    // build formData object with correct backend field names
-   const dataToSend = {
-      name: formData.fullName,
-      company_name: formData.companyName,
-      email: formData.email,
-      phone: formData.phoneNumber,
-      title: formData.title,
-      website: formData.website,
-      gst_number: formData.taxId,
-      primary_address: formData.primaryAddress,
-      billing_address: formData.billingAddress,
-      shipping_address: formData.shippingAddress,
-    }
-
-    const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/create/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, // ✅ send token
-
-      },
-      body: JSON.stringify(dataToSend),
+  const validateForm = (all = formData) => {
+    const newErrors = {}
+    Object.keys(all).forEach((key) => {
+      const msg = validateField(key, all[key], all)
+      if (msg) newErrors[key] = msg
     })
-    console.log("[v1] Saving customer as FormData:", dataToSend)
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
+
+  const handleInputChange = (e) => {
+    const { name } = e.target
+    let { value } = e.target
+
+    if (name === "phoneNumber") {
+      value = value.replace(/\D/g, "").slice(0, 10) // only digits, max 10
     }
 
-    const result = await response.json()
-    console.log("✅ Customer saved successfully:", result)
-    alert("Customer saved successfully!")
-  } catch (error) {
-    console.error("❌ Error saving customer:", error)
-    alert("Error saving customer")
-  }
-}
+    const nextForm = { ...formData, [name]: value }
+    setFormData(nextForm)
 
+    if (!touched[name]) {
+      setTouched((prev) => ({ ...prev, [name]: true }))
+    }
+
+    const msg = validateField(name, value, nextForm)
+    setErrors((prev) => ({ ...prev, [name]: msg }))
+  }
+
+  const handleBlur = (e) => {
+    const { name } = e.target
+    if (!touched[name]) {
+      setTouched((prev) => ({ ...prev, [name]: true }))
+    }
+    const msg = validateField(name, formData[name], formData)
+    setErrors((prev) => ({ ...prev, [name]: msg }))
+  }
+
+  const handleSaveCustomer = async () => {
+    if (!validateForm()) return
+
+    const payload = {
+      name: formData.fullName.trim(),
+      company_name: formData.companyName.trim(),
+      email: formData.email.trim(),
+      phone: formData.phoneNumber.trim(),
+      title: formData.title.trim(),
+      website: formData.website.trim(),
+      gst_number: formData.taxId.trim(),
+      primary_address: formData.primaryAddress.trim(),
+      billing_address: formData.billingAddress.trim(),
+      shipping_address: formData.shippingAddress.trim(),
+    }
+
+    setIsLoading(true)
+    try {
+      const res = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/create/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) throw new Error("Failed to save customer")
+
+      const data = await res.json()
+      console.log("Customer created:", data)
+      alert("Customer saved successfully!")
+
+      setFormData({
+        fullName: "",
+        email: "",
+        title: "",
+        phoneNumber: "",
+        companyName: "",
+        website: "",
+        taxId: "",
+        primaryAddress: "",
+        billingAddress: "",
+        shippingAddress: "",
+      })
+      setErrors({})
+      setTouched({})
+    } catch (err) {
+      console.error("Error saving customer:", err)
+      alert("Error saving customer")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const inputClass = (field) =>
+    `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${touched[field] && errors[field] ? "border-red-500" : "border-gray-300"
+    }`
 
 
 
@@ -76,7 +159,7 @@ const handleSaveCustomer = async () => {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            
+
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
                 <User className="w-5 h-5 text-white" />
@@ -87,13 +170,7 @@ const handleSaveCustomer = async () => {
               </div>
             </div>
           </div>
-          <button
-            onClick={handleSaveCustomer}
-            className="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
-          >
-            <User className="w-4 h-4" />
-            Save Customer
-          </button>
+          
         </div>
       </div>
 
@@ -115,8 +192,9 @@ const handleSaveCustomer = async () => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   placeholder="Enter full name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputClass("fullName")}
                 />
               </div>
 
@@ -127,8 +205,9 @@ const handleSaveCustomer = async () => {
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   placeholder="e.g., Manager, Director"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputClass("title")}
                 />
               </div>
 
@@ -139,9 +218,13 @@ const handleSaveCustomer = async () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   placeholder="customer@company.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputClass("email")}
                 />
+                {touched.email && errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                )}
               </div>
 
               <div>
@@ -151,9 +234,13 @@ const handleSaveCustomer = async () => {
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
-                  placeholder="+1 (555) 123-4567"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onBlur={handleBlur}
+                  placeholder="9876543210"
+                  className={inputClass("phoneNumber")}
                 />
+                {touched.phoneNumber && errors.phoneNumber && (
+                  <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>
+                )}
               </div>
             </div>
           </div>
@@ -173,9 +260,13 @@ const handleSaveCustomer = async () => {
                   name="companyName"
                   value={formData.companyName}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   placeholder="Enter company name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputClass("companyName")}
                 />
+                {touched.companyName && errors.companyName && (
+                  <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>
+                )}
               </div>
 
               <div>
@@ -186,7 +277,7 @@ const handleSaveCustomer = async () => {
                   value={formData.website}
                   onChange={handleInputChange}
                   placeholder="https://www.company.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputClass("website")}
                 />
               </div>
 
@@ -200,90 +291,134 @@ const handleSaveCustomer = async () => {
                   value={formData.taxId}
                   onChange={handleInputChange}
                   placeholder="Enter tax ID"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputClass("taxId")}
                 />
               </div>
             </div>
           </div>
 
+
           {/* Address Information */}
-          {/* Address Information */}
-<div className="bg-white rounded-lg border border-gray-200 p-6">
-  <div className="flex items-center gap-2 mb-6">
-    <MapPin className="w-5 h-5 text-gray-600" />
-    <h2 className="text-lg font-semibold text-gray-900">Address Information</h2>
-  </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <MapPin className="w-5 h-5 text-gray-600" />
+              <h2 className="text-lg font-semibold text-gray-900">Address Information</h2>
+            </div>
 
-  <div className="space-y-4">
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">Primary Address *</label>
-      <textarea
-        name="primaryAddress"
-        value={formData.primaryAddress}
-        onChange={handleInputChange}
-        placeholder="Enter primary address..."
-        rows={3}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-      />
-    </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Primary Address *</label>
+                <textarea
+                  name="primaryAddress"
+                  value={formData.primaryAddress}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  placeholder="Enter primary address..."
+                  rows={3}
+                  className={inputClass("primaryAddress")}
+                />
+                {touched.primaryAddress && errors.primaryAddress && (
+              <p className="text-red-500 text-sm mt-1">{errors.primaryAddress}</p>
+            )}
+              </div>
 
-    {/* ✅ Checkbox for same address */}
-    <div className="flex items-center gap-2">
-      <input
-        type="checkbox"
-        id="sameAddress"
-        checked={formData.billingAddress === formData.primaryAddress && formData.shippingAddress === formData.primaryAddress && formData.primaryAddress !== ""}
-        onChange={(e) => {
-          if (e.target.checked) {
-            setFormData((prev) => ({
-              ...prev,
-              billingAddress: prev.primaryAddress,
-              shippingAddress: prev.primaryAddress,
-            }))
-          } else {
-            setFormData((prev) => ({
-              ...prev,
-              billingAddress: "",
-              shippingAddress: "",
-            }))
-          }
-        }}
-        className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-      />
-      <label htmlFor="sameAddress" className="text-sm text-gray-700">
-        Billing & Shipping same as Primary Address
-      </label>
-    </div>
+              {/* ✅ Checkbox for same address */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="sameAddress"
+                  checked={formData.billingAddress === formData.primaryAddress && formData.shippingAddress === formData.primaryAddress && formData.primaryAddress !== ""}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        billingAddress: prev.primaryAddress,
+                        shippingAddress: prev.primaryAddress,
+                      }))
+                    } else {
+                      setFormData((prev) => ({
+                        ...prev,
+                        billingAddress: "",
+                        shippingAddress: "",
+                      }))
+                    }
+                  }}
+                  className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                />
+                <label htmlFor="sameAddress" className="text-sm text-gray-700">
+                  Billing & Shipping same as Primary Address
+                </label>
+              </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Billing Address</label>
-        <textarea
-          name="billingAddress"
-          value={formData.billingAddress}
-          onChange={handleInputChange}
-          placeholder="Enter billing address (if different)..."
-          rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-        />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Billing Address</label>
+                  <textarea
+                    name="billingAddress"
+                    value={formData.billingAddress}
+                    onChange={handleInputChange}
+                    placeholder="Enter billing address (if different)..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Address</label>
+                  <textarea
+                    name="shippingAddress"
+                    value={formData.shippingAddress}
+                    onChange={handleInputChange}
+                    placeholder="Enter shipping address (if different)..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex items-center justify-center">
+        <button
+          onClick={handleSaveCustomer}
+          disabled={isLoading}
+          className={`w-full py-3 rounded-lg flex items-center justify-center text-lg gap-2 transition-colors cursor-pointer ${
+            isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-gray-900 text-white hover:bg-gray-800"
+          }`}
+        >
+          {isLoading ? (
+            <>
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+              Saving...
+            </>
+          ) : (
+            <>
+              <UserCog className="w-4 h-4" />
+              Create Member
+            </>
+          )}
+        </button>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Shipping Address</label>
-        <textarea
-          name="shippingAddress"
-          value={formData.shippingAddress}
-          onChange={handleInputChange}
-          placeholder="Enter shipping address (if different)..."
-          rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-        />
-      </div>
-    </div>
-  </div>
-</div>
 
-         
         </div>
       </div>
     </div>
