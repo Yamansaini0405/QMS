@@ -81,7 +81,7 @@ const Sidebar = () => {
       title: "Products",
       icon: Package,
       hasSubmenu: true,
-      roles: ["ADMIN"], // only admin
+      roles: ["ADMIN", "SALESPERSON"], // only admin
       subItems: [
         { title: "Add Product", path: "/products/create", icon: Plus },
         { title: "View Products", path: "/products", icon: Eye },
@@ -187,7 +187,7 @@ const Sidebar = () => {
 
       {/* Quick Links */}
       <div className="p-4 border-t border-gray-200">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Quick Links</h3>
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">© 2025 QMS. All Rights Reserved.</h3>
         <div className="space-y-2">
           {role === "admin" && ( // 👈 Settings only for Admin
             <Link

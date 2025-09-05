@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { ArrowLeft, FileText, Plus, Trash2, Save, Eye, Copy, Download } from "lucide-react"
+import Swal from "sweetalert2"
+
 
 export default function AddTermsConditions() {
   const [formData, setFormData] = useState({
@@ -47,14 +49,14 @@ export default function AddTermsConditions() {
 const handleSaveTerms = async () => {
   // Validation
   if (!formData.title.trim()) {
-    alert("Please enter a title for Terms & Conditions.");
+    Swal.fire("Missing Title", "Please enter a title for Terms & Conditions.", "warning")
     return;
   }
 
   // Check if at least one point is non-empty
   const validPoints = formData.points.filter((p) => p.trim() !== "");
   if (validPoints.length === 0) {
-    alert("Please add at least one term/condition point.");
+    Swal.fire("Missing Points", "Please add at least one term/condition point.", "warning")
     return;
   }
 
@@ -91,11 +93,12 @@ const handleSaveTerms = async () => {
 
     const result = await response.json();
     console.log("✅ Saved successfully:", result);
-    alert("Terms and Conditions saved successfully!");
+    Swal.fire("Saved!", "Terms and Conditions saved succesfully.", "success")
+
     setFormData({ title: "", points: [""] });
   } catch (error) {
     console.error("[v0] Error saving terms:", error);
-    alert("Error saving terms and conditions");
+    Swal.fire("Error!","Error saving terms and conditions", "error");
   } finally {
     setIsLoading(false);
   }

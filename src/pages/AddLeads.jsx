@@ -93,7 +93,7 @@ export default function AddLeads() {
       companyName: customer.company_name,
       email: customer.email,
       phone: customer.phone,
-      address: customer.address,
+      address: customer.primary_address,
     }));
 
     setCustomerSearchQuery(customer.name);
@@ -186,8 +186,8 @@ export default function AddLeads() {
 
 
 
-  const handleSaveLead = async () => {
-    setIsLoading(true)
+const handleSaveLead = async () => {
+  setIsLoading(true)
   try {
     let followUpDate = formData.follow_up_date
     if (followUpDate) {
@@ -201,6 +201,7 @@ export default function AddLeads() {
         followUpDate = `${yyyy}-${mm}-${dd}` // ✅ convert to YYYY-MM-DD
       }
     }
+
     const payload = {
       customer_name: formData.customerName,
       customer_email: formData.email,
@@ -237,6 +238,27 @@ export default function AddLeads() {
     const result = await response.json()
     console.log("✅ Lead saved successfully:", result)
     alert("Lead saved successfully!")
+
+    // ✅ Reset form after success
+    setFormData({
+      customerName: "",
+      companyName: "",
+      email: "",
+      phone: "",
+      address: "",
+      lead_status: "NEW",
+      lead_source: "WEBSITE",
+      priority: "MEDIUM",
+      assigned_to: "",
+      follow_up_date: "",
+      description: "",
+      additional_notes: "",
+    })
+
+    setCustomerSearchQuery("")
+    setSalespersonQuery("")
+    setSalespersonSelected(false)
+
   } catch (error) {
     console.error("❌ Error saving lead:", error)
     alert("Failed to save lead. Please try again.")
@@ -244,6 +266,7 @@ export default function AddLeads() {
     setIsLoading(false)
   }
 }
+
 
 
   return (

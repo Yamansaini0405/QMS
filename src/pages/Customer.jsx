@@ -5,6 +5,8 @@ import { Users, Building2, Phone, Star, Search, Download, Eye, Edit, Trash2, Arr
 import CustomerViewModal from "@/components/CustomerViewModal"
 import CustomerEditModal from "@/components/CustomerEditModal"
 import {Link } from "react-router-dom"
+import Swal from "sweetalert2"
+
 
 export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -20,7 +22,7 @@ export default function CustomersPage() {
     const fetchCustomers = async () => {
       try {
         const token = localStorage.getItem("token")
-        const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/", {
+        const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/all/", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -134,7 +136,17 @@ export default function CustomersPage() {
   }
 
   const handleDeleteCustomer = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this customer?")) return
+   const result = await Swal.fire({
+    title: "Are you sure?",
+    text: "This customer will be permanently deleted!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!",
+  })
+
+  if (!result.isConfirmed) return
 
     try {
       const token = localStorage.getItem("token")
@@ -152,10 +164,12 @@ export default function CustomersPage() {
       // ✅ Update local state so UI reflects the deletion
       setCustomers((prev) => prev.filter((customer) => customer.id !== id))
 
-      alert("Customer deleted successfully ✅")
+      Swal.fire("Deleted!", "The customer has been deleted.", "success")
+
     } catch (error) {
       console.error("❌ Error deleting customer:", error)
-      alert("Could not delete customer")
+      Swal.fire("Error!", "Failed to delete customer. Please try again.", "error")
+
     }
   }
 
@@ -307,7 +321,7 @@ export default function CustomersPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{cust.address}</span>
+                    <span className="text-sm text-gray-600">{cust.primary_address}</span>
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-sm text-gray-600">{new Date(cust.created_at).toLocaleString()}</span>

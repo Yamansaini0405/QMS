@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Swal from "sweetalert2"
 import {
   Package,
   CheckCircle,
@@ -18,11 +19,13 @@ import {
 } from "lucide-react"
 import ProductViewModal from "../components/ProductViewModel"
 import ProductEditModal from "../components/ProductEditModel"
-import * as XLSX from "xlsx" 
+import * as XLSX from "xlsx"
 
 export default function Products() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("All Categories")
+  const [categories, setCategories] = useState([])   // store category list
+  const [categoryFilter, setCategoryFilter] = useState("All Categories")  // store selected value
+
   const [statusFilter, setStatusFilter] = useState("All Status")
   const [products, setProducts] = useState([]) // ✅ real data here
   const [loading, setLoading] = useState(true)
@@ -59,7 +62,35 @@ export default function Products() {
     }
 
     fetchProducts()
+  }, [editModalOpen])
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        const res = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/categories/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!res.ok) throw new Error("Failed to fetch categories")
+
+        const data = await res.json()
+        console.log("Fetched categories:", data)
+
+        setCategories(data)   // ✅ update categories list
+      } catch (err) {
+        console.error("Error fetching categories:", err)
+      }
+    }
+
+    fetchCategories()
   }, [])
+
+
 
   const totalProducts = products.length
 
@@ -174,9 +205,17 @@ export default function Products() {
   }
 
   const handleDeleteProduct = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) {
-      return
-    }
+    const result = await Swal.fire({
+  title: "Are you sure?",
+  text: "This product will be permanently deleted!",
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonColor: "#d33",
+  cancelButtonColor: "#3085d6",
+  confirmButtonText: "Yes, delete it!",
+})
+
+if (!result.isConfirmed) return
     console.log("Deleting product with id:", id)
 
     try {
@@ -195,16 +234,18 @@ export default function Products() {
       // ✅ Remove from local state
       setProducts(products.filter((p) => p.id !== id))
 
-      alert("Product deleted successfully")
+      Swal.fire("Deleted!", "The product has been deleted.", "success")
+
     } catch (err) {
       console.error(err)
-      alert("Could not delete product")
+      Swal.fire("Error!", "Failed to delete product. Please try again.", "error")
+
     }
   }
 
-   const handleExportExcel = () => {
+  const handleExportExcel = () => {
     if (!products.length) {
-      alert("No products available to export")
+      Swal.fire("No Product to export", "Please add product to export", "warning")
       return
     }
 
@@ -217,7 +258,7 @@ export default function Products() {
       "Cost Price": p.cost_price,
       "Selling Price": p.selling_price,
       Unit: p.unit,
-      warrenty:p.warranty_months+" months",
+      warrenty: p.warranty_months + " months",
       Status: p.active ? "Active" : "Inactive",
       "Created At": p.created_at ? p.created_at.split("T")[0] : "",
     }))
@@ -308,25 +349,19 @@ export default function Products() {
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
             >
-              <option>All Categories</option>
-              <option>Services</option>
-              <option>Hardware</option>
-              <option>Support</option>
-              <option>Consulting</option>
+              <option value="All Categories">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
 
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-            >
-              <option>All Status</option>
-              <option value="true">Active</option>
-              <option value ="false">Inactive</option>
-            </select>
+
+
 
             <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-            onClick={handleExportExcel}>
+              onClick={handleExportExcel}>
               <Download className="w-4 h-4" />
               <span>Export All (6)</span>
             </button>
@@ -403,17 +438,16 @@ export default function Products() {
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        product.category === "services"
-                          ? "bg-blue-100 text-blue-800"
-                          : product.category === "support"
-                            ? "bg-purple-100 text-purple-800"
-                            : product.category === "hardware"
-                              ? "bg-blue-100 text-blue-800"
-                              : product.category === "consulting"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.category === "services"
+                        ? "bg-blue-100 text-blue-800"
+                        : product.category === "support"
+                          ? "bg-purple-100 text-purple-800"
+                          : product.category === "hardware"
+                            ? "bg-blue-100 text-blue-800"
+                            : product.category === "consulting"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
+                        }`}
                     >
                       {product.category}
                     </span>
@@ -426,9 +460,8 @@ export default function Products() {
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        product.status === "Active" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-800"
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.status === "Active" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-800"
+                        }`}
                     >
                       {product.active ? "Active" : "Inactive"}
                     </span>

@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 import { UserCog, Phone, Lock } from "lucide-react"
+import Swal from "sweetalert2"
+
 
 export default function CreateMember() {
   const [formData, setFormData] = useState({
@@ -141,7 +143,8 @@ export default function CreateMember() {
 
       const data = await response.json()
       console.log("API Response:", data)
-      alert("Member saved successfully!")
+      Swal.fire("Saved!", "The member has been saved.", "success")
+
 
       setFormData({
         first_name: "",

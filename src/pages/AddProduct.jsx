@@ -1,6 +1,8 @@
 
 import { useState, useEffect } from "react"
 import { Save, Package, DollarSign, FileText, IndianRupee } from "lucide-react"
+import Swal from "sweetalert2"
+
 
 export default function AddProduct() {
   const [formData, setFormData] = useState({
@@ -128,7 +130,8 @@ export default function AddProduct() {
       if (!res.ok) throw new Error("Failed to save product")
 
       const data = await res.json()
-      alert("Product saved successfully!")
+      Swal.fire("Saved!", "The product has been saved.", "success")
+
       console.log("Product saved:", data)
 
       setFormData({

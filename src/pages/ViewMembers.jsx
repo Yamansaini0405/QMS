@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { UserCog, Plus, Search, Filter, Download, Trash2, ArrowUp, ArrowDown } from "lucide-react"
-import {Link} from "react-router-dom"
+import { Link } from "react-router-dom"
+import Swal from "sweetalert2"
+
 
 export default function ViewMembers() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -44,18 +46,48 @@ export default function ViewMembers() {
     fetchMembers()
   }, [])
 
-  const handleDeleteMember = async (memberId) => {
-    if (window.confirm("Are you sure you want to delete this member? This action cannot be undone.")) {
-      try {
-        console.log("[v0] Deleting member:", memberId)
-        setMembers((prevMembers) => prevMembers.filter((member) => member.id !== memberId))
-        alert("Member deleted successfully!")
-      } catch (error) {
-        console.log("[v0] Error deleting member:", error)
-        alert("Error deleting member. Please try again.")
+    const handleDeleteMember = async (memberId) => {
+  const result = await Swal.fire({
+    title: "Are you sure?",
+    text: "This member will be permanently deleted!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!",
+  })
+
+  if (result.isConfirmed) {
+    try {
+      console.log("[v0] Deleting member:", memberId)
+
+      const token = localStorage.getItem("token") // if your API requires auth
+      const res = await fetch(
+        `https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/users/${memberId}/delete/`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
+      )
+
+      if (!res.ok) {
+        throw new Error("Failed to delete member")
       }
+
+      // ✅ Update UI only after successful deletion
+      setMembers((prev) => prev.filter((member) => member.id !== memberId))
+
+      Swal.fire("Deleted!", "Member deleted successfully.", "success")
+    } catch (error) {
+      console.error("[v0] Error deleting member:", error)
+      Swal.fire("Error!", "Failed to delete member. Please try again.", "error")
     }
   }
+}
+
 
   // Handle sorting
   const handleSort = (key) => {
@@ -120,10 +152,10 @@ export default function ViewMembers() {
           </div>
         </div>
         <Link to="/members/create">
-        <button className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          New Member
-        </button>
+          <button className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            New Member
+          </button>
         </Link>
       </div>
 
@@ -161,7 +193,7 @@ export default function ViewMembers() {
           <p className="text-sm text-gray-600">
             Showing {filteredMembers.length} of {members.length} members
           </p>
-         
+
         </div>
       </div>
 
@@ -173,7 +205,7 @@ export default function ViewMembers() {
               <tr>
                 <th
                   className="text-left py-3 px-6 font-medium text-gray-900 cursor-pointer"
-                  // onClick={() => handleSort("id")}
+                // onClick={() => handleSort("id")}
                 >
                   SNo. <SortIcon column="id" />
                 </th>
@@ -223,11 +255,10 @@ export default function ViewMembers() {
                   </td>
                   <td className="py-4 px-6">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        member.role === "SALESPERSON"
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${member.role === "SALESPERSON"
                           ? "bg-purple-100 text-purple-800"
                           : "bg-blue-100 text-blue-800"
-                      }`}
+                        }`}
                     >
                       {member.role}
                     </span>
@@ -235,9 +266,8 @@ export default function ViewMembers() {
                   <td className="py-4 px-6 text-gray-900">{member.phone_number}</td>
                   <td className="py-4 px-6">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        member.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${member.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                        }`}
                     >
                       {member.is_active ? "Active" : "Inactive"}
                     </span>

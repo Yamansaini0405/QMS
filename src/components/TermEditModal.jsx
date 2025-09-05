@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { X, FileText, Plus, Trash2, Save, AlertCircle } from "lucide-react"
+import Swal from "sweetalert2"
 
 export default function TermEditModal({ term, isOpen, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -66,11 +67,12 @@ export default function TermEditModal({ term, isOpen, onClose, onSave }) {
     }
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (termId, e) => {
+    console.log(termId)
     e.preventDefault()
     setLoading(true)
     setError("")
-
+    console.log("terms edit starts")
     try {
       // Convert points array back to content_html format
       const contentHtml = formData.points
@@ -86,7 +88,7 @@ export default function TermEditModal({ term, isOpen, onClose, onSave }) {
       }
 
       // Simulate API call - replace with actual API endpoint
-      const response = await fetch("/api/terms/" + term.id, {
+      const response = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/terms/${termId}/update/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -101,6 +103,7 @@ export default function TermEditModal({ term, isOpen, onClose, onSave }) {
       const result = await response.json()
 
       // Only update local state and close modal after successful API response
+      Swal.fire("Updated", "Terms and conditions updated successfully", "success")
       onSave(updatedTerm)
       onClose()
     } catch (err) {
@@ -139,7 +142,8 @@ export default function TermEditModal({ term, isOpen, onClose, onSave }) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+        <form onSubmit={(e) => handleSubmit(term.id, e)} className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+
           <div className="space-y-6">
             <div className="bg-gray-50 rounded-lg p-6">
               <div className="flex items-center gap-2 mb-4">

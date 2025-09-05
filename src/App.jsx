@@ -18,11 +18,13 @@ import ViewTermsAndCondition from "./pages/ViewTermsAndCondition"
 import ViewMembers from "./pages/ViewMembers"
 import SalesPersonDashboard from "./pages/SalesPersonDashboard"
 import AddLeads from "./pages/AddLeads"
+import Profile from "./pages/Profile"
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route
         path="/*"

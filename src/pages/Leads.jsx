@@ -1,9 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown } from "lucide-react"
+import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trash2,Building2 } from "lucide-react"
 import LeadViewModal from "../components/LeadViewModal"
+import {Link} from "react-router-dom"
 import QuotationEditModal from "@/components/QuotationEditModel"
+import Swal from "sweetalert2"
+import CustomerViewModal from "@/components/CustomerViewModal"
+
 
 export default function Leads() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -18,6 +22,40 @@ export default function Leads() {
   const [editQuotationOpen, setEditQuotationOpen] = useState(false)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
+  const [selectedCustomer, setSelectedCustomer] = useState(null)
+
+  const [customers, setCustomers] = useState([])
+  const [expandedCustomer, setExpandedCustomer] = useState(null)
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        const res = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!res.ok) throw new Error("Failed to fetch customers")
+
+        const data = await res.json()
+        console.log("✅ Customers loaded:", data.data)
+        setCustomers(data.data || data)
+      } catch (err) {
+        console.error("❌ Error fetching customers:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCustomers()
+  }, [])
+
+  const toggleExpand = (customerId) => {
+    setExpandedCustomer(expandedCustomer === customerId ? null : customerId)
+  }
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -55,7 +93,7 @@ export default function Leads() {
   const newLeads = leads.filter((l) => l.status === "PENDING").length
   const qualifiedLeads = leads.filter((l) => l.status === "QUALIFIED").length
   const convertedLeads = leads.filter((l) => l.status === "CONVERTED").length
-  const pipelineValue = leads.reduce((sum, l) => sum + (l.estimated_value || 0), 0)
+
 
   const stats = [
     {
@@ -86,13 +124,7 @@ export default function Leads() {
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
-    // {
-    //   title: "Pipeline Value",
-    //   value: `Rs. ${pipelineValue.toLocaleString()}`,
-    //   icon: DollarSign,
-    //   color: "text-blue-600",
-    //   bgColor: "bg-blue-50",
-    // },
+    ,
   ]
 
   const handleSort = (key) => {
@@ -164,11 +196,21 @@ export default function Leads() {
   }
 
   const handleDeleteLead = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this lead?")) return
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This lead will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    })
+
+    if (!result.isConfirmed) return
 
     try {
-      
-      const res = await fetch(`/api/leads/${id}`, {
+      // 🔹 call backend API
+      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/leads/${id}/`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -183,11 +225,55 @@ export default function Leads() {
       // 🔹 update UI
       setLeads((prev) => prev.filter((lead) => lead.id !== id))
       console.log("[v0] Lead deleted from backend:", id)
+      Swal.fire("Deleted!", "The lead has been deleted.", "success")
+
+
+
     } catch (err) {
       console.error(err)
-      alert("Error deleting lead. Please try again.")
+      Swal.fire("Error!", "Failed to delete lead. Please try again.", "error")
+
+
     }
   }
+
+   const handleDeleteCustomer = async (id) => {
+     const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This customer will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    })
+  
+    if (!result.isConfirmed) return
+  
+      try {
+        const token = localStorage.getItem("token")
+        const response = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/create/?id=${id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+  
+        if (!response.ok) {
+          throw new Error(`Failed to delete customer: ${response.statusText}`)
+        }
+  
+        // ✅ Update local state so UI reflects the deletion
+        setCustomers((prev) => prev.filter((customer) => customer.id !== id))
+  
+        Swal.fire("Deleted!", "The customer has been deleted.", "success")
+  
+      } catch (error) {
+        console.error("❌ Error deleting customer:", error)
+        Swal.fire("Error!", "Failed to delete customer. Please try again.", "error")
+  
+      }
+    }
 
   const handleCreateQuotation = async (quotationId) => {
     try {
@@ -220,15 +306,16 @@ export default function Leads() {
 
   const handleStatusChange = async (lead, id, newStatus) => {
     const payload = {
-      customer_name: lead.customer.name,
-      customer_email: lead.customer.email,
-      customer_phone: lead.customer.phone,
+      id:id,
+      // customer_name: lead.customer.name,
+      // customer_email: lead.customer.email,
+      // customer_phone: lead.customer.phone,
       status: newStatus,
-      priority: lead.priority,
+      // priority: lead.priority,
     }
     console.log("sending payload:", payload)
     try {
-      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/leads/${id}/`, {
+      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/leads/${id}/status/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -245,9 +332,12 @@ export default function Leads() {
       setLeads((prev) => prev.map((lead) => (lead.id === id ? { ...lead, status: newStatus } : lead)))
 
       console.log("[v0] Status updated in backend:", id, newStatus)
+      Swal.fire("Updated!", "The lead has been updated.", "success")
+
     } catch (err) {
       console.error(err)
-      alert("Error updating status. Please try again.")
+      Swal.fire("Error!", "Failed to update lead. Please try again.", "error")
+
     }
   }
 
@@ -279,6 +369,12 @@ export default function Leads() {
     }
   }
 
+  const handleViewCustomer = (customer) => {
+    console.log("[v0] Opening view modal for customer:", customer.name)
+    setSelectedCustomer(customer)
+    setViewModalOpen(true)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -304,10 +400,12 @@ export default function Leads() {
             </div>
           </div>
         </div>
+        <Link to="/leads/create">
         <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
           <span className="text-lg">+</span>
           <span>New Lead</span>
         </button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -373,7 +471,7 @@ export default function Leads() {
               <option>social media</option>
             </select>
 
-            <select
+            {/* <select
               value={assigneeFilter}
               onChange={(e) => setAssigneeFilter(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
@@ -381,12 +479,12 @@ export default function Leads() {
               <option>All Assignees</option>
               <option>u1</option>
               <option>u2</option>
-            </select>
+            </select> */}
 
-            <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+            {/* <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200">
               <Download className="w-4 h-4" />
               <span>Export All ({filteredLeads.length})</span>
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -400,138 +498,168 @@ export default function Leads() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">SNo.</th>
-                <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("customer_name")}
-                >
-                  Lead <SortIcon column="customer_name" />
-                </th>
-                <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("company_name")}
-                >
-                  Company <SortIcon column="company_name" />
-                </th>
-                <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("status")}
-                >
-                  Status <SortIcon column="status" />
-                </th>
-                <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("source")}
-                >
-                  Source <SortIcon column="source" />
-                </th>
-                <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("assigned_to_name")}
-                >
-                  Assigned To <SortIcon column="assigned_to_name" />
-                </th>
-                <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("created_at")}
-                >
-                  Created <SortIcon column="created_at" />
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Quotation</th>
+                <th className="px-6 py-4"></th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Customer</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Company</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Email</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Phone</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredLeads.map((lead, index) => (
-                <tr key={index} className="hover:bg-gray-50 transition-colors duration-200">
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="font-medium text-gray-900">{index + 1}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
-                        <Target className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">{lead.customer.name}</p>
-                        <p className="text-sm text-gray-500">{lead.email}</p>
-                        <p className="text-sm text-gray-500">{lead.phone}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className=" text-gray-800 ">{lead.customer.company_name}</p>
-                      <p className="text-sm text-gray-500">{lead.contact_person}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <select
-                      value={lead.status}
-                      onChange={(e) => handleStatusChange(lead, lead.id, e.target.value)}
-                      className="text-sm  text-white px-3 py-1 bg-blue-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="NEW">New</option>
-                      <option value="QUALIFIED">Qualified</option>
-                      <option value="PROPOSAL">Proposal</option>
-                      <option value="CONVERTED">Converted</option>
-                    </select>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{lead.source}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{lead.assigned_to.name}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{new Date(lead.created_at).toLocaleDateString()}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {lead.file_url.length > 0 ? (
-                      <a
-                        href={lead.file_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1 text-sm text-white bg-green-600 rounded hover:bg-green-700 transition"
-                      >
-                        Download
-                      </a>
-                    ) : (
+              {customers.map((customer) => (
+                <>
+                  {/* Customer Row */}
+                  <tr key={customer.id} className="hover:bg-gray-50 transition-colors duration-200">
+                    <td className="px-6 py-4">
                       <button
-                        onClick={() => handleCreateQuotation(lead.quotation)}
-                        className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700 transition"
+                        onClick={() => toggleExpand(customer.id)}
+                        className="text-gray-500 hover:text-gray-800"
                       >
-                        Create
+                        {expandedCustomer === customer.id ? (
+                          <ChevronDown className="w-5 h-5" />
+                        ) : (
+                          <ChevronRight className="w-5 h-5" />
+                        )}
                       </button>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2">
+                    </td>
+                    <td className="px-6 py-4 font-medium text-gray-900 flex items-center justify-start gap-2"><div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                        <Users className="w-4 h-4 text-white" />
+                      </div>{customer.name}</td>
+                    <td className="px-6 py-4 text-gray-700 "><div className="flex  items-center justify-start gap-2"><Building2 className="w-4 h-4 text-gray-400" />{customer.company_name}</div></td>
+                    <td className="px-6 py-4 text-gray-600">{customer.email}</td>
+                    <td className="px-6 py-4 text-gray-600">{customer.phone}</td>
+                    <td className="px-6 py-4">
                       <button
-                        onClick={() => handleViewLead(lead)}
-                        className="p-1 text-gray-400 hover:text-orange-600 transition-colors duration-200"
-                        title="View Lead"
+                        onClick={() => handleViewCustomer(customer)}
+                        className="p-1 text-gray-400 hover:text-green-600 transition-colors duration-200"
+                        title="View Customer"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      {/* Delete */}
                       <button
-                        onClick={() => handleDeleteLead(lead.id)}
-                        className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
-                        title="Delete Lead"
+                        onClick={() => handleDeleteCustomer(customer.id)}
+                        className="p-1 text-red-600 transition-colors duration-200"
+                        title="Delete Customer"
                       >
-                        <Trash className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
-                    </div>
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
+
+                  {/* Expanded Leads Sublist */}
+                  {expandedCustomer === customer.id && (
+                    
+                    <tr className="bg-gray-50">
+                      <td colSpan={6} className="px-6 py-4">
+                        { customer.leads.length > 0 ? (
+                          <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+                            <thead className="bg-gray-200">
+                              <tr className="">
+                                <th className="px-4 py-3 text-left">Lead</th>
+                                <th className="px-4 py-3 text-left">Company</th>
+                                <th className="px-4 py-3 text-left">Status</th>
+                                <th className="px-4 py-3 text-left">Source</th>
+                                <th className="px-4 py-3 text-left">Assignee</th>
+                                <th className="px-4 py-3 text-left">Created</th>
+                                <th className="px-4 py-3 text-left">Quotation</th>
+                                <th className="px-4 py-3 text-left">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {customer.leads.map((lead) => (
+                                <tr key={lead.id} className="border-t hover:bg-white">
+                                  {/* Lead Name */}
+                                  <td className="px-4 py-2 font-medium text-gray-900">
+                                    {customer.name}
+                                  </td>
+
+                                  {/* Company */}
+                                  <td className="px-4 py-2 text-gray-700">
+                                    {customer.company_name}
+                                  </td>
+
+                                  {/* Status with Dropdown */}
+                                  <td className="px-4 py-2">
+                                    <select
+                                      value={lead.status}
+                                      onChange={(e) => handleStatusChange(lead, lead.id, e.target.value)}
+                                      className="border rounded px-2 py-1 text-sm"
+                                    >
+                                      <option value="NEW">New</option>
+                                      <option value="PENDING">Pending</option>
+                                      <option value="QUALIFIED">Qualified</option>
+                                      <option value="CONVERTED">Converted</option>
+                                    </select>
+                                  </td>
+
+                                  {/* Source */}
+                                  <td className="px-4 py-2">{lead.lead_source || "-"}</td>
+
+                                  {/* Assignee */}
+                                  <td className="px-4 py-2">{lead.assigned_to?.name || "Unassigned"}</td>
+
+                                  {/* Created Date */}
+                                  <td className="px-4 py-2">
+                                    {new Date(lead.created_at).toLocaleDateString()}
+                                  </td>
+
+                                  {/* Quotation Column */}
+                                  <td className="px-4 py-2">
+                                    {lead.file_url ? (
+                                      <a
+                                        href={lead.file_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-white hover:underline bg-orange-700 px-2 py-1 rounded-lg"
+                                      >
+                                        Download
+                                      </a>
+                                    ) : (
+                                      <button
+                                        onClick={() => handleCreateQuotation(lead.quotation)}
+                                        className="text-white hover:underline bg-green-700 px-2 py-1 rounded-lg   "
+                                      >
+                                        Create
+                                      </button>
+                                    )}
+                                  </td>
+
+                                  {/* Actions */}
+                                  <td className="px-4 py-2 flex space-x-2">
+                                    {/* <button
+                                      onClick={() => handleViewLead(customer, lead)}
+                                      className="p-1 text-gray-400 hover:text-orange-600"
+                                      title="View Lead"
+                                    >
+                                      <Eye className="w-4 h-4" />
+                                    </button> */}
+                                    <button
+                                      onClick={() => handleDeleteLead(lead.id)}
+                                      className="p-1 text-gray-400 hover:text-red-600"
+                                      title="Delete Lead"
+                                    >
+                                      <Trash className="w-4 h-4" />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <p className="text-gray-500">No leads found for this customer.</p>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+
+                </>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+      <CustomerViewModal customer={selectedCustomer} isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} />
 
       <LeadViewModal lead={selectedLead} isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} />
       <QuotationEditModal

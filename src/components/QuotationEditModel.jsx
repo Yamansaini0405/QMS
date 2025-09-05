@@ -50,9 +50,9 @@ const [productSearchStates, setProductSearchStates] = useState({})
   const fetchTerms = async () => {
   try {
     const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/terms/", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+      // headers: {
+      //   Authorization: `Bearer ${localStorage.getItem("token")}`,
+      // },
     })
     const data = await response.json()
     if (data) {
@@ -380,7 +380,7 @@ const filteredTerms = availableTerms.filter((term) =>
           product: p.id,
           quantity: p.quantity,
           unit_price: p.selling_price,
-          discount_percentage: p.percentage_discount || 0,
+          percentage_discount: p.percentage_discount || 0,
         })),
       terms: selectedTerms,
       discount: Number(formData.discount) || 0,
@@ -623,6 +623,7 @@ const filteredTerms = availableTerms.filter((term) =>
               <td className="py-3 px-2">
                 {formData.products.length > 1 && (
                   <button
+                  type="button"
                     onClick={() => removeProductRow(index)}
                     className="px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
                   >
@@ -639,6 +640,7 @@ const filteredTerms = availableTerms.filter((term) =>
           Total: <span className="font-semibold">Rs. {formData.subtotal}</span>
         </div>
         <button
+        type="button"
           onClick={addProductRow}
           className="flex items-center space-x-2 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
         >

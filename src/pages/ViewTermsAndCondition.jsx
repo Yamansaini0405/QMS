@@ -5,6 +5,8 @@ import { FileText, Calendar, User, Eye, Edit, Trash2, Search, Download, ArrowUpD
 import TermViewModal from "../components/TermViewModal"
 import TermEditModal from "../components/TermEditModal"
 import { Link } from "react-router-dom"
+import Swal from "sweetalert2"
+
 
 export default function ViewTermsAndCondition() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -19,12 +21,12 @@ export default function ViewTermsAndCondition() {
   useEffect(() => {
     const fetchTerms = async () => {
       try {
-        
+
         console.log("[v0] Fetching terms and conditions...")
         const response = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/terms/`)
         if (!response.ok) throw new Error("Failed to fetch terms")
         const data = await response.json()
-      console.log("[v0] Fetched terms:", data)
+        console.log("[v0] Fetched terms:", data)
         setTerms(data)
       } catch (error) {
         console.error("❌ Error fetching terms:", error)
@@ -100,13 +102,43 @@ export default function ViewTermsAndCondition() {
   }
 
   const handleDeleteTerm = async (termId) => {
-    if (window.confirm("Are you sure you want to delete this term?")) {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This lead will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    })
+
+    if (result.isConfirmed) {
       try {
         console.log("[v0] Deleting term:", termId)
+
+        const token = localStorage.getItem("token")
+        const res = await fetch(
+          `https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/terms/${termId}/delete/`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+          }
+        )
+
+        if (!res.ok) {
+          throw new Error("Failed to delete term")
+        }
+
+
         setTerms((prev) => prev.filter((term) => term.id !== termId))
+
+        Swal.fire("Deleted!", "The term has been deleted.", "success")
       } catch (error) {
         console.error("❌ Error deleting term:", error)
-        alert("Error deleting term. Please try again.")
+        Swal.fire("Error!", "Failed to delete the term. Please try again.", "error")
       }
     }
   }
@@ -143,10 +175,10 @@ export default function ViewTermsAndCondition() {
           </div>
         </div>
         <Link to="/terms/create">
-        <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
-          <span className="text-lg">+</span>
-          <span>New Terms</span>
-        </button></Link>
+          <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
+            <span className="text-lg">+</span>
+            <span>New Terms</span>
+          </button></Link>
       </div>
 
       {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -220,7 +252,10 @@ export default function ViewTermsAndCondition() {
                       <div>
                         <p className="font-semibold text-gray-900">{term.title}</p>
                         <p className="text-sm text-gray-500">
-                          {term.content_html.split("*").filter(Boolean).length} points
+                          {(term?.content_html || "")
+                            .split("*")
+                            .map(s => s.trim())
+                            .filter(Boolean).length} points
                         </p>
                       </div>
                     </div>

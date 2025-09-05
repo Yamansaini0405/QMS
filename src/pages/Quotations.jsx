@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import {
   Users,
   FileText,
@@ -17,6 +17,7 @@ import {
   ArrowDown,
 } from "lucide-react"
 import QuotationEditModel from "../components/QuotationEditModel"
+
 
 const Quotations = () => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -178,14 +179,14 @@ const Quotations = () => {
 
   const handleStatusChange = async (quotation, id, newStatus) => {
     const payload = {
-      ...quotation,
+      // ...quotation,
       status: newStatus,
     }
 
     console.log("Sending quotation status update:", payload)
 
     try {
-      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/`, {
+      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/quotations/${id}/status/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -206,6 +207,52 @@ const Quotations = () => {
     } catch (err) {
       console.error("❌ Error updating quotation status:", err)
       alert("Error updating status. Please try again.")
+    }
+  }
+
+  const handleExport = async () => {
+    // Collect all PDF URLs from filteredQuotations
+    
+    const pdfUrls = filteredQuotations
+      .map((q) => q.url) // adjust if your key is different
+      .filter((url) => !!url) // remove null/undefined
+
+    if (pdfUrls.length === 0) {
+      alert("No PDF URLs available to export.")
+      return
+    }
+
+    const payload = {
+      pdf_urls: pdfUrls,
+    }
+
+    try {
+      const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/merge/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to export PDFs")
+      }
+
+      const data = await response.json()
+
+      if (data.final_url) {
+        // Open the merged PDF in a new tab
+        window.open(data.final_url, "_blank")
+      } else {
+        alert("Export failed: no final PDF URL received.")
+      }
+    } catch (error) {
+      console.error("❌ Export failed:", error)
+      alert("Export failed. Please try again.")
+    } finally {
+      
     }
   }
 
@@ -235,10 +282,12 @@ const Quotations = () => {
             </div>
           </div>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
-          <Plus className="w-4 h-4" />
-          <span>New Quotation</span>
-        </button>
+        <Link to="/quotations/new">
+          <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
+            <Plus className="w-4 h-4" />
+            <span>New Quotation</span>
+          </button>
+        </Link>
       </div>
 
       {/* Stats Grid */}
@@ -293,10 +342,14 @@ const Quotations = () => {
               <option>Rejected</option>
             </select>
 
-            <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+            <button
+              onClick={handleExport}
+              className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+            >
               <Download className="w-4 h-4" />
               <span>Export All {filteredQuotations.length}</span>
             </button>
+
           </div>
         </div>
       </div>

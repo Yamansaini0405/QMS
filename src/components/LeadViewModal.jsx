@@ -2,7 +2,8 @@
 
 import { X, Target, User, FileText, DollarSign } from "lucide-react"
 
-export default function LeadViewModal({ lead, isOpen, onClose }) {
+export default function LeadViewModal({ customer, lead, isOpen, onClose }) {
+  console.log(customer)
   if (!isOpen || !lead) return null
 
   return (
@@ -35,7 +36,7 @@ export default function LeadViewModal({ lead, isOpen, onClose }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
-                <p className="text-gray-900">{lead.customer.name}</p>
+                <p className="text-gray-900">{customer.name}</p>
               </div>
               {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Contact Person</label>
@@ -43,19 +44,19 @@ export default function LeadViewModal({ lead, isOpen, onClose }) {
               </div> */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <p className="text-gray-900">{lead.customer.email}</p>
+                <p className="text-gray-900">{customer.email}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <p className="text-gray-900">{lead.customer.phone}</p>
+                <p className="text-gray-900">{customer.phone}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
-                <p className="text-gray-900">{lead.customer.company_name}</p>
+                <p className="text-gray-900">{customer.company_name}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <p className="text-gray-900">{lead.customer.primary_address}</p>
+                <p className="text-gray-900">{customer.primary_address}</p>
               </div>
             </div>
           </div>
@@ -71,11 +72,11 @@ export default function LeadViewModal({ lead, isOpen, onClose }) {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                 <span
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    lead.lead_status === "New"
+                    lead.status === "New"
                       ? "bg-blue-100 text-blue-800"
-                      : lead.lead_status === "Qualified"
+                      : lead.status === "Qualified"
                         ? "bg-purple-100 text-purple-800"
-                        : lead.lead_status === "Proposal"
+                        : lead.status === "Proposal"
                           ? "bg-yellow-100 text-yellow-800"
                           : "bg-green-100 text-green-800"
                   }`}
@@ -85,12 +86,12 @@ export default function LeadViewModal({ lead, isOpen, onClose }) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
-                <p className="text-gray-900">{lead.source}</p>
+                <p className="text-gray-900">{lead.lead_source}</p>
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                 <p className="text-gray-900">{lead.priority}</p>
-              </div>
+              </div> */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
                 <p className="text-gray-900">{lead.assigned_to.name}</p>

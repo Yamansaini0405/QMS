@@ -81,7 +81,7 @@ export const QuotationProvider = ({ children }) => {
         discountType: "amount",
         totalAmount: "0.00",
         additionalNotes: "",
-        createdBy: "Admin User",
+        createdBy: localStorage.getItem("role"),
         digitalSignature: "",
     });
 
@@ -90,9 +90,9 @@ export const QuotationProvider = ({ children }) => {
         const fetchTerms = async () => {
             try {
                 const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/terms/", {
-                    headers: {
-                        "Authorization": `Bearer ${localStorage.getItem("token")}`,
-                    },
+                        // headers: {
+                        //     "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                        // },
                 });
                 const data = await response.json();
                 if (data) setAvailableTerms(data);
@@ -138,78 +138,110 @@ export const QuotationProvider = ({ children }) => {
     // Handlers
 
     // Create Quotation handler
-    const createQuotation = async () => {
+   const createQuotation = async () => {
+  try {
+    const token = localStorage.getItem("token");
 
-        try {
-            const token = localStorage.getItem("token");
-
-            // Build items array asynchronously
-            const items = await Promise.all(
-                formData.products.map(async (p) => {
-                    if (!p.id) {
-                        const id = await handleSaveProduct(p.name, p.selling_price);
-                        return {
-                            product: id,
-                            name: p.name,
-                            quantity: p.quantity,
-                            unit_price: p.selling_price ? Number(p.selling_price) : 0,
-                            discount: p.percentage_discount ? Number(p.percentage_discount) : 0,
-                        };
-                    } else {
-                        return {
-                            product: p.id,
-                            name: p.name,
-                            quantity: p.quantity,
-                            unit_price: p.selling_price ? Number(p.selling_price) : 0,
-                            discount: p.percentage_discount ? Number(p.percentage_discount) : 0,
-                        };
-                    }
-                })
-            );
-
-            const payload = {
-                customer: {
-                    name: formData.customerName,
-                    email: formData.email,
-                    phone: formData.phone,
-                    company_name: formData.companyName,
-                    primary_address: formData.address,
-                },
-                auto_assign: true,
-                status: "PENDING",
-                discount: formData.discount ? Number.parseFloat(formData.discount) : 0,
-                tax_rate:formData.taxRate,
-                discount_type: formData.discountType,
-                follow_up_date: formatDateToBackend(formData.validUntil),
-                terms: selectedTerms,
-                items,
-            };
-            console.log("Creating quotation with payload:", payload);
-            const response = await fetch(
-                "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/",
-
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(payload),
-                }
-            );
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(
-                    `Failed to create quotation: ${response.status} - ${errorText}`
-                );
-            }
-            const result = await response.json();
-            console.log("Quotation created successfully:", result);
-            alert("Quotation created and sent successfully!");
-        } catch (error) {
-            alert("Error creating quotation. Please try again.");
+    // Build items array asynchronously
+    const items = await Promise.all(
+      formData.products.map(async (p) => {
+        if (!p.id) {
+          const id = await handleSaveProduct(p.name, p.selling_price);
+          return {
+            product: id,
+            name: p.name,
+            quantity: p.quantity,
+            unit_price: p.selling_price ? Number(p.selling_price) : 0,
+            discount: p.percentage_discount ? Number(p.percentage_discount) : 0,
+          };
+        } else {
+          return {
+            product: p.id,
+            name: p.name,
+            quantity: p.quantity,
+            unit_price: p.selling_price ? Number(p.selling_price) : 0,
+            discount: p.percentage_discount ? Number(p.percentage_discount) : 0,
+          };
         }
+      })
+    );
+
+    const payload = {
+      customer: {
+        name: formData.customerName,
+        email: formData.email,
+        phone: formData.phone,
+        company_name: formData.companyName,
+        primary_address: formData.address,
+      },
+      auto_assign: true,
+      status: "PENDING",
+      discount: formData.discount ? Number.parseFloat(formData.discount) : 0,
+      tax_rate: formData.taxRate,
+      discount_type: formData.discountType,
+      follow_up_date: formatDateToBackend(formData.validUntil),
+      terms: selectedTerms,
+      items,
     };
+
+    console.log("Creating quotation with payload:", payload);
+
+    const response = await fetch(
+      "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Failed to create quotation: ${response.status} - ${errorText}`
+      );
+    }
+
+    const result = await response.json();
+    console.log("Quotation created successfully:", result);
+    alert("Quotation created and sent successfully!");
+
+    // ✅ Reset formData after success
+    setFormData({
+      quotationDate: formatDate(new Date()),
+      validUntil: "",
+      validityNumber: 30,
+      validityType: "days",
+      followUpDate: "",
+      customerName: "",
+      companyName: "",
+      email: "",
+      phone: "",
+      address: "",
+      products: [
+        { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 },
+      ],
+      subtotal: "0.00",
+      discount: "",
+      tax: "0.00",
+      taxRate: "18",
+      discountType: "amount",
+      totalAmount: "0.00",
+      additionalNotes: "",
+      createdBy: localStorage.getItem("role"),
+      digitalSignature: "",
+    });
+
+    setSelectedTerms([]); // also reset terms if needed
+
+  } catch (error) {
+    alert("Error creating quotation. Please try again.");
+    console.error("❌ Error creating quotation:", error);
+  }
+};
 
     // Download PDF handler (dummy, replace with your logic)
     const downloadPDF = () => {
@@ -465,7 +497,7 @@ export const QuotationProvider = ({ children }) => {
         setIsSearchingCustomers(true);
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/", {
+            const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/all/", {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             const data = await response.json();

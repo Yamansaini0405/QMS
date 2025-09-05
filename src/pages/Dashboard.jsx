@@ -1,5 +1,6 @@
 import { FileText, Clock, Target, TrendingUp, Download, Plus, Eye, Edit, MoreHorizontal } from "lucide-react"
 import { useState, useEffect } from "react"
+import {Link} from "react-router-dom"
 import DashboardSkeleton from "@/components/DashboardSkeleton"
 
 const Dashboard = () => {
@@ -132,10 +133,12 @@ if (loading) return <DashboardSkeleton />
                   <Download className="w-4 h-4" />
                   <span>Export</span>
                 </button>
+                <Link to="/quotations/new">
                 <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors duration-200">
                   <Plus className="w-4 h-4" />
                   <span>New Quotation</span>
                 </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -182,10 +185,12 @@ if (loading) return <DashboardSkeleton />
                   <Download className="w-4 h-4" />
                   <span>Export</span>
                 </button>
+                <Link to="/leads/create">
                 <button className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 transition-colors duration-200">
                   <Plus className="w-4 h-4" />
                   <span>New Lead</span>
                 </button>
+                </Link>
               </div>
             </div>
           </div>

@@ -29,7 +29,7 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
         description: product.description || "",
         category: product.category || "hardware",
         brand: product.brand || "",
-        active: product.active || true,
+        active: product.active,
         cost_price: product.cost_price || 0,
         selling_price: product.selling_price || 0,
         unit: product.unit || "piece",

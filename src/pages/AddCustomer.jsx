@@ -1,5 +1,7 @@
 import { useState } from "react"
 import { UserCog, User, Building, MapPin, FileText, Mail, Phone, FileEdit, Calendar, BarChart3 } from "lucide-react"
+import Swal from "sweetalert2"
+
 
 export default function AddCustomer() {
   const [formData, setFormData] = useState({
@@ -123,7 +125,8 @@ export default function AddCustomer() {
 
       const data = await res.json()
       console.log("Customer created:", data)
-      alert("Customer saved successfully!")
+      Swal.fire("Saved!", "The customer has been saved.", "success")
+
 
       setFormData({
         fullName: "",
@@ -141,7 +144,8 @@ export default function AddCustomer() {
       setTouched({})
     } catch (err) {
       console.error("Error saving customer:", err)
-      alert("Error saving customer")
+      Swal.fire("Error!", "Failed to save customer. Please try again.", "error")
+
     } finally {
       setIsLoading(false)
     }
