@@ -59,6 +59,16 @@ export default function ViewMembers() {
 
   if (result.isConfirmed) {
     try {
+
+      Swal.fire({
+      title: "Deleting...",
+      text: "Please wait while we delete your Member.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      },
+    })
+
       console.log("[v0] Deleting member:", memberId)
 
       const token = localStorage.getItem("token") // if your API requires auth
@@ -89,7 +99,7 @@ export default function ViewMembers() {
 }
 
 
-  // Handle sorting
+
   const handleSort = (key) => {
     let direction = "asc"
     if (sortConfig.key === key && sortConfig.direction === "asc") {

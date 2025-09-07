@@ -150,6 +150,16 @@ const Quotations = () => {
     if (!result.isConfirmed) return
 
     try {
+
+      Swal.fire({
+      title: "Deleting...",
+      text: "Please wait while we delete your Quotation.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      },
+    })
+
       const token = localStorage.getItem("token")
       const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/quotations/${id}/`, {
         method: "DELETE",
@@ -256,6 +266,16 @@ const Quotations = () => {
     console.log("Sending quotation status update:", payload)
 
     try {
+
+      Swal.fire({
+      title: "Updating...",
+      text: "Please wait while we update your Quotation status.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      },
+    })
+
       const res = await fetch(`https://qms-2h5c.onrender.com/accounts/api/quotations/${id}/status/`, {
         method: "PUT",
         headers: {
@@ -300,6 +320,16 @@ const Quotations = () => {
     }
 
     try {
+      Swal.fire({
+      title: "Exporting...",
+      text: "Please wait while we export your all quotation.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      },
+    })
+
+
       const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/merge/", {
         method: "POST",
         headers: {
@@ -351,6 +381,15 @@ const handleDuplicateQuotation = async (id) => {
   if (!result.isConfirmed) return;
 
   try {
+    Swal.fire({
+      title: "Duplicating...",
+      text: "Please wait while we duplicate your quotation.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      },
+    })
+
     const response = await fetch(
       `https://qms-2h5c.onrender.com/quotations/api/quotations/${id}/duplicate/`,
       {

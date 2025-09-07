@@ -21,6 +21,8 @@ import ProductViewModal from "../components/ProductViewModel"
 import ProductEditModal from "../components/ProductEditModel"
 import * as XLSX from "xlsx"
 
+
+
 export default function Products() {
   const [searchTerm, setSearchTerm] = useState("")
   const [categories, setCategories] = useState([])   // store category list
@@ -141,7 +143,7 @@ export default function Products() {
     },
     {
       title: "Monthly Sales",
-      value: totalMonthlySales,
+      value: totalMonthlySales.toFixed(2),
       icon: TrendingUp,
       color: "text-pink-500",
       bgColor: "bg-pink-100",
@@ -219,6 +221,14 @@ if (!result.isConfirmed) return
     console.log("Deleting product with id:", id)
 
     try {
+      Swal.fire({
+      title: "Deleting...",
+      text: "Please wait while we delete your Product.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      },
+    })
       const token = localStorage.getItem("token")
 
       const res = await fetch(`https://qms-2h5c.onrender.com/quotations/api/products/create/?id=${id}`, {

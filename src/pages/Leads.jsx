@@ -210,6 +210,15 @@ export default function Leads() {
 
     try {
       // 🔹 call backend API
+      Swal.fire({
+              title: "Deleting...",
+              text: "Please wait while we delete your Lead.",
+              allowOutsideClick: false,
+              didOpen: () => {
+                Swal.showLoading()
+              },
+            })
+      
       const res = await fetch(`https://qms-2h5c.onrender.com/quotations/api/leads/${id}/`, {
         method: "DELETE",
         headers: {
@@ -226,6 +235,7 @@ export default function Leads() {
       setLeads((prev) => prev.filter((lead) => lead.id !== id))
       console.log("[v0] Lead deleted from backend:", id)
       Swal.fire("Deleted!", "The lead has been deleted.", "success")
+
 
 
 
@@ -315,6 +325,14 @@ export default function Leads() {
     }
     console.log("sending payload:", payload)
     try {
+      Swal.fire({
+      title: "Updating...",
+      text: "Please wait while we update your Lead status.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      },
+    })
       const res = await fetch(`https://qms-2h5c.onrender.com/accounts/api/leads/${id}/status/`, {
         method: "PUT",
         headers: {

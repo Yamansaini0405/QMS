@@ -62,6 +62,16 @@ const handleSaveTerms = async () => {
 
   setIsLoading(true);
   try {
+
+    Swal.fire({
+      title: "Saving...",
+      text: "Please wait while we save your Terms & Conditions.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      },
+    })
+
     // Convert points array into comma-separated string
     const contentHtml = validPoints
       .map((point) => `*${point}*`)

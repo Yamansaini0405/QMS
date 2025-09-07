@@ -130,6 +130,16 @@ export default function CreateMember() {
     console.log(payload)
     setIsLoading(true)
     try {
+
+      Swal.fire({
+      title: "Saving...",
+      text: "Please wait while we save your Member.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      },
+    })
+
       const response = await fetch("https://qms-2h5c.onrender.com/accounts/api/admin/create/", {
         method: "POST",
         headers: {

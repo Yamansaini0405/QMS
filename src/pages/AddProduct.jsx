@@ -93,6 +93,15 @@ export default function AddProduct() {
   const handleSaveProduct = async () => {
     setIsLoading(true)
     try {
+
+      Swal.fire({
+      title: "Saving...",
+      text: "Please wait while we save your Product.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      },
+    })
       const token = localStorage.getItem("token")
 
       // Convert warranty to months before sending

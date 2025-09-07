@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Users, Building2, Phone, Star, Search, Download, Eye, Edit, Trash2, ArrowUp, ArrowDown } from "lucide-react"
 import CustomerViewModal from "@/components/CustomerViewModal"
 import CustomerEditModal from "@/components/CustomerEditModal"
-import {Link } from "react-router-dom"
+import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
 
 
@@ -55,7 +55,7 @@ export default function CustomersPage() {
 
   const stats = [
     {
-      title: "Total Customers", 
+      title: "Total Customers",
       value: totalCustomers.toString(),
       icon: Users,
       color: "text-green-600",
@@ -136,19 +136,29 @@ export default function CustomersPage() {
   }
 
   const handleDeleteCustomer = async (id) => {
-   const result = await Swal.fire({
-    title: "Are you sure?",
-    text: "This customer will be permanently deleted!",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
-    confirmButtonText: "Yes, delete it!",
-  })
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This customer will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    })
 
-  if (!result.isConfirmed) return
+    if (!result.isConfirmed) return
 
     try {
+
+      Swal.fire({
+        title: "Deleting...",
+        text: "Please wait while we delete your Constumer.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
+
       const token = localStorage.getItem("token")
       const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/customers/create/?id=${id}`, {
         method: "DELETE",
@@ -200,10 +210,10 @@ export default function CustomersPage() {
           </div>
         </div>
         <Link to="/customers/create">
-        <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
-          <span className="text-lg">+</span>
-          <span>New Customer</span>
-        </button>
+          <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
+            <span className="text-lg">+</span>
+            <span>New Customer</span>
+          </button>
         </Link>
       </div>
 
@@ -247,7 +257,7 @@ export default function CustomersPage() {
             </div>
           </div>
 
-         
+
         </div>
       </div>
 

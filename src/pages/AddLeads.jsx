@@ -205,6 +205,15 @@ export default function AddLeads() {
     }
     setIsLoading(true)
     try {
+      Swal.fire({
+        title: "Saving...",
+        text: "Please wait while we save your Lead.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
+
       let followUpDate = formData.follow_up_date
       if (followUpDate) {
         const [year, month, day] = followUpDate.includes("-") && followUpDate.split("-").length === 3
@@ -418,37 +427,37 @@ export default function AddLeads() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-             
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  placeholder="Enter email"
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    placeholder="Enter email"
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
       ${formErrors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"}`}
-                />
-                {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
-              </div>
+                  />
+                  {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
-                <input
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Enter phone"
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                  <input
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="Enter phone"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
       ${formErrors.phone ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"}`}
-                />
-                {formErrors.phone && <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>}
-              </div>
+                  />
+                  {formErrors.phone && <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>}
+                </div>
 
- </div>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
                 <input
@@ -621,7 +630,7 @@ export default function AddLeads() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                   <input
                     name="salespersonEmail"
-                    
+
                     value={formData.salespersonEmail || ""}
                     placeholder="Enter phone"
                     onChange={(e) => updateFormData("salespersonEmail", e.target.value)}

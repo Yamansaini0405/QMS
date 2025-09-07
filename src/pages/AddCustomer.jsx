@@ -112,6 +112,16 @@ export default function AddCustomer() {
 
     setIsLoading(true)
     try {
+
+      Swal.fire({
+      title: "Saving...",
+      text: "Please wait while we save your Constumer.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading()
+      },
+    })
+
       const res = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/create/", {
         method: "POST",
         headers: {

@@ -74,6 +74,15 @@ export default function TermEditModal({ term, isOpen, onClose, onSave }) {
     setError("")
     console.log("terms edit starts")
     try {
+
+      Swal.fire({
+                title: "Updating...",
+                text: "Please wait while we update your terms.",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading()
+                },
+            })
       // Convert points array back to content_html format
       const contentHtml = formData.points
         .filter((point) => point.trim())

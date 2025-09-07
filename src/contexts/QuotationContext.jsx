@@ -258,6 +258,27 @@ export const QuotationProvider = ({ children }) => {
                 return;
             }
 
+            if(formData.totalAmount < 0){
+                Swal.fire("Warning!", "Total Amount must be greater than 0", "warning")
+                return;
+            }
+
+            id ? Swal.fire({
+                title: "Updating...",
+                text: "Please wait while we update your Quotation.",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading()
+                },
+            }) : Swal.fire({
+                title: "Creating...",
+                text: "Please wait while we create your Quotation.",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading()
+                },
+            })
+
             const token = localStorage.getItem("token");
 
             // Build items array asynchronously

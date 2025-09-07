@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { X, Package, DollarSign, FileText, Save } from "lucide-react"
+import Swal from "sweetalert2"
+
 
 export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -59,6 +61,16 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
   const handleSave = async () => {
     setLoading(true)
     try {
+
+      Swal.fire({
+                title: "Updating...",
+                text: "Please wait while we update your Product.",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading()
+                },
+            })
+
       const token = localStorage.getItem("token")
       const payload = {
         ...formData,
@@ -80,13 +92,13 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
       })
       console.log("sending data", payload)
       if (!res.ok) throw new Error("Failed to update product")
-
+        Swal.fire("Updated!", "Product has been updated", "success")
       const updatedProduct = await res.json()
       onSave(updatedProduct)
       onClose()
     } catch (error) {
       console.error("Error updating product:", error)
-      alert("Failed to update product. Please try again.")
+      Swal.fire("Error!", "Failed to updated product","error")
     } finally {
       setLoading(false)
     }

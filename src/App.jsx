@@ -16,7 +16,7 @@ import Leads from "./pages/Leads"
 
 import ViewTermsAndCondition from "./pages/ViewTermsAndCondition"
 import ViewMembers from "./pages/ViewMembers"
-import SalesPersonDashboard from "./pages/SalesPersonDashboard"
+// import SalesPersonDashboard from "./pages/SalesPersonDashboard"
 import AddLeads from "./pages/AddLeads"
 import Profile from "./pages/Profile"
 import { QuotationProvider } from "./contexts/QuotationContext"
@@ -66,14 +66,14 @@ function App() {
               {/* ...other admin routes... */}
 
               {/* Salesperson-only routes */}
-              <Route
+              {/* <Route
                 path="/salesperson"
                 element={
                   <ProtectedRoute allowedRoles={["SALESPERSON"]}>
                     <SalesPersonDashboard />
                   </ProtectedRoute>
                 }
-              />
+              /> */}
               {/* ...other salesperson routes... */}
             </Routes>
           </Layout>
