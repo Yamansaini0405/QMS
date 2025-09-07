@@ -1,10 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import Swal from "sweetalert2"
+
 
 const QuotationContext = createContext();
 
 export const useQuotation = () => useContext(QuotationContext);
 
 export const QuotationProvider = ({ children }) => {
+
+    const { id } = useParams();
 
     const formatDate = (date) => {
         const d = new Date(date)
@@ -62,6 +67,8 @@ export const QuotationProvider = ({ children }) => {
     const [productSearchStates, setProductSearchStates] = useState({});
     const [productSearchResults, setProductSearchResults] = useState({});
     const [isSearchingProducts, setIsSearchingProducts] = useState({});
+    const [formErrors, setFormErrors] = useState({});
+
     const [formData, setFormData] = useState({
         quotationDate: formatDate(new Date()), // Auto-set to today's date
         validUntil: "",
@@ -81,18 +88,99 @@ export const QuotationProvider = ({ children }) => {
         discountType: "amount",
         totalAmount: "0.00",
         additionalNotes: "",
+        status:"",
         createdBy: localStorage.getItem("role"),
         digitalSignature: "",
     });
 
+    useEffect(() => {
+    if (!id) {
+        setFormData({
+             quotationDate: formatDate(new Date()), // Auto-set to today's date
+        validUntil: "",
+        validityNumber: 30, // Added validity number field
+        validityType: "days", // Added validity type field (days/months)
+        followUpDate: "", // Added follow-up date field
+        customerName: "",
+        companyName: "",
+        email: "",
+        phone: "",
+        address: "",
+        products: [{ id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 }],
+        subtotal: "0.00",
+        discount: "",
+        tax: "0.00",    
+        taxRate: "18",
+        discountType: "amount",
+        totalAmount: "0.00",
+        additionalNotes: "",
+        status:"",
+        createdBy: localStorage.getItem("role"),
+        digitalSignature: "",
+       
+        })
+    }; // create mode, skip fetching
+
+    const fetchQuotation = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(
+          `https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/${id}/`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (!res.ok) throw new Error("Failed to fetch quotation");
+        const data = await res.json();
+        console.log("edit quotationData ",data);
+        // Map backend response → formData structure
+        setFormData({
+          quotationDate: formatDate(new Date(data.data.created_at)),
+          validUntil: formatDate(new Date(data.data.follow_up_date)),
+          validityNumber: 30, // derive if backend gives
+          validityType: "days",
+          followUpDate: formatDate(new Date(data.data.follow_up_date)),
+          customerName: data.data.customer?.name || "",
+          companyName: data.data.customer?.company_name || "",
+          email: data.data.customer?.email || "",
+          phone: data.data.customer?.phone || "",
+          address: data.data.customer?.primary_address || "",
+          products: data.data.items?.map((item) => ({
+            id: item.product.id,
+            name: item.product.name,
+            quantity: item.quantity,
+            selling_price: item.unit_price,
+            percentage_discount: item.discount || 0,
+          })) || [],
+          subtotal: data.data.subtotal || "0.00",
+          discount: data.data.discount || "",
+          tax: data.data.tax || "0.00",
+          taxRate: data.data.tax_rate || "18",
+          discountType: data.data.discount_type || "amount",
+          totalAmount: data.data.total || "0.00",
+          status:data.data.status,
+          additionalNotes: data.data.additional_notes || "",
+          createdBy: data.data.created_by || localStorage.getItem("role"),
+          digitalSignature: data.data.digital_signature || "",
+          
+        });
+        setSelectedTerms(data.data.terms || [])
+
+      } catch (err) {
+        console.error("Error fetching quotation:", err);
+      }
+    };
+
+    fetchQuotation();
+  }, [id]);
     // Fetch terms on mount
     useEffect(() => {
         const fetchTerms = async () => {
             try {
                 const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/terms/", {
-                        // headers: {
-                        //     "Authorization": `Bearer ${localStorage.getItem("token")}`,
-                        // },
+                        headers: {
+                            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                        },
                 });
                 const data = await response.json();
                 if (data) setAvailableTerms(data);
@@ -101,6 +189,7 @@ export const QuotationProvider = ({ children }) => {
             }
         };
         fetchTerms();
+        
     }, []);
 
     const handleSaveProduct = async (name, selling_price) => {
@@ -139,7 +228,14 @@ export const QuotationProvider = ({ children }) => {
 
     // Create Quotation handler
    const createQuotation = async () => {
+        setIsGeneratingPDF(true)
   try {
+
+     if (!validateForm()) {
+      Swal.fire("Validation Error", "Please fix errors before saving.", "error");
+      return;
+    }
+
     const token = localStorage.getItem("token");
 
     // Build items array asynchronously
@@ -182,6 +278,8 @@ export const QuotationProvider = ({ children }) => {
       follow_up_date: formatDateToBackend(formData.validUntil),
       terms: selectedTerms,
       items,
+      quotation_id: id? Number(id) : "",
+      send_immediately:true
     };
 
     console.log("Creating quotation with payload:", payload);
@@ -189,7 +287,7 @@ export const QuotationProvider = ({ children }) => {
     const response = await fetch(
       "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/",
       {
-        method: "POST",
+        method: id ? "PUT":"POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -207,7 +305,9 @@ export const QuotationProvider = ({ children }) => {
 
     const result = await response.json();
     console.log("Quotation created successfully:", result);
-    alert("Quotation created and sent successfully!");
+    
+    Swal.fire(id ? "Updated" :"Created!", `The Quotation has been ${id?"updated" :"created"}.`, "success")
+
 
     // ✅ Reset formData after success
     setFormData({
@@ -238,8 +338,12 @@ export const QuotationProvider = ({ children }) => {
     setSelectedTerms([]); // also reset terms if needed
 
   } catch (error) {
-    alert("Error creating quotation. Please try again.");
+    
+    Swal.fire("Error!", "Failed creating quotation. Please try again.", "error")
+
     console.error("❌ Error creating quotation:", error);
+  } finally {
+    setIsGeneratingPDF(false)
   }
 };
 
@@ -522,7 +626,7 @@ export const QuotationProvider = ({ children }) => {
             companyName: customer.company_name,
             email: customer.email,
             phone: customer.phone,
-            address: customer.address,
+            address: customer.primary_address,
         }));
         setCustomerSearchQuery(customer.name);
         setShowCustomerSearch(false);
@@ -551,6 +655,53 @@ export const QuotationProvider = ({ children }) => {
             selectedTerms: updatedSelectedTerms,
         }));
     };
+
+    const validateField = (name, value) => {
+  let error = "";
+
+  // Email validation
+  if (name === "email" || name === "salespersonEmail") {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!value) error = "Email is required";
+    else if (!emailRegex.test(value)) error = "Invalid email address";
+  }
+
+  // Phone validation
+  if (name === "phone" || name === "salespersonPhone") {
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!value) error = "Phone number is required";
+    else if (!phoneRegex.test(value))
+      error = "Phone must be 10 digits and start with 6-9";
+  }
+
+  // Name/Company validation
+  if (name === "customerName" || name === "companyName") {
+    if (!value.trim()) error = "This field is required";
+  }
+
+  if (name === "salespersonName") {
+    if (!value.trim()) error = "Salesperson name is required";
+  }
+
+  return error;
+};
+
+const validateForm = () => {
+  const errors = {};
+
+  errors.customerName = validateField("customerName", formData.customerName);
+  errors.companyName = validateField("companyName", formData.companyName);
+  errors.email = validateField("email", formData.email);
+  errors.phone = validateField("phone", formData.phone);
+
+
+
+  setFormErrors(errors);
+
+  // return true if no errors
+  return Object.values(errors).every((err) => !err);
+};
+
 
     const filteredTerms = availableTerms.filter(
         (term) =>
@@ -591,6 +742,8 @@ export const QuotationProvider = ({ children }) => {
                 filteredTerms,
                 createQuotation,
                 downloadPDF,
+                formErrors,
+                id
             }}
         >
             {children}

@@ -2,7 +2,7 @@
 
 import { Package, Plus } from "lucide-react"
 import { useQuotation } from "../../contexts/QuotationContext"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function ProductTable() {
   const {
@@ -18,7 +18,16 @@ export default function ProductTable() {
     setProductSearchStates,
   } = useQuotation()
 
-  const [showPercentageDiscount, setShowPercentageDiscount] = useState(false)
+const [showPercentageDiscount, setShowPercentageDiscount] = useState(false);
+
+useEffect(() => {
+  if (formData.products?.some(p => p.percentage_discount && Number(p.percentage_discount) > 0)) {
+    setShowPercentageDiscount(true);
+  } else {
+    setShowPercentageDiscount(false);
+  }
+}, [formData.products]);
+
 
   const calculateFinalAmount = (product) => {
     const baseAmount = (product.quantity || 0) * (product.selling_price || 0)
@@ -27,7 +36,6 @@ export default function ProductTable() {
     if (showPercentageDiscount && product.percentage_discount) {
       finalAmount = finalAmount - finalAmount * (product.percentage_discount / 100)
     }
-
 
     return Math.max(0, finalAmount)
   }

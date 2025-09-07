@@ -45,10 +45,10 @@ export default function AdditionalSettings() {
             value={formData.status}
             onChange={(e) => updateFormData("status", e.target.value)}
           >
-            <option value="pending">Pending</option>
-            <option value="sent">Sent</option>
-            <option value="accepted">Accepted</option>
-            <option value="rejected">Rejected</option>
+            <option value="PENDING">Pending</option>
+            <option value="SENT">Sent</option>
+            <option value="ACCEPTED">Accepted</option>
+            <option value="REJECTED">Rejected</option>
           </select>
         </div>
       </div>

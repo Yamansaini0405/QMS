@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { Target, User, FileText, DollarSign, Mail, Phone, Search, MessageSquare, UserCog } from "lucide-react"
+import Swal from "sweetalert2"
+
 
 export default function AddLeads() {
   const [formData, setFormData] = useState({
@@ -18,6 +20,7 @@ export default function AddLeads() {
     description: "",
     additional_notes: "",
   })
+  const [formErrors, setFormErrors] = useState({})
 
   const [showCustomerSearch, setShowCustomerSearch] = useState(false)
   const [customerSearchQuery, setCustomerSearchQuery] = useState("")
@@ -31,27 +34,27 @@ export default function AddLeads() {
   const [role, setRole] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  
+
   useEffect(() => {
     try {
       setRole(localStorage.getItem("role"))
-    } catch {}
+    } catch { }
   }, [])
 
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-  const updateFormData = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
-  }
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     [name]: value,
+  //   }))
+  // }
+  // const updateFormData = (field, value) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     [field]: value,
+  //   }))
+  // }
 
 
   const searchCustomers = async (query) => {
@@ -186,86 +189,134 @@ export default function AddLeads() {
 
 
 
-const handleSaveLead = async () => {
-  setIsLoading(true)
-  try {
-    let followUpDate = formData.follow_up_date
-    if (followUpDate) {
-      const [year, month, day] = followUpDate.includes("-") && followUpDate.split("-").length === 3
-        ? followUpDate.split("-")
-        : [] 
+  const handleSaveLead = async () => {
+    validateField("email", formData.email)
+    validateField("phone", formData.phone)
 
-      // if user somehow typed or you reformatted into DD-MM-YYYY
-      if (year.length !== 4) {
-        const [dd, mm, yyyy] = followUpDate.split("-")
-        followUpDate = `${yyyy}-${mm}-${dd}` // ✅ convert to YYYY-MM-DD
+    if (role === "ADMIN") {
+      validateField("salespersonEmail", formData.salespersonEmail || "")
+      validateField("salespersonPhone", formData.salespersonPhone || "")
+    }
+
+    // Stop if any errors exist
+    if (Object.values(formErrors).some((err) => err)) {
+      Swal.fire("Validation Error", "Please fix all errors before saving.", "error")
+      return
+    }
+    setIsLoading(true)
+    try {
+      let followUpDate = formData.follow_up_date
+      if (followUpDate) {
+        const [year, month, day] = followUpDate.includes("-") && followUpDate.split("-").length === 3
+          ? followUpDate.split("-")
+          : []
+
+        // if user somehow typed or you reformatted into DD-MM-YYYY
+        if (year.length !== 4) {
+          const [dd, mm, yyyy] = followUpDate.split("-")
+          followUpDate = `${yyyy}-${mm}-${dd}` // ✅ convert to YYYY-MM-DD
+        }
       }
-    }
 
-    const payload = {
-      customer_name: formData.customerName,
-      customer_email: formData.email,
-      customer_phone: formData.phone,
-      customer_company: formData.companyName,
-      customer_primary_address: formData.address,
-      status: formData.lead_status,
-      lead_source: formData.lead_source,
-      follow_up_date: followUpDate,
-      notes: formData.description,
-      assigned_to: formData.assigned_to,
-      priority: formData.priority,
-    }
-
-    console.log("Saving lead payload:", payload)
-
-    const response = await fetch(
-      "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/leads/create/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
+      const payload = {
+        customer_name: formData.customerName,
+        customer_email: formData.email,
+        customer_phone: formData.phone,
+        customer_company: formData.companyName,
+        customer_primary_address: formData.address,
+        status: formData.lead_status,
+        lead_source: formData.lead_source,
+        follow_up_date: followUpDate,
+        notes: formData.description,
+        assigned_to: formData.assigned_to,
+        priority: formData.priority,
       }
-    )
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Failed to save lead: ${errorText}`)
+      console.log("Saving lead payload:", payload)
+
+      const response = await fetch(
+        "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/leads/create/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      )
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Failed to save lead: ${errorText}`)
+      }
+
+      const result = await response.json()
+      console.log("✅ Lead saved successfully:", result)
+
+      Swal.fire("Saved!", "Lead saved successfully!", "success")
+
+
+      // ✅ Reset form after success
+      setFormData({
+        customerName: "",
+        companyName: "",
+        email: "",
+        phone: "",
+        address: "",
+        lead_status: "NEW",
+        lead_source: "WEBSITE",
+        priority: "MEDIUM",
+        assigned_to: "",
+        follow_up_date: "",
+        description: "",
+        additional_notes: "",
+      })
+
+      setCustomerSearchQuery("")
+      setSalespersonQuery("")
+      setSalespersonSelected(false)
+
+    } catch (error) {
+      console.error("❌ Error saving lead:", error)
+      Swal.fire("Error!", "Failed to save lead. Please try again.", "error")
+
+    } finally {
+      setIsLoading(false)
     }
-
-    const result = await response.json()
-    console.log("✅ Lead saved successfully:", result)
-    alert("Lead saved successfully!")
-
-    // ✅ Reset form after success
-    setFormData({
-      customerName: "",
-      companyName: "",
-      email: "",
-      phone: "",
-      address: "",
-      lead_status: "NEW",
-      lead_source: "WEBSITE",
-      priority: "MEDIUM",
-      assigned_to: "",
-      follow_up_date: "",
-      description: "",
-      additional_notes: "",
-    })
-
-    setCustomerSearchQuery("")
-    setSalespersonQuery("")
-    setSalespersonSelected(false)
-
-  } catch (error) {
-    console.error("❌ Error saving lead:", error)
-    alert("Failed to save lead. Please try again.")
-  } finally {
-    setIsLoading(false)
   }
-}
+
+  const validateField = (name, value) => {
+    let error = ""
+
+    // Email validation
+    if (name === "email" || name === "salespersonEmail") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!value) error = "Email is required"
+      else if (!emailRegex.test(value)) error = "Invalid email address"
+    }
+
+    // Phone validation
+    if (name === "phone" || name === "salespersonPhone") {
+      const phoneRegex = /^[6-9]\d{9}$/
+      if (!value) error = "Phone number is required"
+      else if (!phoneRegex.test(value))
+        error = "Phone must be 10 digits and start with 6-9"
+    }
+
+    setFormErrors((prev) => ({ ...prev, [name]: error }))
+  }
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    validateField(name, value)
+  }
+
+  const updateFormData = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    validateField(field, value)
+  }
+
 
 
 
@@ -292,46 +343,7 @@ const handleSaveLead = async () => {
             <Target className="w-4 h-4" />
             Save Lead
           </button> */}
-          <button
-            onClick={handleSaveLead}
-            disabled={isLoading}
-            className={`px-6 py-2 rounded-lg flex items-center gap-2 transition-colors ${
-              isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gray-900 text-white hover:bg-gray-800"
-            }`}
-          >
-            {isLoading ? (
-              <>
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  ></path>
-                </svg>
-                Creating...
-              </>
-            ) : (
-              <>
-                <UserCog className="w-4 h-4" />
-                Create Lead
-              </>
-            )}
-          </button>
+
         </div>
       </div>
 
@@ -358,7 +370,7 @@ const handleSaveLead = async () => {
                         setShowCustomerSearch(true)
                       }
                     }}
-                    onBlur={() => setTimeout(() => setShowCustomerSearch(false),150)}
+                    onBlur={() => setTimeout(() => setShowCustomerSearch(false), 150)}
                     className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2" />
@@ -371,7 +383,7 @@ const handleSaveLead = async () => {
                         customerSearchResults.map((customer) => (
                           <div
                             key={customer.id}
-                           onMouseDown={() => selectCustomer(customer)} 
+                            onMouseDown={() => selectCustomer(customer)}
                             className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                           >
                             <div className="font-medium text-gray-900">{customer.name}</div>
@@ -406,30 +418,37 @@ const handleSaveLead = async () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
+             
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  placeholder="Enter email"
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
+      ${formErrors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"}`}
+                />
+                {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
-                  <input
-                    type="email"
-                    placeholder="email@example.com"
-                    value={formData.email}
-                    onChange={(e) => updateFormData("email", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
-                  <input
-                    placeholder="+1 234567890 (10 digits)"
-                    value={formData.phone}
-                    onChange={(e) => updateFormData("phone", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                <input
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  placeholder="Enter phone"
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
+      ${formErrors.phone ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"}`}
+                />
+                {formErrors.phone && <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>}
               </div>
 
+ </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
                 <input
@@ -585,28 +604,35 @@ const handleSaveLead = async () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Phone No.</label>
                   <input
-                    placeholder="Enter phone number"
+                    name="salespersonPhone"
+                    type="tel"
                     value={formData.salespersonPhone || ""}
+                    placeholder="Enter phone"
                     onChange={(e) => updateFormData("salespersonPhone", e.target.value)}
-                    readOnly={salespersonSelected} // ✅ read-only if from API
-                    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 ${
-                      salespersonSelected ? "bg-gray-100" : "focus:ring-blue-500"
-                    }`}
+                    readOnly={salespersonSelected}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
+      ${formErrors.salespersonPhone ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"} 
+      ${salespersonSelected ? "bg-gray-100" : ""}`}
                   />
+                  {formErrors.salespersonPhone && <p className="text-red-500 text-sm mt-1">{formErrors.salespersonPhone}</p>}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                   <input
-                    placeholder="Enter email"
+                    name="salespersonEmail"
+                    
                     value={formData.salespersonEmail || ""}
+                    placeholder="Enter phone"
                     onChange={(e) => updateFormData("salespersonEmail", e.target.value)}
                     readOnly={salespersonSelected}
-                    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 ${
-                      salespersonSelected ? "bg-gray-100" : "focus:ring-blue-500"
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
+      ${formErrors.salespersonEmail ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"} 
+      ${salespersonSelected ? "bg-gray-100" : ""}`}
                   />
+                  {formErrors.salespersonEmail && <p className="text-red-500 text-sm mt-1">{formErrors.salespersonEmail}</p>}
                 </div>
+
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
@@ -615,9 +641,8 @@ const handleSaveLead = async () => {
                     value={formData.salespersonAddress || ""}
                     onChange={(e) => updateFormData("salespersonAddress", e.target.value)}
                     readOnly={salespersonSelected}
-                    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 ${
-                      salespersonSelected ? "bg-gray-100" : "focus:ring-blue-500"
-                    }`}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 ${salespersonSelected ? "bg-gray-100" : "focus:ring-blue-500"
+                      }`}
                   />
                 </div>
               </div>
@@ -690,18 +715,59 @@ const handleSaveLead = async () => {
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Score:</span>
+                <span className="text-gray-600">Priority: </span>
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">{formData.lead_score}</span>
+                  <div className="w-8 h-8 flex items-center justify-center">
+                    <span className="text-gray-900 text-sm font-medium">{formData.priority}</span>
                   </div>
                 </div>
               </div>
 
-             
+
             </div>
           </div>
         </div>
+      </div>
+      <div className="mt-4 w-full">
+        <button
+          onClick={handleSaveLead}
+          disabled={isLoading}
+          className={`w-full px-6 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors ${isLoading
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-gray-900 text-white hover:bg-gray-800"
+            }`}
+        >
+          {isLoading ? (
+            <>
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+              Creating...
+            </>
+          ) : (
+            <>
+              <UserCog className="w-4 h-4" />
+              Create Lead
+            </>
+          )}
+        </button>
       </div>
     </div>
   )

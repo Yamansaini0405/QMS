@@ -4,7 +4,7 @@ import { useQuotation } from "../../contexts/QuotationContext";
 export default function CustomerInfoForm() {
   const {
     customerSearchQuery, handleCustomerSearchChange, showCustomerSearch, setShowCustomerSearch,
-    customerSearchResults, isSearchingCustomers, selectCustomer, formData, updateFormData
+    customerSearchResults, isSearchingCustomers, selectCustomer, formData, updateFormData, formErrors
   } = useQuotation();
 
   return (
@@ -52,53 +52,106 @@ export default function CustomerInfoForm() {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Customer Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Customer Name *
+            </label>
             <input
               placeholder="Enter customer name"
               value={formData.customerName}
               onChange={(e) => updateFormData("customerName", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                formErrors.customerName
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-blue-500"
+              }`}
             />
+            {formErrors.customerName && (
+              <p className="text-red-500 text-sm mt-1">
+                {formErrors.customerName}
+              </p>
+            )}
           </div>
+
+          {/* Company Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Company Name *
+            </label>
             <input
               placeholder="Enter company name"
               value={formData.companyName}
               onChange={(e) => updateFormData("companyName", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                formErrors.companyName
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-blue-500"
+              }`}
             />
+            {formErrors.companyName && (
+              <p className="text-red-500 text-sm mt-1">
+                {formErrors.companyName}
+              </p>
+            )}
           </div>
         </div>
+
+        {/* Email + Phone */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address *
+            </label>
             <input
               type="email"
               placeholder="email@example.com"
               value={formData.email}
               onChange={(e) => updateFormData("email", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                formErrors.email
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-blue-500"
+              }`}
             />
+            {formErrors.email && (
+              <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
+            )}
           </div>
+
+          {/* Phone */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Phone Number *
+            </label>
             <input
-              placeholder="+1 234567890 (10 digits)"
+              placeholder="10 digit number"
               value={formData.phone}
               onChange={(e) => updateFormData("phone", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              maxLength={10}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                formErrors.phone
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-blue-500"
+              }`}
             />
+            {formErrors.phone && (
+              <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>
+            )}
           </div>
         </div>
+
+        {/* Address (optional) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Address
+          </label>
           <input
             placeholder="Enter address"
             value={formData.address}
             onChange={(e) => updateFormData("address", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>

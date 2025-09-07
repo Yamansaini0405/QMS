@@ -12,7 +12,8 @@ import { FileText, Eye, Send, EyeOff } from "lucide-react";
 
 
 function NewQuotationPageContent() {
-  const { showPreview, formData, setShowPreview, downloadPDF, isGeneratingPDF, generatePDFAndSend, availableTerms } = useQuotation();
+  const { id, showPreview, formData, setShowPreview, downloadPDF, isGeneratingPDF, createQuotation, availableTerms } = useQuotation();
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -24,7 +25,7 @@ function NewQuotationPageContent() {
           </div>
           <div>
 
-            <h1 className="text-2xl font-semibold text-gray-900">New Quotation</h1>
+            <h1 className="text-2xl font-semibold text-gray-900">{id?"Edit" : "New"} Quotation</h1>
             <p className="text-gray-600">Create a new quotation for your customer</p>
           </div>
           </div>
@@ -37,22 +38,31 @@ function NewQuotationPageContent() {
             {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             <span>{showPreview ? "Hide Preview" : "Live Preview"}</span>
           </button>
-          <button
+          {/* <button
             onClick={downloadPDF}
             disabled={isGeneratingPDF}
             className="flex items-center space-x-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 transition-colors"
           >
             <FileText className="w-4 h-4" />
             <span>Download PDF</span>
-          </button>
-          <button
-            onClick={generatePDFAndSend}
+          </button> */}
+          {id ? <button
+            onClick={createQuotation}
+            disabled={isGeneratingPDF}
+            className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          >
+            <Send className="w-4 h-4" />
+            <span>{isGeneratingPDF ? "Updating..." : "Update & Send"}</span>
+          </button> : <button
+            onClick={createQuotation}
             disabled={isGeneratingPDF}
             className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
           >
             <Send className="w-4 h-4" />
             <span>{isGeneratingPDF ? "Creating..." : "Create & Send"}</span>
-          </button>
+          </button>}
+          
+          
           
         </div>
         </div>

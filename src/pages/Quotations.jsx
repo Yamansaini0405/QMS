@@ -15,57 +15,88 @@ import {
   Trash2,
   ArrowUp,
   ArrowDown,
+  Edit,
+  ChevronRight,
+  ChevronDown,
+  Building2,
+  History,
+  Copy,
+  MoreHorizontal,
 } from "lucide-react"
 import QuotationEditModel from "../components/QuotationEditModel"
+import Swal from "sweetalert2"
+import ViewLogsModal from "@/components/ViewLogsModal"
+import { useQuotation } from "@/contexts/QuotationContext"
+
 
 
 const Quotations = () => {
+
+  const {setFormData, updateFormData} = useQuotation()
+  
+
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("All Status")
-  const [quotations, setQuotations] = useState([])
+  const [customers, setCustomers] = useState([])
   const [loading, setLoading] = useState(true)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
+  const [expandedCustomer, setExpandedCustomer] = useState(null)
+    const [isLogsModalOpen, setIsLogsModalOpen] = useState(false)
+  const [selectedQuotationLogs, setSelectedQuotationLogs] = useState(null)
+  const [openDropdown, setOpenDropdown] = useState(null)
 
   const navigate = useNavigate()
 
+  const toggleDropdown = (quotationId) => {
+    setOpenDropdown(openDropdown === quotationId ? null : quotationId)
+  }
+
+  const closeDropdown = () => {
+    setOpenDropdown(null)
+  }
   useEffect(() => {
-    const fetchQuotations = async () => {
+    const fetchCustomers = async () => {
       setLoading(true)
       try {
         const token = localStorage.getItem("token")
-        const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/", {
+        const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/all/", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         })
         const data = await response.json()
-        setQuotations(data.data || [])
-        console.log("Fetched quotations:", data)
+        setCustomers(data.data || [])
+        console.log("✅ Customers with quotations loaded:", data.data)
       } catch (error) {
-        setQuotations([])
+        console.error("❌ Error fetching customers:", error)
+        setCustomers([])
       } finally {
         setLoading(false)
       }
     }
-    fetchQuotations()
+    fetchCustomers()
   }, [])
 
-  // Calculate stats dynamically
-  const totalValue = quotations.reduce((sum, q) => {
+  const allQuotations = customers.flatMap((customer) => customer.quotations || [])
+
+  const totalValue = allQuotations.reduce((sum, q) => {
     const value = typeof q.total === "string" ? Number.parseFloat(q.total.replace(/[^\d.]/g, "")) : Number(q.total) || 0
     return sum + value
   }, 0)
 
-  const pendingCount = quotations.filter((q) => q.status === "PENDING").length
-  const acceptedCount = quotations.filter((q) => q.status === "ACCEPTED").length
+  const pendingCount = allQuotations.filter((q) => q.status === "PENDING").length
+  const acceptedCount = allQuotations.filter((q) => q.status === "ACCEPTED").length
+
+  
+
 
   const stats = [
     {
       title: "Total Quotations",
-      value: quotations.length,
+      value: allQuotations.length,
       icon: FileText,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
@@ -93,34 +124,58 @@ const Quotations = () => {
     },
   ]
 
+  const toggleExpand = (customerId) => {
+    setExpandedCustomer(expandedCustomer === customerId ? null : customerId)
+  }
+
   const handleViewQuotation = (quotation) => {
     if (quotation.url) {
-      window.open(quotation.url, "_blank") // open PDF in new tab
+      window.open(quotation.url, "_blank")
     } else {
-      alert("PDF not available for this quotation.")
+      Swal.fire("Error!", "PDF not available for this quotation.", "error")
     }
   }
 
-  // const handleDeleteQuotation = async (id) => {
+  const handleDeleteQuotation = async (id) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This quotation will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    })
 
-  //   try {
-  //     const token = localStorage.getItem("token")
-  //     await fetch(
-  //       `https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/${id}/`,
-  //       {
-  //         method: "DELETE",
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     )
-  //     // remove deleted quotation from state
-  //     setQuotations((prev) => prev.filter((q) => q.id !== id))
-  //     alert("Quotation deleted successfully")
-  //   } catch (error) {
-  //     console.error("Failed to delete quotation:", error)
-  //   }
-  // }
+    if (!result.isConfirmed) return
+
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/${id}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        Swal.fire("Error!", `Failed to delete: ${errorText}`, "error")
+        throw new Error(`Delete failed: ${response.status} - ${errorText}`)
+      }
+
+      setCustomers((prev) =>
+        prev.map((customer) => ({
+          ...customer,
+          quotations: customer.quotations.filter((q) => q.id !== id),
+        })),
+      )
+      Swal.fire("Deleted!", "The quotation has been deleted.", "success")
+    } catch (error) {
+      console.error("Failed to delete quotation:", error)
+      Swal.fire("Error!", "Something went wrong while deleting.", "error")
+    }
+  }
 
   const handleSort = (key) => {
     let direction = "asc"
@@ -139,14 +194,23 @@ const Quotations = () => {
     )
   }
 
-  const sortedQuotations = [...quotations].sort((a, b) => {
+  const sortedCustomers = [...customers].sort((a, b) => {
     if (!sortConfig.key) return 0
     let valueA, valueB
 
-    if (sortConfig.key === "customer_name") {
-      valueA = a.customer?.name ?? ""
-      valueB = b.customer?.name ?? ""
-    } else {
+    if (sortConfig.key === "name") {
+      valueA = a.name ?? ""
+      valueB = b.name ?? ""
+    } else if (sortConfig.key === "company_name") {
+      valueA = a.company_name ?? ""
+      valueB = b.company_name ?? ""
+    } else if (sortConfig.key === "email") {
+      valueA = a.email ?? ""
+      valueB = b.email ?? ""
+    } else if (sortConfig.key === "phone") {
+      valueA = a.phone ?? ""
+      valueB = b.phone ?? ""
+    }else {
       valueA = a[sortConfig.key] ?? ""
       valueB = b[sortConfig.key] ?? ""
     }
@@ -156,16 +220,18 @@ const Quotations = () => {
     return 0
   })
 
-  // Filter quotations by search and status
-  const filteredQuotations = sortedQuotations.filter((q) => {
+  const filteredCustomers = sortedCustomers.filter((customer) => {
     const matchesSearch =
-      q.customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      // q.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      q.id
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "All Status" || q.status === statusFilter
-    return matchesSearch && matchesStatus
+      customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
+
+    if (statusFilter === "All Status") {
+      return matchesSearch
+    } else {
+      const hasMatchingQuotation = customer.quotations?.some((q) => q.status === statusFilter)
+      return matchesSearch && hasMatchingQuotation
+    }
   })
 
   const handleEditQuotation = (quotation) => {
@@ -174,12 +240,16 @@ const Quotations = () => {
   }
 
   const handleSaveQuotation = (updatedQuotation) => {
-    setQuotations((prev) => prev.map((q) => (q.id === updatedQuotation.id ? updatedQuotation : q)))
+    setCustomers((prev) =>
+      prev.map((customer) => ({
+        ...customer,
+        quotations: customer.quotations.map((q) => (q.id === updatedQuotation.id ? updatedQuotation : q)),
+      })),
+    )
   }
 
   const handleStatusChange = async (quotation, id, newStatus) => {
     const payload = {
-      // ...quotation,
       status: newStatus,
     }
 
@@ -199,26 +269,29 @@ const Quotations = () => {
         throw new Error("Failed to update quotation status")
       }
 
-      // ✅ Update UI locally
-      setQuotations((prev) => prev.map((q) => (q.id === id ? { ...q, status: newStatus } : q)))
-      alert("status updated")
+      setCustomers((prev) =>
+        prev.map((customer) => ({
+          ...customer,
+          quotations: customer.quotations.map((q) => (q.id === id ? { ...q, status: newStatus } : q)),
+        })),
+      )
 
+      Swal.fire("Updated!", "Status updated.", "success")
       console.log("[v0] Quotation status updated:", id, newStatus)
     } catch (err) {
       console.error("❌ Error updating quotation status:", err)
-      alert("Error updating status. Please try again.")
+      Swal.fire("Error!", "Error updating status. Please try again.", "error")
     }
   }
 
   const handleExport = async () => {
-    // Collect all PDF URLs from filteredQuotations
-    
-    const pdfUrls = filteredQuotations
-      .map((q) => q.url) // adjust if your key is different
-      .filter((url) => !!url) // remove null/undefined
+    const pdfUrls = filteredCustomers
+      .flatMap((customer) => customer.quotations || [])
+      .map((q) => q.url)
+      .filter((url) => !!url)
 
     if (pdfUrls.length === 0) {
-      alert("No PDF URLs available to export.")
+      Swal.fire("Missing Url", "No PDF URLs available to export.", "warning")
       return
     }
 
@@ -243,17 +316,81 @@ const Quotations = () => {
       const data = await response.json()
 
       if (data.final_url) {
-        // Open the merged PDF in a new tab
         window.open(data.final_url, "_blank")
       } else {
-        alert("Export failed: no final PDF URL received.")
+        Swal.fire("Error!", "Export failed: no final PDF URL received.", "error")
       }
     } catch (error) {
       console.error("❌ Export failed:", error)
-      alert("Export failed. Please try again.")
-    } finally {
-      
+      Swal.fire("Error!", "Export failed. Please try again.", "error")
     }
+  }
+
+ const handleViewLogs = async (quotation) => {
+    setSelectedQuotationLogs({
+      quotation,
+      logs: quotation.activity_logs || [],
+    })
+    setIsLogsModalOpen(true)
+    closeDropdown()
+  }
+
+  const handleDuplicateQuotation = async (quotation) => {
+    console.log("duplicate ",quotation)
+    const formatDate = (date) => {
+        const d = new Date(date)
+        const day = String(d.getDate()).padStart(2, "0")
+        const month = String(d.getMonth() + 1).padStart(2, "0")
+        const year = d.getFullYear()
+        return `${day}-${month}-${year}`
+    }
+    closeDropdown()
+    const result = await Swal.fire({
+      title: "Duplicate Quotation?",
+      text: "This will create a copy of the quotation with a new quotation number.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, duplicate it!",
+    })
+
+    if (!result.isConfirmed) return
+
+    setFormData({
+          quotationDate: formatDate(new Date(quotation.created_at)),
+          validUntil: formatDate(new Date(quotation.follow_up_date)),
+          validityNumber: 30, // derive if backend gives
+          validityType: "days",
+          followUpDate: formatDate(new Date(quotation.follow_up_date)),
+          customerName: quotation.customer?.name || "yaman",
+          companyName: quotation.customer?.company_name || "",
+          email: quotation.customer?.email || "",
+          phone: quotation.customer?.phone || "",
+          address: quotation.customer?.primary_address || "",
+          products: quotation.items?.map((item) => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            selling_price: item.unit_price,
+            percentage_discount: item.percentage_discount || 0,
+          })) || [],
+          subtotal: quotation.subtotal || "0.00",
+          discount: quotation.discount || "",
+          tax: quotation.tax || "0.00",
+          taxRate: quotation.tax_rate || "18",
+          discountType: quotation.discount_type || "amount",
+          totalAmount: quotation.total || "0.00",
+          status:quotation.status,
+          additionalNotes: quotation.additional_notes || "",
+          createdBy: quotation.created_by || localStorage.getItem("role"),
+          digitalSignature: quotation.digital_signature || "",
+    })
+    setTimeout(() => {
+      updateFormData()
+  navigate("/quotations/new")
+}, 0)
+    
   }
 
   if (loading) {
@@ -322,7 +459,7 @@ const Quotations = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search quotations..."
+                placeholder="Search customers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
@@ -337,9 +474,10 @@ const Quotations = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
             >
               <option>All Status</option>
-              <option>Pending</option>
-              <option>Accepted</option>
-              <option>Rejected</option>
+              <option value="PENDING">Pending</option>
+              <option value="ACCEPTED">Accepted</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="REVISED">Revised</option>
             </select>
 
             <button
@@ -347,115 +485,206 @@ const Quotations = () => {
               className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200"
             >
               <Download className="w-4 h-4" />
-              <span>Export All {filteredQuotations.length}</span>
+              <span>Export All ({allQuotations.length})</span>
             </button>
-
           </div>
         </div>
+
+        <p className="text-sm text-gray-500 mt-4">
+          Showing {filteredCustomers.length} customers with {allQuotations.length} total quotations
+        </p>
       </div>
 
-      {/* Quotations Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left text-sm">Sno.</th>
-                <th
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
+                 <th
                   className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("customer_name")}
+                  onClick={() => handleSort("name")}
                 >
-                  Customer <SortIcon column="customer_name" />
+                  Customer <SortIcon column="name" />
                 </th>
                 <th
                   className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("id")}
+                  onClick={() => handleSort("company_name")}
                 >
-                  Quote ID <SortIcon column="id" />
+                  Company <SortIcon column="company_name" />
                 </th>
                 <th
                   className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("total")}
+                  onClick={() => handleSort("email")}
                 >
-                  Amount <SortIcon column="total" />
+                  Email <SortIcon column="email" />
                 </th>
                 <th
                   className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("status")}
+                  onClick={() => handleSort("phone")}
                 >
-                  Status <SortIcon column="status" />
+                  Phone <SortIcon column="phone" />
                 </th>
-                <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("created_at")}
-                >
-                  Created <SortIcon column="created_at" />
-                </th>
-                <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("follow_up_date")}
-                >
-                  Valid Until <SortIcon column="follow_up_date" />
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
+
+                
+                
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredQuotations.map((quotation, index) => (
-                <tr key={index} className="hover:bg-gray-50 transition-colors duration-200">
-                  <td className="px-6 py-4">{index + 1}</td>
-                  <td className="px-6 py-4 flex items-center gap-3">
-                    <div className="w-8 h-8  bg-green-600 rounded-lg flex items-center justify-center">
-                      <Users className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">{quotation.customer?.name || ""}</p>
-                      <p className="text-sm text-gray-500">{quotation.customer?.email}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="font-medium text-gray-900">{quotation.id}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="font-semibold text-gray-900">₹{quotation.total}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <select
-                      value={quotation.status}
-                      onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
-                      className="text-sm text-white px-3 py-1 bg-blue-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="PENDING">Pending</option>
-                      <option value="ACCEPTED">Accepted</option>
-                      <option value="REJECTED">Rejected</option>
-                    </select>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{quotation.created_at.split("T")[0]}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`text-sm ${quotation.validColor}`}>{quotation.follow_up_date}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleViewQuotation(quotation)}
-                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-200"
-                      >
-                        <Eye className="w-4 h-4" />
+              {filteredCustomers
+              .filter((c) => c.quotations && c.quotations.length > 0)
+              .map((customer, index) => (
+                <>
+                  {/* Customer Row */}
+                  <tr key={customer.id} className="hover:bg-gray-50 transition-colors duration-200">
+                    <td className="px-6 py-4 text-gray-600">{index + 1}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900 flex items-center justify-start gap-2">
+                      <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                        <Users className="w-4 h-4 text-white" />
+                      </div>
+                      {customer.name}
+                    </td>
+                    <td className="px-6 py-4 text-gray-700">
+                      <div className="flex items-center justify-start gap-2">
+                        <Building2 className="w-4 h-4 text-gray-400" />
+                        {customer.company_name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">{customer.email}</td>
+                    <td className="px-6 py-4 text-gray-600">{customer.phone}</td>
+                    <td className="px-6 py-4">
+                      <button onClick={() => toggleExpand(customer.id)} className="text-gray-500 hover:text-gray-800">
+                        {expandedCustomer === customer.id ? (
+                          <ChevronDown className="w-5 h-5" />
+                        ) : (
+                          <ChevronRight className="w-5 h-5" />
+                        )}
                       </button>
-                      {/* <button
-                        onClick={() => handleEditQuotation(quotation)}
-                        className="p-1 text-gray-400 hover:text-green-600 transition-colors duration-200"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button> */}
-                      <button className="p-1  text-gray-400 hover:text-red-500 transition-colors duration-200">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
+
+                  {/* Expanded Quotations Sublist */}
+                  {expandedCustomer === customer.id && (
+                    <tr className="bg-gray-50">
+                      <td colSpan={6} className="px-6 py-4">
+                        {customer.quotations && customer.quotations.length > 0 ? (
+                          <table className="w-full text-sm border border-gray-200 rounded-lg">
+                            <thead className="bg-gray-200">
+                              <tr>
+                                <th className="px-4 py-3 text-left">Quote ID</th>
+                                <th className="px-4 py-3 text-left">Amount</th>
+                                <th className="px-4 py-3 text-left">Status</th>
+                                <th className="px-4 py-3 text-left">Created</th>
+                                <th className="px-4 py-3 text-left">Valid Until</th>
+                                <th className="px-4 py-3 text-left">Assigned To</th>
+                                <th className="px-4 py-3 text-left">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {console.log(customer.quotations)}
+                              {customer.quotations.map((quotation) => (
+                                <tr key={quotation.id} className="border-t hover:bg-white">
+                                  <td className="px-4 py-2 font-medium text-gray-900">{quotation.quotation_number}</td>
+                                  <td className="px-4 py-2 font-semibold text-gray-900">₹{quotation.total}</td>
+                                  <td className="px-4 py-2">
+                                    <select
+                                      value={quotation.status}
+                                      onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
+                                      className="text-sm text-white px-3 py-1 bg-blue-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    >
+                                      <option value="PENDING">Pending</option>
+                                      <option value="ACCEPTED">Accepted</option>
+                                      <option value="REJECTED">Rejected</option>
+                                      <option value="REVISED">Revised</option>
+                                    </select>
+                                  </td>
+                                  <td className="px-4 py-2">{new Date(quotation.created_at).toLocaleDateString()}</td>
+                                  <td className="px-4 py-2">{quotation.follow_up_date || "-"}</td>
+                                  <td className="px-4 py-2">{quotation.assigned_to?.name || "Unassigned"}</td>
+                                  <td className="px-4 py-2 flex space-x-2">
+                                    <div className="flex items-center space-x-2">
+                                      {/* Primary Actions - Always Visible */}
+                                      <button
+                                        onClick={() => handleViewQuotation(quotation)}
+                                        className="p-1 text-gray-400 hover:text-blue-600"
+                                        title="View Quotation"
+                                      >
+                                        <Eye className="w-4 h-4" />
+                                      </button>
+                                      <button
+                                        onClick={() => navigate(`/quotations/edit/${quotation.id}`)}
+                                        className="p-1 text-gray-400 hover:text-green-600"
+                                        title="Edit Quotation"
+                                      >
+                                        <Edit className="w-4 h-4" />
+                                      </button>
+
+                                      {/* More Actions Dropdown */}
+                                      <div className="relative">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            toggleDropdown(quotation.id)
+                                          }}
+                                          className="p-1 text-gray-400 hover:text-gray-600"
+                                          title="More Actions"
+                                        >
+                                          <MoreHorizontal className="w-4 h-4" />
+                                        </button>
+
+                                        {/* Dropdown Menu */}
+                                        {openDropdown === quotation.id && (
+                                          <div className="z-10 absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[160px]">
+                                            <div className="py-1">
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation()
+                                                  handleViewLogs(quotation)
+                                                }}
+                                                className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                              >
+                                                <History className="w-4 h-4" />
+                                                <span>View Logs</span>
+                                              </button>
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation()
+                                                  handleDuplicateQuotation(quotation)
+                                                }}
+                                                className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                              >
+                                                <Copy className="w-4 h-4" />
+                                                <span>Duplicate</span>
+                                              </button>
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation()
+                                                  closeDropdown()
+                                                  handleDeleteQuotation(quotation.id)
+                                                }}
+                                                className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                              >
+                                                <Trash2 className="w-4 h-4" />
+                                                <span>Delete</span>
+                                              </button>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <p className="text-gray-500">No quotations found for this customer.</p>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))}
             </tbody>
           </table>
@@ -467,6 +696,11 @@ const Quotations = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSave={handleSaveQuotation}
+      />
+      <ViewLogsModal
+        quotationLogs={selectedQuotationLogs}
+        isOpen={isLogsModalOpen}
+        onClose={() => setIsLogsModalOpen(false)}
       />
     </div>
   )

@@ -4,19 +4,26 @@ import { useQuotation } from "../../contexts/QuotationContext";
 
 export default function BottomActions() {
 
-  const { isGeneratingPDF, createQuotation, downloadPDF } = useQuotation();
+  const { id, isGeneratingPDF, createQuotation, downloadPDF } = useQuotation();
 
   return (
-    <div className="flex items-center justify-center space-x-4 pt-6 border-t border-gray-200">
+    <div className="w-full flex items-center justify-center space-x-4 pt-6 border-t border-gray-200">
       
-      <button
+      {id ? <button
         onClick={createQuotation}
         disabled={isGeneratingPDF}
-        className="flex items-center space-x-2 px-6 py-3 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+        className="w-full flex items-center justify-center space-x-2 px-6 py-3 text-md bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+      >
+        <Send className="w-4 h-4" />
+        <span>{isGeneratingPDF ? "Updating..." : "Update & Send"}</span>
+      </button> : <button
+        onClick={createQuotation}
+        disabled={isGeneratingPDF}
+        className="w-full flex items-center justify-center space-x-2 px-6 py-3 text-md bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
       >
         <Send className="w-4 h-4" />
         <span>{isGeneratingPDF ? "Creating..." : "Create & Send"}</span>
-      </button>
+      </button>}
     </div>
   );
 }

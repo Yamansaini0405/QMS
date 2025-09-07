@@ -498,19 +498,30 @@ export default function Leads() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4"></th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Customer</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Company</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Email</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Phone</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {customers.map((customer) => (
+              {customers
+              .filter((c) => c.leads && c.leads.length > 0)
+              .map((customer, index) => (
                 <>
                   {/* Customer Row */}
                   <tr key={customer.id} className="hover:bg-gray-50 transition-colors duration-200">
+                    
+                    <td className="px-6 py-4 text-gray-600">{index+1}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900 flex items-center justify-start gap-2"><div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                        <Users className="w-4 h-4 text-white" />
+                      </div>{customer.name}</td>
+                    <td className="px-6 py-4 text-gray-700 "><div className="flex  items-center justify-start gap-2"><Building2 className="w-4 h-4 text-gray-400" />{customer.company_name}</div></td>
+                    <td className="px-6 py-4 text-gray-600">{customer.email}</td>
+                    <td className="px-6 py-4 text-gray-600">{customer.phone}</td>
+                  
                     <td className="px-6 py-4">
                       <button
                         onClick={() => toggleExpand(customer.id)}
@@ -521,28 +532,6 @@ export default function Leads() {
                         ) : (
                           <ChevronRight className="w-5 h-5" />
                         )}
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 font-medium text-gray-900 flex items-center justify-start gap-2"><div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-                        <Users className="w-4 h-4 text-white" />
-                      </div>{customer.name}</td>
-                    <td className="px-6 py-4 text-gray-700 "><div className="flex  items-center justify-start gap-2"><Building2 className="w-4 h-4 text-gray-400" />{customer.company_name}</div></td>
-                    <td className="px-6 py-4 text-gray-600">{customer.email}</td>
-                    <td className="px-6 py-4 text-gray-600">{customer.phone}</td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleViewCustomer(customer)}
-                        className="p-1 text-gray-400 hover:text-green-600 transition-colors duration-200"
-                        title="View Customer"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCustomer(customer.id)}
-                        className="p-1 text-red-600 transition-colors duration-200"
-                        title="Delete Customer"
-                      >
-                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>

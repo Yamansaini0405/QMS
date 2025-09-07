@@ -18,6 +18,12 @@ export default function QuotationSummary() {
         calculateTotals(formData.products)
     }, [formData.discount, formData.discountType, formData.taxRate, formData.specialDiscountEnabled])
 
+    useEffect(() => {
+  if (formData.discount) {
+    calculateTotals(formData.products)
+  }
+}, [formData.discount])
+
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center space-x-2 mb-6">
@@ -51,18 +57,32 @@ export default function QuotationSummary() {
                     </div>
                     <span className="text-sm font-medium">Rs. {formData.tax}</span>
                 </div>
-                 <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                         <input
                             type="checkbox"
                             id="special-discount"
-                            checked={formData.specialDiscountEnabled}   // ✅ controlled by state
+                            checked={!!formData.discount}
                             onChange={(e) => {
-                                updateFormData("specialDiscountEnabled", e.target.checked)
-                                calculateTotals(formData.products)
+                                const checked = e.target.checked;
+
+                                updateFormData("specialDiscountEnabled", checked);
+
+                                if (!checked) {
+                                    // User turned OFF special discount → clear discount value
+                                    updateFormData("discount", "");
+                                } else {
+                                    // User turned it back ON → set default discount if empty
+                                    if (!formData.discount) {
+                                        updateFormData("discount", "0");
+                                    }
+                                }
+
+                                calculateTotals(formData.products);
                             }}
                             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         />
+
                         <label htmlFor="special-discount" className="text-sm text-gray-600">
                             Special Discount
                         </label>

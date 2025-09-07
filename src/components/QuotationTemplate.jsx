@@ -54,58 +54,73 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
 
       {/* Products/Services Table */}
       <div className="mb-8">
-        <table className="w-full border-collapse border border-gray-300">
-          <thead>
-            <tr className="bg-blue-50">
-              <th className="border border-gray-300 p-3 text-left">S.No.</th>
-              <th className="border border-gray-300 p-3 text-left">Product/Service</th>
-              <th className="border border-gray-300 p-3 text-center">Quantity</th>
-              <th className="border border-gray-300 p-3 text-right">Rate</th>
+        {formData.products && formData.products.length > 0 && (
+          <>
+          
+            {(() => {
+              const showDiscountColumn = formData.products.some(
+                (p) => (p.percentage_discount || 0) > 0
+              );
 
-              <th className="border border-gray-300 p-3 text-right">Discount</th>
-              <th className="border border-gray-300 p-3 text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {formData.products && formData.products.length > 0 ? (
-              formData.products.map((product, index) => {
-                const qty = product.quantity || 1
-                const rate = product.selling_price || 0
-                const discountPct = product.percentage_discount || 0
+              return (
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-blue-50">
+                      <th className="border border-gray-300 p-3 text-left">S.No.</th>
+                      <th className="border border-gray-300 p-3 text-left">Product/Service</th>
+                      <th className="border border-gray-300 p-3 text-center">Quantity</th>
+                      <th className="border border-gray-300 p-3 text-right">Rate</th>
 
-                const baseAmount = qty * rate
-                const discountAmount = (baseAmount * discountPct) / 100
-                const finalAmount = baseAmount - discountAmount
+                      {/* Conditionally render Discount column */}
+                      {showDiscountColumn && (
+                        <th className="border border-gray-300 p-3 text-right">Discount</th>
+                      )}
 
-                return (
-                  <tr key={index}>
-                    <td className="border border-gray-300 p-3">{index + 1}</td>
-                    <td className="border border-gray-300 p-3">{product.name || "[Product/Service]"}</td>
-                    <td className="border border-gray-300 p-3 text-center">{qty}</td>
-                    <td className="border border-gray-300 p-3 text-right">Rs. {rate.toFixed(2)}</td>
-                    <td className="border border-gray-300 p-3 text-right">
-                      {discountPct > 0 ? `${discountPct}%` : "—"}
-                    </td>
-                    <td className="border border-gray-300 p-3 text-right">
-                      Rs. {finalAmount.toFixed(2)}
-                    </td>
-                  </tr>
-                )
-              })
-            ) : (
-              <tr>
-                <td className="border border-gray-300 p-3">1</td>
-                <td className="border border-gray-300 p-3">[Product/Service]</td>
-                <td className="border border-gray-300 p-3 text-center">1</td>
-                <td className="border border-gray-300 p-3 text-right">Rs. 0.00</td>
-                <td className="border border-gray-300 p-3 text-right">—</td>
-                <td className="border border-gray-300 p-3 text-right">Rs. 0.00</td>
-              </tr>
-            )}
-          </tbody>
+                      <th className="border border-gray-300 p-3 text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {formData.products.map((product, index) => {
+                      const qty = product.quantity || 1;
+                      const rate = product.selling_price || 0;
+                      const discountPct = product.percentage_discount || 0;
 
-        </table>
+                      const baseAmount = qty * rate;
+                      const discountAmount = (baseAmount * discountPct) / 100;
+                      const finalAmount = baseAmount - discountAmount;
+
+                      return (
+                        <tr key={index}>
+                          <td className="border border-gray-300 p-3">{index + 1}</td>
+                          <td className="border border-gray-300 p-3">
+                            {product.name || "[Product/Service]"}
+                          </td>
+                          <td className="border border-gray-300 p-3 text-center">{qty}</td>
+                          <td className="border border-gray-300 p-3 text-right">
+                            Rs. {rate.toFixed(2)}
+                          </td>
+
+                          {/* Conditionally render Discount column */}
+                          {showDiscountColumn && (
+                            <td className="border border-gray-300 p-3 text-right">
+                              {discountPct > 0 ? `${discountPct}%` : "—"}
+                            </td>
+                          )}
+
+                          <td className="border border-gray-300 p-3 text-right">
+                            Rs. {finalAmount.toFixed(2)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              );
+            })()}
+          </>
+        )}
       </div>
+
 
       {/* Summary */}
       <div className="flex justify-end mb-8">
@@ -124,7 +139,7 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
                   </span>
                 ) : (
                   <span>Rs. {formData.discount}</span>
-                )}  
+                )}
               </div>
             )}
             <div className="flex justify-between">

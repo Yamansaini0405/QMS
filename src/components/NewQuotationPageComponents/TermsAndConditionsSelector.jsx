@@ -25,7 +25,7 @@ export default function TermsAndConditionsSelector() {
       .map((item) => item.trim())
       .filter((item) => item.length > 0)
   }
-
+  console.log(selectedTerms)
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Terms & Conditions</h2>

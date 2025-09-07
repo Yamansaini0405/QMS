@@ -24,8 +24,8 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
           products: [{ id: "", name: "", quantity: 1, selling_price: 0, percentage_discount: 0 }],
           subtotal: 0,
           discount: 0,
-          tax: 0,
-          taxRate: 0,
+          tax:0,
+          taxRate: "",
           discountType: "amount",
           totalAmount: "0.00",
           additionalNotes: "",
@@ -233,7 +233,7 @@ const filteredTerms = availableTerms.filter((term) =>
         companyName: quotation.customer?.company_name || "",
         email: quotation.customer?.email || "",
         phone: quotation.customer?.phone || "",
-        address: quotation.customer?.primary_address || "",
+        address: quotation.customer?.address || "",
         products:
           quotation.products?.map((p) => ({
             id: p.id,
@@ -248,7 +248,7 @@ const filteredTerms = availableTerms.filter((term) =>
         totalAmount: Number(quotation.total),
         quotationDate: formatDate(quotation.created_at),
         validUntil: formatDate(quotation.follow_up_date),
-        status: quotation.status || "PENDING",
+        status: quotation.status,
         additionalNotes: quotation.additionalNotes || "",
         createdBy: quotation.created_by || "Admin User",
         digitalSignature: quotation.digitalSignature || "",
@@ -335,8 +335,16 @@ const filteredTerms = availableTerms.filter((term) =>
         useEffect(() => {
             calculateTotals(formData.products)
         }, [formData.discount, formData.discountType, formData.taxRate, formData.specialDiscountEnabled])
+        
 
   const [showPercentageDiscount, setShowPercentageDiscount] = useState(false)
+  useEffect(() => {
+  if (formData.products?.[0]?.percentage_discount) {
+    setShowPercentageDiscount(true);
+  } else {
+    setShowPercentageDiscount(false);
+  }
+}, [formData.products]);
 
   const calculateFinalAmount = (product) => {
     const baseAmount = (product.quantity || 0) * (product.selling_price || 0)
@@ -874,10 +882,11 @@ const filteredTerms = availableTerms.filter((term) =>
                   onChange={(e) => updateFormData("status", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="pending">Pending</option>
-                  <option value="sent">Sent</option>
-                  <option value="accepted">Accepted</option>
-                  <option value="rejected">Rejected</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="SENT">Sent</option>
+                  <option value="ACCEPTED">Accepted</option>
+                  <option value="REJECTED">Rejected</option>
+                  <option value="REVISED">Revised</option>
                 </select>
               </div>
             </div>

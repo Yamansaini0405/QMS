@@ -19,6 +19,7 @@ import ViewMembers from "./pages/ViewMembers"
 import SalesPersonDashboard from "./pages/SalesPersonDashboard"
 import AddLeads from "./pages/AddLeads"
 import Profile from "./pages/Profile"
+import { QuotationProvider } from "./contexts/QuotationContext"
 
 function App() {
   return (
@@ -44,11 +45,14 @@ function App() {
                 path="/quotations"
                 element={
                   <ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}>
-                    <Quotations />
+                   <QuotationProvider>
+                     <Quotations />
+                   </QuotationProvider>
                   </ProtectedRoute>
                 }
               />
               <Route path="/quotations/new" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><NewQuotationPage /></ProtectedRoute>} />
+              <Route path="/quotations/edit/:id" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><NewQuotationPage /></ProtectedRoute>} />
               <Route path="/customers/create" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><AddCustomer /></ProtectedRoute>} />
               <Route path="/products/create" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AddProduct /></ProtectedRoute>} />
               <Route path="/terms/create" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AddTermsConditions /></ProtectedRoute>} />
