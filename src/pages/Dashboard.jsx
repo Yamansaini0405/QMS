@@ -89,6 +89,14 @@ const Dashboard = () => {
     },
   ]
 
+  const handleViewQuotation = (quotation) => {
+      if (quotation.url) {
+        window.open(quotation.url, "_blank")
+      } else {
+        Swal.fire("Error!", "PDF not available for this quotation.", "error")
+      }
+    }
+
 
     const recentQuotations = quotations.slice(-3).reverse() // last 3
   const recentLeads = leads.slice(-3).reverse()
@@ -129,10 +137,10 @@ if (loading) return <DashboardSkeleton />
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">Recent Quotations</h2>
               <div className="flex items-center space-x-3">
-                <button className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                {/* <button className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200">
                   <Download className="w-4 h-4" />
                   <span>Export</span>
-                </button>
+                </button> */}
                 <Link to="/quotations/new">
                 <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors duration-200">
                   <Plus className="w-4 h-4" />
@@ -162,9 +170,10 @@ if (loading) return <DashboardSkeleton />
                   <div className="text-right">
                     <p className="font-bold text-gray-900 mb-2">Rs {quotation.total.toFixed(2)}</p>
                     <div className="flex items-center justify-center space-x-2 bg-blue-700 rounded-lg w-12 ml-8 ">
-                      <button className="p-1 text-white hover:text-gray-600 transition-colors duration-200 flex items-center justify-center gap-2 ">
+                      <button className="p-1 text-white hover:text-gray-600 transition-colors duration-200 flex items-center justify-center gap-2 "
+                      onClick={() => handleViewQuotation(quotation)}>
                         <Eye className="w-4 h-4" />
-                        {/* <span className="text-lg">see</span> */}
+                        
                       </button>
                       
                     </div>
@@ -181,10 +190,10 @@ if (loading) return <DashboardSkeleton />
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">Recent Leads</h2>
               <div className="flex items-center space-x-3">
-                <button className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200">
+                {/* <button className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200">
                   <Download className="w-4 h-4" />
                   <span>Export</span>
-                </button>
+                </button> */}
                 <Link to="/leads/create">
                 <button className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 transition-colors duration-200">
                   <Plus className="w-4 h-4" />
@@ -216,15 +225,7 @@ if (loading) return <DashboardSkeleton />
                   <div className="text-right">
                     <p className="text-sm text-gray-600 mb-1">{lead.source}</p>
                     <div className="flex items-center space-x-2">
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
+                       <p className="text-md text-gray-900">{lead.assigned_to.name}</p>
                     </div>
                   </div>
                 </div>

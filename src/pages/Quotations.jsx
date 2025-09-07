@@ -335,63 +335,46 @@ const Quotations = () => {
     closeDropdown()
   }
 
-  const handleDuplicateQuotation = async (quotation) => {
-    console.log("duplicate ", quotation)
-    const formatDate = (date) => {
-      const d = new Date(date)
-      const day = String(d.getDate()).padStart(2, "0")
-      const month = String(d.getMonth() + 1).padStart(2, "0")
-      const year = d.getFullYear()
-      return `${day}-${month}-${year}`
+const handleDuplicateQuotation = async (id) => {
+  closeDropdown();
+
+  const result = await Swal.fire({
+    title: "Duplicate Quotation?",
+    text: "This will create a copy of the quotation with a new quotation number.",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, duplicate it!",
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    const response = await fetch(
+      `https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/${id}/duplicate/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to duplicate quotation");
+    } else {
+      Swal.fire("Duplicated", "quotation is successfully duplicated", "success")
     }
-    closeDropdown()
-    const result = await Swal.fire({
-      title: "Duplicate Quotation?",
-      text: "This will create a copy of the quotation with a new quotation number.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, duplicate it!",
-    })
 
-    if (!result.isConfirmed) return
+    const data = await response.json();
 
-    setFormData({
-      quotationDate: formatDate(new Date(quotation.created_at)),
-      validUntil: formatDate(new Date(quotation.follow_up_date)),
-      validityNumber: 30, // derive if backend gives
-      validityType: "days",
-      followUpDate: formatDate(new Date(quotation.follow_up_date)),
-      customerName: quotation.customer?.name || "yaman",
-      companyName: quotation.customer?.company_name || "",
-      email: quotation.customer?.email || "",
-      phone: quotation.customer?.phone || "",
-      address: quotation.customer?.primary_address || "",
-      products: quotation.items?.map((item) => ({
-        id: item.id,
-        name: item.name,
-        quantity: item.quantity,
-        selling_price: item.unit_price,
-        percentage_discount: item.percentage_discount || 0,
-      })) || [],
-      subtotal: quotation.subtotal || "0.00",
-      discount: quotation.discount || "",
-      tax: quotation.tax || "0.00",
-      taxRate: quotation.tax_rate || "18",
-        discountType: quotation.discount_type || "amount",
-      totalAmount: quotation.total || "0.00",
-      status: quotation.status,
-      additionalNotes: quotation.additional_notes || "",
-      createdBy: quotation.created_by || localStorage.getItem("role"),
-      digitalSignature: quotation.digital_signature || "",
-    })
-    setTimeout(() => {
-      updateFormData()
-      navigate("/quotations/new")
-    }, 0)
-
+  } catch (error) {
+    Swal.fire("Error!", error.message || "Failed to duplicate quotation", "error");
   }
+};
+
 
   if (loading) {
     return (
@@ -650,7 +633,7 @@ const Quotations = () => {
                                                 <button
                                                   onClick={(e) => {
                                                     e.stopPropagation()
-                                                    handleDuplicateQuotation(quotation)
+                                                    handleDuplicateQuotation(quotation.id)
                                                   }}
                                                   className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                                 >

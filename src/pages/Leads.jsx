@@ -446,7 +446,7 @@ export default function Leads() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          {/* <div className="flex items-center space-x-4">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -470,22 +470,7 @@ export default function Leads() {
               <option>quotation</option>
               <option>social media</option>
             </select>
-
-            {/* <select
-              value={assigneeFilter}
-              onChange={(e) => setAssigneeFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-            >
-              <option>All Assignees</option>
-              <option>u1</option>
-              <option>u2</option>
-            </select> */}
-
-            {/* <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200">
-              <Download className="w-4 h-4" />
-              <span>Export All ({filteredLeads.length})</span>
-            </button> */}
-          </div>
+          </div> */}
         </div>
 
         <p className="text-sm text-gray-500 mt-4">
