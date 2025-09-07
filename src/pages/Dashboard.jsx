@@ -17,7 +17,7 @@ const Dashboard = () => {
         const token = localStorage.getItem("token")
 
         // fetch quotations
-        const qRes = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/", {
+        const qRes = await fetch("https://qms-2h5c.onrender.com/quotations/api/quotations/", {
           headers: { Authorization: `Bearer ${token}` }
         })
         const qData = await qRes.json()
@@ -25,7 +25,7 @@ const Dashboard = () => {
 
 
         // fetch leads
-        const lRes = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/leads/", {
+        const lRes = await fetch("https://qms-2h5c.onrender.com/quotations/api/leads/", {
           headers: { Authorization: `Bearer ${token}` }
         })
         const lData = await lRes.json()

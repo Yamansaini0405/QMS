@@ -32,7 +32,7 @@ export default function AddProduct() {
     const fetchCategories = async () => {
       try {
         const token = localStorage.getItem("token")
-        const res = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/categories/", {
+        const res = await fetch("https://qms-2h5c.onrender.com/quotations/api/categories/", {
           headers: { "Authorization": `Bearer ${token}` }
         })
         const data = await res.json()
@@ -116,7 +116,7 @@ export default function AddProduct() {
       console.log("Sending payload:", payload)
 
       const res = await fetch(
-        "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/products/create/",
+        "https://qms-2h5c.onrender.com/quotations/api/products/create/",
         {
           method: "POST",
           headers: {

@@ -59,8 +59,8 @@ const Login = () => {
     try {
       const apiEndpoint =
         formData.role === "admin"
-          ? "https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/admin/login/"
-          : "https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/salesperson/login/"
+          ? "https://qms-2h5c.onrender.com/accounts/api/admin/login/"
+          : "https://qms-2h5c.onrender.com/accounts/api/salesperson/login/"
 
       const response = await fetch(apiEndpoint, {
         method: "POST",

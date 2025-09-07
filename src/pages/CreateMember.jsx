@@ -130,7 +130,7 @@ export default function CreateMember() {
     console.log(payload)
     setIsLoading(true)
     try {
-      const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/admin/create/", {
+      const response = await fetch("https://qms-2h5c.onrender.com/accounts/api/admin/create/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

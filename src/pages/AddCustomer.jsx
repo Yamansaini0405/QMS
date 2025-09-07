@@ -112,7 +112,7 @@ export default function AddCustomer() {
 
     setIsLoading(true)
     try {
-      const res = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/create/", {
+      const res = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/create/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

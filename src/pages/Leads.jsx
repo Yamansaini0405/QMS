@@ -31,7 +31,7 @@ export default function Leads() {
     const fetchCustomers = async () => {
       try {
         const token = localStorage.getItem("token")
-        const res = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/", {
+        const res = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -63,7 +63,7 @@ export default function Leads() {
         console.log("[v0] Fetching leads from backend...")
         const token = localStorage.getItem("token") // 🔑 get token
 
-        const res = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/leads/", {
+        const res = await fetch("https://qms-2h5c.onrender.com/quotations/api/leads/", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -210,7 +210,7 @@ export default function Leads() {
 
     try {
       // 🔹 call backend API
-      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/leads/${id}/`, {
+      const res = await fetch(`https://qms-2h5c.onrender.com/quotations/api/leads/${id}/`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -252,7 +252,7 @@ export default function Leads() {
   
       try {
         const token = localStorage.getItem("token")
-        const response = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/create/?id=${id}`, {
+        const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/customers/create/?id=${id}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -281,7 +281,7 @@ export default function Leads() {
 
       console.log("[v0] Fetching quotation for lead:", quotationId)
 
-      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/${quotationId}/`, {
+      const res = await fetch(`https://qms-2h5c.onrender.com/quotations/api/quotations/${quotationId}/`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -315,7 +315,7 @@ export default function Leads() {
     }
     console.log("sending payload:", payload)
     try {
-      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/leads/${id}/status/`, {
+      const res = await fetch(`https://qms-2h5c.onrender.com/accounts/api/leads/${id}/status/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

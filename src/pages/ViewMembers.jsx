@@ -26,7 +26,7 @@ export default function ViewMembers() {
   const fetchMembers = async () => {
     try {
       setIsLoading(true)
-      const res = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/users/", {
+      const res = await fetch("https://qms-2h5c.onrender.com/accounts/api/users/", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -63,7 +63,7 @@ export default function ViewMembers() {
 
       const token = localStorage.getItem("token") // if your API requires auth
       const res = await fetch(
-        `https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/users/${memberId}/delete/`,
+        `https://qms-2h5c.onrender.com/accounts/api/users/${memberId}/delete/`,
         {
           method: "DELETE",
           headers: {

@@ -88,7 +88,7 @@ export default function TermEditModal({ term, isOpen, onClose, onSave }) {
       }
 
       // Simulate API call - replace with actual API endpoint
-      const response = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/terms/${termId}/update/`, {
+      const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/terms/${termId}/update/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

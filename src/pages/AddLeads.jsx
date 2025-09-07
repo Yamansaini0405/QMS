@@ -67,7 +67,7 @@ export default function AddLeads() {
     // /api/customers?search=${encodeURIComponent(query)}
     try {
       const token = localStorage.getItem("token")
-      const response = await fetch("https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/customers/", {
+      const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -129,7 +129,7 @@ export default function AddLeads() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/users/",
+        "https://qms-2h5c.onrender.com/accounts/api/users/",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -235,7 +235,7 @@ export default function AddLeads() {
       console.log("Saving lead payload:", payload)
 
       const response = await fetch(
-        "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/leads/create/",
+        "https://qms-2h5c.onrender.com/quotations/api/leads/create/",
         {
           method: "POST",
           headers: {
