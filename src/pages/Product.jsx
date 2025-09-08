@@ -402,9 +402,9 @@ if (!result.isConfirmed) return
                 </th>
                 <th
                   className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("cost_price")}
+                  onClick={() => handleSort("selling_price")}
                 >
-                  Price <SortIcon column="cost_price" />
+                  Price <SortIcon column="selling_price" />
                 </th>
                 <th
                   className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
@@ -463,7 +463,7 @@ if (!result.isConfirmed) return
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm font-medium text-green-600">{product.cost_price}</span>
+                    <span className="text-sm font-medium text-green-600">{product.selling_price}</span>
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-sm text-gray-600">{product.unit}</span>
