@@ -67,7 +67,7 @@ export default function AddLeads() {
     // /api/customers?search=${encodeURIComponent(query)}
     try {
       const token = localStorage.getItem("token")
-      const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/", {
+      const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/all/", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
