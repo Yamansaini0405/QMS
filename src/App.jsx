@@ -18,14 +18,15 @@ import ViewTermsAndCondition from "./pages/ViewTermsAndCondition"
 import ViewMembers from "./pages/ViewMembers"
 // import SalesPersonDashboard from "./pages/SalesPersonDashboard"
 import AddLeads from "./pages/AddLeads"
-import Profile from "./pages/Profile"
 import { QuotationProvider } from "./contexts/QuotationContext"
+import ProfilePage from "./pages/ProfilePage"
+
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/profile" element={<Profile />} />
+      
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route
         path="/*"
@@ -51,6 +52,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              
               <Route path="/quotations/new" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><NewQuotationPage /></ProtectedRoute>} />
               <Route path="/quotations/edit/:id" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><NewQuotationPage /></ProtectedRoute>} />
               <Route path="/customers/create" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><AddCustomer /></ProtectedRoute>} />
@@ -63,18 +65,8 @@ function App() {
               <Route path="/members/create" element={<ProtectedRoute allowedRoles={["ADMIN"]}><CreateMember /></ProtectedRoute>} />
               <Route path="/terms" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ViewTermsAndCondition /></ProtectedRoute>} />
               <Route path="/members" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ViewMembers /></ProtectedRoute>} /> 
+              <Route path="/profile" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><ProfilePage /></ProtectedRoute>} /> 
               {/* ...other admin routes... */}
-
-              {/* Salesperson-only routes */}
-              {/* <Route
-                path="/salesperson"
-                element={
-                  <ProtectedRoute allowedRoles={["SALESPERSON"]}>
-                    <SalesPersonDashboard />
-                  </ProtectedRoute>
-                }
-              /> */}
-              {/* ...other salesperson routes... */}
             </Routes>
           </Layout>
         }

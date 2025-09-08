@@ -223,7 +223,7 @@ const Login = () => {
 
         {/* Footer */}
         <div className="text-center mt-6">
-          <p className="text-sm text-gray-500">© 2024 Quotation Management System. All rights reserved.</p>
+          <p className="text-sm text-gray-500">© 2025 Quotation Management System. All rights reserved.</p>
         </div>
       </div>
     </div>
