@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trash2,Building2 } from "lucide-react"
+import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trash2, Building2 } from "lucide-react"
 import LeadViewModal from "../components/LeadViewModal"
-import {Link} from "react-router-dom"
+import { Link } from "react-router-dom"
 import QuotationEditModal from "@/components/QuotationEditModel"
 import Swal from "sweetalert2"
 import CustomerViewModal from "@/components/CustomerViewModal"
+import * as XLSX from "xlsx"
 
 
 export default function Leads() {
@@ -22,6 +23,8 @@ export default function Leads() {
   const [editQuotationOpen, setEditQuotationOpen] = useState(false)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
+  const [leadSortConfig, setLeadSortConfig] = useState({ key: null, direction: "asc" })
+
   const [selectedCustomer, setSelectedCustomer] = useState(null)
 
   const [customers, setCustomers] = useState([])
@@ -127,13 +130,24 @@ export default function Leads() {
     ,
   ]
 
-  const handleSort = (key) => {
+  const handleSortLead = (key) => {
     let direction = "asc"
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
+    if (leadSortConfig.key === key && leadSortConfig.direction === "asc") {
       direction = "desc"
     }
-    setSortConfig({ key, direction })
+    setLeadSortConfig({ key, direction })
   }
+
+  const LeadSortIcon = ({ column }) => {
+    if (leadSortConfig.key !== column) return null
+    return leadSortConfig.direction === "asc" ? (
+      <ArrowUp className="inline w-3 h-3 ml-1" />
+    ) : (
+      <ArrowDown className="inline w-3 h-3 ml-1" />
+    )
+  }
+
+
 
   const SortIcon = ({ column }) => {
     if (sortConfig.key !== column) return null
@@ -144,44 +158,70 @@ export default function Leads() {
     )
   }
 
-  const sortedLeads = [...leads].sort((a, b) => {
-    if (!sortConfig.key) return 0
-    let valueA, valueB
-
-    if (sortConfig.key === "customer_name") {
-      valueA = a.customer?.name ?? ""
-      valueB = b.customer?.name ?? ""
-    } else if (sortConfig.key === "company_name") {
-      valueA = a.customer?.company_name ?? ""
-      valueB = b.customer?.company_name ?? ""
-    } else if (sortConfig.key === "assigned_to_name") {
-      valueA = a.assigned_to?.name ?? ""
-      valueB = b.assigned_to?.name ?? ""
-    } else {
-      valueA = a[sortConfig.key] ?? ""
-      valueB = b[sortConfig.key] ?? ""
+  const handleSortCust = (key) => {
+    let direction = "asc"
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc"
     }
-
+    setSortConfig({ key, direction })
+  }
+  const sortedCustomers = [...customers].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    const valueA = a[sortConfig.key] ?? ""
+    const valueB = b[sortConfig.key] ?? ""
     if (valueA < valueB) return sortConfig.direction === "asc" ? -1 : 1
     if (valueA > valueB) return sortConfig.direction === "asc" ? 1 : -1
     return 0
   })
 
-  const filteredLeads = sortedLeads.filter((lead) => {
-    const matchesSearch =
-      lead.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.customer?.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCustomers = sortedCustomers.filter(
+    (customer) =>
+      customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.company?.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
-    const matchesStatus = statusFilter === "All Status" || lead.status === statusFilter.toUpperCase()
+  const sortedLeads = (leads) => {
+    return [...leads].sort((a, b) => {
+      if (!leadSortConfig.key) return 0
+      let valueA, valueB
 
-    const matchesSource = sourceFilter === "All Sources" || lead.source?.toLowerCase() === sourceFilter.toLowerCase()
+      if (leadSortConfig.key === "customer") {
+        valueA = a.customer?.name ?? ""
+        valueB = b.customer?.name ?? ""
+      } else if (leadSortConfig.key === "company") {
+        valueA = a.customer?.company_name ?? ""
+        valueB = b.customer?.company_name ?? ""
+      } else if (leadSortConfig.key === "assignee") {
+        valueA = a.assigned_to?.name ?? ""
+        valueB = b.assigned_to?.name ?? ""
+      } else {
+        valueA = a[leadSortConfig.key] ?? ""
+        valueB = b[leadSortConfig.key] ?? ""
+      }
 
-    const matchesAssignee =
-      assigneeFilter === "All Assignees" || lead.assigned_to?.name?.toLowerCase() === assigneeFilter.toLowerCase()
+      if (valueA < valueB) return leadSortConfig.direction === "asc" ? -1 : 1
+      if (valueA > valueB) return leadSortConfig.direction === "asc" ? 1 : -1
+      return 0
+    })
+  }
 
-    return matchesSearch && matchesStatus && matchesSource && matchesAssignee
-  })
+
+  // const filteredLeads = sortedLeads.filter((lead) => {
+  //   const matchesSearch =
+  //     lead.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     lead.customer?.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
+
+  //   const matchesStatus = statusFilter === "All Status" || lead.status === statusFilter.toUpperCase()
+
+  //   const matchesSource = sourceFilter === "All Sources" || lead.source?.toLowerCase() === sourceFilter.toLowerCase()
+
+  //   const matchesAssignee =
+  //     assigneeFilter === "All Assignees" || lead.assigned_to?.name?.toLowerCase() === assigneeFilter.toLowerCase()
+
+  //   return matchesSearch && matchesStatus && matchesSource && matchesAssignee
+  // })
 
   const handleViewLead = (lead) => {
     console.log("[v0] Opening view modal for lead:", lead.customer_name)
@@ -211,14 +251,14 @@ export default function Leads() {
     try {
       // 🔹 call backend API
       Swal.fire({
-              title: "Deleting...",
-              text: "Please wait while we delete your Lead.",
-              allowOutsideClick: false,
-              didOpen: () => {
-                Swal.showLoading()
-              },
-            })
-      
+        title: "Deleting...",
+        text: "Please wait while we delete your Lead.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
+
       const res = await fetch(`https://qms-2h5c.onrender.com/quotations/api/leads/${id}/`, {
         method: "DELETE",
         headers: {
@@ -246,44 +286,6 @@ export default function Leads() {
 
     }
   }
-
-   const handleDeleteCustomer = async (id) => {
-     const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "This customer will be permanently deleted!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    })
-  
-    if (!result.isConfirmed) return
-  
-      try {
-        const token = localStorage.getItem("token")
-        const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/customers/create/?id=${id}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-  
-        if (!response.ok) {
-          throw new Error(`Failed to delete customer: ${response.statusText}`)
-        }
-  
-        // ✅ Update local state so UI reflects the deletion
-        setCustomers((prev) => prev.filter((customer) => customer.id !== id))
-  
-        Swal.fire("Deleted!", "The customer has been deleted.", "success")
-  
-      } catch (error) {
-        console.error("❌ Error deleting customer:", error)
-        Swal.fire("Error!", "Failed to delete customer. Please try again.", "error")
-  
-      }
-    }
 
   const handleCreateQuotation = async (quotationId) => {
     try {
@@ -316,7 +318,7 @@ export default function Leads() {
 
   const handleStatusChange = async (lead, id, newStatus) => {
     const payload = {
-      id:id,
+      id: id,
       // customer_name: lead.customer.name,
       // customer_email: lead.customer.email,
       // customer_phone: lead.customer.phone,
@@ -326,13 +328,13 @@ export default function Leads() {
     console.log("sending payload:", payload)
     try {
       Swal.fire({
-      title: "Updating...",
-      text: "Please wait while we update your Lead status.",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading()
-      },
-    })
+        title: "Updating...",
+        text: "Please wait while we update your Lead status.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
       const res = await fetch(`https://qms-2h5c.onrender.com/accounts/api/leads/${id}/status/`, {
         method: "PUT",
         headers: {
@@ -393,6 +395,45 @@ export default function Leads() {
     setViewModalOpen(true)
   }
 
+  const handleExportExcel = () => {
+  if (!filteredCustomers.length) {
+    Swal.fire("No Leads to export", "No leads found for filtered customers", "warning")
+    return
+  }
+
+  // Flatten leads for all filtered customers
+  const exportData = []
+  filteredCustomers.forEach((c, cIndex) => {
+    if (c.leads && c.leads.length > 0) {
+      c.leads.forEach((lead, lIndex) => {
+        exportData.push({
+          "S.No.": exportData.length + 1,
+          Customer: c.name,
+          Company: c.company_name || "",
+          Email: c.email || "",
+          Phone: c.phone || "",
+          LeadStatus: lead.status || "",
+          LeadSource: lead.lead_source || "",
+          Assignee: lead.assigned_to?.name || "Unassigned",
+          CreatedAt: lead.created_at ? lead.created_at.split("T")[0] : "",
+        })
+      })
+    }
+  })
+
+  if (!exportData.length) {
+    Swal.fire("No Leads", "Filtered customers have no leads to export", "info")
+    return
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Leads")
+
+  XLSX.writeFile(workbook, "leads.xlsx")
+}
+
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -419,10 +460,10 @@ export default function Leads() {
           </div>
         </div>
         <Link to="/leads/create">
-        <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
-          <span className="text-lg">+</span>
-          <span>New Lead</span>
-        </button>
+          <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
+            <span className="text-lg">+</span>
+            <span>New Lead</span>
+          </button>
         </Link>
       </div>
 
@@ -451,7 +492,7 @@ export default function Leads() {
         </div>
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 md:space-x-4">
-          <div className="flex-1">
+          <div className="flex justify-center items-center">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -459,8 +500,18 @@ export default function Leads() {
                 placeholder="Search leads..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                className="w-[60rem] pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 mr-4"
               />
+              
+            </div>
+            <div>
+              <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              onClick={() => handleExportExcel()}>
+              <Download className="w-4 h-4" />
+              <span>Export All {filteredCustomers.reduce((count, customer) => {
+  return count + (customer.leads ? customer.leads.length : 0)
+}, 0)}</span>
+            </button>
             </div>
           </div>
 
@@ -491,9 +542,9 @@ export default function Leads() {
           </div> */}
         </div>
 
-        <p className="text-sm text-gray-500 mt-4">
+        {/* <p className="text-sm text-gray-500 mt-4">
           Showing {filteredLeads.length} of {totalLeads} leads
-        </p>
+        </p> */}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -502,151 +553,206 @@ export default function Leads() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Customer</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Company</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Email</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Phone</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSortCust("name")}>
+                  Customer <SortIcon column="name" />
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSortCust("company")}>
+                  Company <SortIcon column="company" />
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSortCust("email")}>
+                  Email <SortIcon column="email" />
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  onClick={() => handleSortCust("phone")}>
+                  Phone <SortIcon column="phone" />
+                </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {customers
-              .filter((c) => c.leads && c.leads.length > 0)
-              .map((customer, index) => (
-                <>
-                  {/* Customer Row */}
-                  <tr key={customer.id} className="hover:bg-gray-50 transition-colors duration-200">
-                    
-                    <td className="px-6 py-4 text-gray-600">{index+1}</td>
-                    <td className="px-6 py-4 font-medium text-gray-900 flex items-center justify-start gap-2"><div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+              {filteredCustomers
+                .filter((c) => c.leads && c.leads.length > 0)
+                .map((customer, index) => (
+                  <>
+                    {/* Customer Row */}
+                    <tr key={customer.id} className="hover:bg-gray-50 transition-colors duration-200">
+
+                      <td className="px-6 py-4 text-gray-600">{index + 1}</td>
+                      <td className="px-6 py-4 font-medium text-gray-900 flex items-center justify-start gap-2"><div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
                         <Users className="w-4 h-4 text-white" />
                       </div>{customer.name}</td>
-                    <td className="px-6 py-4 text-gray-700 "><div className="flex  items-center justify-start gap-2"><Building2 className="w-4 h-4 text-gray-400" />{customer.company_name}</div></td>
-                    <td className="px-6 py-4 text-gray-600">{customer.email}</td>
-                    <td className="px-6 py-4 text-gray-600">{customer.phone}</td>
-                  
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => toggleExpand(customer.id)}
-                        className="text-gray-500 hover:text-gray-800"
-                      >
-                        {expandedCustomer === customer.id ? (
-                          <ChevronDown className="w-5 h-5" />
-                        ) : (
-                          <ChevronRight className="w-5 h-5" />
-                        )}
-                      </button>
-                    </td>
-                  </tr>
+                      <td className="px-6 py-4 text-gray-700 "><div className="flex  items-center justify-start gap-2"><Building2 className="w-4 h-4 text-gray-400" />{customer.company_name}</div></td>
+                      <td className="px-6 py-4 text-gray-600">{customer.email}</td>
+                      <td className="px-6 py-4 text-gray-600">{customer.phone}</td>
 
-                  {/* Expanded Leads Sublist */}
-                  {expandedCustomer === customer.id && (
-                    
-                    <tr className="bg-gray-50">
-                      <td colSpan={6} className="px-6 py-4">
-                        { customer.leads.length > 0 ? (
-                          <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
-                            <thead className="bg-gray-200">
-                              <tr className="">
-                                <th className="px-4 py-3 text-left">Lead</th>
-                                <th className="px-4 py-3 text-left">Company</th>
-                                <th className="px-4 py-3 text-left">Status</th>
-                                <th className="px-4 py-3 text-left">Source</th>
-                                <th className="px-4 py-3 text-left">Assignee</th>
-                                <th className="px-4 py-3 text-left">Created</th>
-                                <th className="px-4 py-3 text-left">Quotation</th>
-                                <th className="px-4 py-3 text-left">Actions</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {customer.leads.map((lead) => (
-                                <tr key={lead.id} className="border-t hover:bg-white">
-                                  {/* Lead Name */}
-                                  <td className="px-4 py-2 font-medium text-gray-900">
-                                    {customer.name}
-                                  </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => toggleExpand(customer.id)}
+                          className="text-gray-500 hover:text-gray-800"
+                        >
+                          {expandedCustomer === customer.id ? (
+                            <ChevronDown className="w-5 h-5" />
+                          ) : (
+                            <ChevronRight className="w-5 h-5" />
+                          )}
+                        </button>
+                      </td>
+                    </tr>
 
-                                  {/* Company */}
-                                  <td className="px-4 py-2 text-gray-700">
-                                    {customer.company_name}
-                                  </td>
+                    {/* Expanded Leads Sublist */}
+                    {expandedCustomer === customer.id && (
 
-                                  {/* Status with Dropdown */}
-                                  <td className="px-4 py-2">
-                                    <select
-                                      value={lead.status}
-                                      onChange={(e) => handleStatusChange(lead, lead.id, e.target.value)}
-                                      className="border rounded px-2 py-1 text-sm"
-                                    >
-                                      <option value="NEW">New</option>
-                                      <option value="PENDING">Pending</option>
-                                      <option value="QUALIFIED">Qualified</option>
-                                      <option value="CONVERTED">Converted</option>
-                                    </select>
-                                  </td>
+                      <tr className="bg-gray-50">
+                        <td colSpan={6} className="px-6 py-4">
+                          {customer.leads.length > 0 ? (
+                            <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+                              <thead className="bg-gray-200">
+                                <tr>
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer"
+                                    onClick={() => handleSortLead("name")}
+                                  >
+                                    Lead <LeadSortIcon column="name" />
+                                  </th>
 
-                                  {/* Source */}
-                                  <td className="px-4 py-2">{lead.lead_source || "-"}</td>
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer"
+                                    onClick={() => handleSortLead("company")}
+                                  >
+                                    Company <LeadSortIcon column="company" />
+                                  </th>
 
-                                  {/* Assignee */}
-                                  <td className="px-4 py-2">{lead.assigned_to?.name || "Unassigned"}</td>
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer"
+                                    onClick={() => handleSortLead("status")}
+                                  >
+                                    Status <LeadSortIcon column="status" />
+                                  </th>
 
-                                  {/* Created Date */}
-                                  <td className="px-4 py-2">
-                                    {new Date(lead.created_at).toLocaleDateString()}
-                                  </td>
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer"
+                                    onClick={() => handleSortLead("lead_source")}
+                                  >
+                                    Source <LeadSortIcon column="lead_source" />
+                                  </th>
 
-                                  {/* Quotation Column */}
-                                  <td className="px-4 py-2">
-                                    {lead.file_url ? (
-                                      <a
-                                        href={lead.file_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-white hover:underline bg-orange-700 px-2 py-1 rounded-lg"
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer"
+                                    onClick={() => handleSortLead("assignee")}
+                                  >
+                                    Assignee <LeadSortIcon column="assignee" />
+                                  </th>
+
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer"
+                                    onClick={() => handleSortLead("created_at")}
+                                  >
+                                    Created <LeadSortIcon column="created_at" />
+                                  </th>
+
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer"
+                                    onClick={() => handleSortLead("quotation")}
+                                  >
+                                    Quotation <LeadSortIcon column="quotation" />
+                                  </th>
+
+                                  <th className="px-4 py-3 text-left">Actions</th>
+                                </tr>
+
+                              </thead>
+                              <tbody>
+                                {sortedLeads(customer.leads).map((lead) => (
+                                  <tr key={lead.id} className="border-t hover:bg-white">
+                                    {/* Lead Name */}
+                                    <td className="px-4 py-2 font-medium text-gray-900">
+                                      {customer.name}
+                                    </td>
+
+                                    {/* Company */}
+                                    <td className="px-4 py-2 text-gray-700">
+                                      {customer.company_name}
+                                    </td>
+
+                                    {/* Status with Dropdown */}
+                                    <td className="px-4 py-2">
+                                      <select
+                                        value={lead.status}
+                                        onChange={(e) => handleStatusChange(lead, lead.id, e.target.value)}
+                                        className="border rounded px-2 py-1 text-sm"
                                       >
-                                        Download
-                                      </a>
-                                    ) : (
-                                      <button
-                                        onClick={() => handleCreateQuotation(lead.quotation)}
-                                        className="text-white hover:underline bg-green-700 px-2 py-1 rounded-lg   "
-                                      >
-                                        Create
-                                      </button>
-                                    )}
-                                  </td>
+                                        <option value="NEW">New</option>
+                                        <option value="PENDING">Pending</option>
+                                        <option value="QUALIFIED">Qualified</option>
+                                        <option value="CONVERTED">Converted</option>
+                                      </select>
+                                    </td>
 
-                                  {/* Actions */}
-                                  <td className="px-4 py-2 flex space-x-2">
-                                    {/* <button
+                                    {/* Source */}
+                                    <td className="px-4 py-2">{lead.lead_source || "-"}</td>
+
+                                    {/* Assignee */}
+                                    <td className="px-4 py-2">{lead.assigned_to?.name || "Unassigned"}</td>
+
+                                    {/* Created Date */}
+                                    <td className="px-4 py-2">
+                                      {new Date(lead.created_at).toLocaleDateString()}
+                                    </td>
+
+                                    {/* Quotation Column */}
+                                    <td className="px-4 py-2">
+                                      {lead.file_url ? (
+                                        <a
+                                          href={lead.file_url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-white hover:underline bg-orange-700 px-2 py-1 rounded-lg"
+                                        >
+                                          Download
+                                        </a>
+                                      ) : (
+                                        <button
+                                          onClick={() => handleCreateQuotation(lead.quotation)}
+                                          className="text-white hover:underline bg-green-700 px-2 py-1 rounded-lg   "
+                                        >
+                                          Create
+                                        </button>
+                                      )}
+                                    </td>
+
+                                    {/* Actions */}
+                                    <td className="px-4 py-2 flex space-x-2">
+                                      {/* <button
                                       onClick={() => handleViewLead(customer, lead)}
                                       className="p-1 text-gray-400 hover:text-orange-600"
                                       title="View Lead"
                                     >
                                       <Eye className="w-4 h-4" />
                                     </button> */}
-                                    <button
-                                      onClick={() => handleDeleteLead(lead.id)}
-                                      className="p-1 text-gray-400 hover:text-red-600"
-                                      title="Delete Lead"
-                                    >
-                                      <Trash className="w-4 h-4" />
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        ) : (
-                          <p className="text-gray-500">No leads found for this customer.</p>
-                        )}
-                      </td>
-                    </tr>
-                  )}
+                                      <button
+                                        onClick={() => handleDeleteLead(lead.id)}
+                                        className="p-1 text-gray-400 hover:text-red-600"
+                                        title="Delete Lead"
+                                      >
+                                        <Trash className="w-4 h-4" />
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          ) : (
+                            <p className="text-gray-500">No leads found for this customer.</p>
+                          )}
+                        </td>
+                      </tr>
+                    )}
 
-                </>
-              ))}
+                  </>
+                ))}
             </tbody>
           </table>
         </div>

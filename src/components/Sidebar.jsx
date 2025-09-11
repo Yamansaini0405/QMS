@@ -52,6 +52,7 @@ const Sidebar = () => {
       subItems: [
         { title: "Create Quotation", path: "/quotations/new", icon: Plus },
         { title: "All Quotations", path: "/quotations", icon: Eye },
+        { title: "List of Quotations", path: "/quotations/all", icon: Eye },
       ],
     },
     {

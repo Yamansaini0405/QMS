@@ -320,14 +320,14 @@ const Quotations = () => {
     }
 
     try {
-      Swal.fire({
-      title: "Exporting...",
-      text: "Please wait while we export your all quotation.",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading()
-      },
-    })
+    //   Swal.fire({
+    //   title: "Exporting...",
+    //   text: "Please wait while we export your all quotation.",
+    //   allowOutsideClick: false,
+    //   didOpen: () => {
+    //     Swal.showLoading()
+    //   },
+    // })
 
 
       const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/merge/", {

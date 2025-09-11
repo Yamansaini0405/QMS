@@ -6,7 +6,7 @@ import CustomerViewModal from "@/components/CustomerViewModal"
 import CustomerEditModal from "@/components/CustomerEditModal"
 import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
-
+import * as XLSX from "xlsx"
 
 export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -112,9 +112,9 @@ export default function CustomersPage() {
 
   const filteredCustomers = sortedCustomers.filter(
     (customer) =>
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.company.toLowerCase().includes(searchTerm.toLowerCase()),
+      customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.company?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   const handleViewCustomer = (customer) => {
@@ -181,6 +181,32 @@ export default function CustomersPage() {
 
     }
   }
+
+ const handleExportExcel = () => {
+  if (!customers.length) {
+    Swal.fire("No Customers to export", "Please add customers to export", "warning")
+    return
+  }
+
+  // Map only required fields for export
+  const exportData = filteredCustomers.map((c, index) => ({
+    "S.No.": index + 1,
+    Name: c.name,
+    Company: c.company_name || "",
+    Email: c.email || "",
+    Phone: c.phone || "",
+    Address: c.primary_address || "",
+    "Created At": c.created_at ? c.created_at.split("T")[0] : "",
+  }))
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Customers")
+
+  XLSX.writeFile(workbook, "customers.xlsx")
+}
+
+
 
   if (loading) {
     return (
@@ -254,6 +280,13 @@ export default function CustomersPage() {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
               />
             </div>
+          </div>
+          <div>
+            <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              onClick={() => handleExportExcel()}>
+              <Download className="w-4 h-4" />
+              <span>Export All {filteredCustomers.length}</span>
+            </button>
           </div>
 
 

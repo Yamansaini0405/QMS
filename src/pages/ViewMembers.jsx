@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { UserCog, Plus, Search, Filter, Download, Trash2, ArrowUp, ArrowDown } from "lucide-react"
+import { UserCog, Plus, Search, Filter, Download, Trash2, ArrowUp, ArrowDown, ArrowLeftRight } from "lucide-react"
 import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
 
@@ -46,57 +46,57 @@ export default function ViewMembers() {
     fetchMembers()
   }, [])
 
-    const handleDeleteMember = async (memberId) => {
-  const result = await Swal.fire({
-    title: "Are you sure?",
-    text: "This member will be permanently deleted!",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
-    confirmButtonText: "Yes, delete it!",
-  })
-
-  if (result.isConfirmed) {
-    try {
-
-      Swal.fire({
-      title: "Deleting...",
-      text: "Please wait while we delete your Member.",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading()
-      },
+  const handleDeleteMember = async (memberId) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This member will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
     })
 
-      console.log("[v0] Deleting member:", memberId)
+    if (result.isConfirmed) {
+      try {
 
-      const token = localStorage.getItem("token") // if your API requires auth
-      const res = await fetch(
-        `https://qms-2h5c.onrender.com/accounts/api/users/${memberId}/delete/`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token && { Authorization: `Bearer ${token}` }),
+        Swal.fire({
+          title: "Deleting...",
+          text: "Please wait while we delete your Member.",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading()
           },
+        })
+
+        console.log("[v0] Deleting member:", memberId)
+
+        const token = localStorage.getItem("token") // if your API requires auth
+        const res = await fetch(
+          `https://qms-2h5c.onrender.com/accounts/api/users/${memberId}/delete/`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+          }
+        )
+
+        if (!res.ok) {
+          throw new Error("Failed to delete member")
         }
-      )
 
-      if (!res.ok) {
-        throw new Error("Failed to delete member")
+        // ✅ Update UI only after successful deletion
+        setMembers((prev) => prev.filter((member) => member.id !== memberId))
+
+        Swal.fire("Deleted!", "Member deleted successfully.", "success")
+      } catch (error) {
+        console.error("[v0] Error deleting member:", error)
+        Swal.fire("Error!", "Failed to delete member. Please try again.", "error")
       }
-
-      // ✅ Update UI only after successful deletion
-      setMembers((prev) => prev.filter((member) => member.id !== memberId))
-
-      Swal.fire("Deleted!", "Member deleted successfully.", "success")
-    } catch (error) {
-      console.error("[v0] Error deleting member:", error)
-      Swal.fire("Error!", "Failed to delete member. Please try again.", "error")
     }
   }
-}
 
 
 
@@ -127,6 +127,59 @@ export default function ViewMembers() {
 
     return matchesSearch && matchesStatus && matchesRole && matchesDepartment
   })
+
+  const handleToggleRole = async (memberId, role) => {
+    const result = await Swal.fire({
+      title: "Change Role?",
+      text: "Do you want to toggle this member's role?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, change it",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#4f46e5",
+      cancelButtonColor: "#6b7280",
+    })
+
+    if (result.isConfirmed) {
+      try {
+        Swal.fire({
+          title: "Updating...",
+          text: "Please wait while we update the role.",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading()
+          },
+        })
+
+        const token = localStorage.getItem("token")
+        const res = await fetch(
+          `https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/${memberId}/toggleUser/`,
+          {
+            method: "POST",
+            headers: {
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+          }
+        )
+
+        if (!res.ok) {
+          throw new Error("Failed to toggle role")
+        }
+
+        const updated = await res.json()
+        
+        setMembers((prev) =>
+          prev.map((m) => (m.id === memberId ? { ...m, role: role=== "ADMIN" ? "SALESPERSON" : "ADMIN" } : m))
+        )
+
+        Swal.fire("Updated!", `Role changed to ${updated.role}`, "success")
+      } catch (error) {
+        console.error("[v0] Error toggling role:", error)
+        Swal.fire("Error!", "Failed to toggle role. Please try again.", "error")
+      }
+    }
+  }
+
 
   if (isLoading) {
     return (
@@ -266,8 +319,8 @@ export default function ViewMembers() {
                   <td className="py-4 px-6">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${member.role === "SALESPERSON"
-                          ? "bg-purple-100 text-purple-800"
-                          : "bg-blue-100 text-blue-800"
+                        ? "bg-purple-100 text-purple-800"
+                        : "bg-blue-100 text-blue-800"
                         }`}
                     >
                       {member.role}
@@ -285,6 +338,13 @@ export default function ViewMembers() {
                   <td className="py-4 px-6 text-gray-900">{member.date_joined.split("T")[0]}</td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleToggleRole(member.id, member.role)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Toggle Role"
+                      >
+                        <ArrowLeftRight className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleDeleteMember(member.id)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"

@@ -20,6 +20,7 @@ import ViewMembers from "./pages/ViewMembers"
 import AddLeads from "./pages/AddLeads"
 import { QuotationProvider } from "./contexts/QuotationContext"
 import ProfilePage from "./pages/ProfilePage"
+import AllQuotations from "./pages/AllQuotations"
 
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
                 }
               />
               
+              <Route path="/quotations/all" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AllQuotations /></ProtectedRoute>} />
               <Route path="/quotations/new" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><NewQuotationPage /></ProtectedRoute>} />
               <Route path="/quotations/edit/:id" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><NewQuotationPage /></ProtectedRoute>} />
               <Route path="/customers/create" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><AddCustomer /></ProtectedRoute>} />

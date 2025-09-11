@@ -503,7 +503,7 @@ export default function AddLeads() {
                 >
                   <option value="WEBSITE">Website</option>
                   <option value="REFERRAL">Referral</option>
-                  <option value="SOCIALMEDIA">Social Media</option>
+                  <option value="SOCIAL_MEDIA">Social Media</option>
                   <option value="QUOTATION">Quotation</option>
                 </select>
               </div>
