@@ -344,6 +344,7 @@ const Quotations = () => {
       }
 
       const data = await response.json()
+      Swal.fire("Exported!!", "All Quotation are successfully exported", "success")
 
       if (data.final_url) {
         window.open(data.final_url, "_blank")
@@ -657,7 +658,7 @@ const handleDuplicateQuotation = async (id) => {
 
                                           {/* Dropdown Menu */}
                                           {openDropdown === quotation.id && (
-                                            <div className="z-10 absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[160px]">
+                                            <div className="z-10 absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px]">
                                               <div className="py-1">
                                                 <button
                                                   onClick={(e) => {

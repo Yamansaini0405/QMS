@@ -59,6 +59,7 @@ const Dashboard = () => {
       color: "border-l-purple-500",
       bgColor: "bg-purple-50",
       iconColor: "text-purple-600",
+      url:"/quotations"
     },
     {
       title: "Pending Quotations",
@@ -68,6 +69,7 @@ const Dashboard = () => {
       color: "border-l-amber-500",
       bgColor: "bg-amber-50",
       iconColor: "text-amber-600",
+      url:"/quotations"
     },
     {
       title: "Total Revenue",
@@ -77,6 +79,7 @@ const Dashboard = () => {
       color: "border-l-emerald-500",
       bgColor: "bg-emerald-50",
       iconColor: "text-emerald-600",
+      url:"/dashboard"
     },
     {
       title: "Active Leads",
@@ -86,6 +89,7 @@ const Dashboard = () => {
       color: "border-l-blue-500",
       bgColor: "bg-blue-50",
       iconColor: "text-blue-600",
+      url:"/leads"
     },
   ]
 
@@ -111,10 +115,13 @@ if (loading) return <DashboardSkeleton />
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
+          
+          
           <div
             key={index}
             className={`bg-white rounded-xl shadow-sm border-l-4 ${stat.color} p-6 hover:shadow-md transition-shadow duration-200`}
           >
+            <Link to={stat.url}>
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
@@ -125,7 +132,10 @@ if (loading) return <DashboardSkeleton />
                 <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
               </div>
             </div>
+             </Link>
           </div>
+          
+         
         ))}
       </div>
 

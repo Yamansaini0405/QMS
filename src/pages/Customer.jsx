@@ -171,7 +171,6 @@ export default function CustomersPage() {
         throw new Error(`Failed to delete customer: ${response.statusText}`)
       }
 
-      // ✅ Update local state so UI reflects the deletion
       setCustomers((prev) => prev.filter((customer) => customer.id !== id))
 
       Swal.fire("Deleted!", "The customer has been deleted.", "success")
@@ -352,13 +351,13 @@ export default function CustomersPage() {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button
+                      {localStorage.getItem("role") == "ADMIN" ? <button
                         onClick={() => handleDeleteCustomer(cust.id)}
                         className="p-1 text-red-600 transition-colors duration-200"
                         title="Delete Customer"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </button> : ""}
                     </div>
                   </td>
                 </tr>
