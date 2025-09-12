@@ -160,7 +160,7 @@ export const QuotationProvider = ({ children }) => {
                         id: item.product.id,
                         name: item.product.name,
                         quantity: item.quantity,
-                        selling_price: item.unit_price,
+                        selling_price: item.unit_price|| "",
                         percentage_discount: item.discount || 0,
                     })) || [],
                     subtotal: data.data.subtotal || "0.00",
@@ -251,6 +251,7 @@ export const QuotationProvider = ({ children }) => {
     // Create Quotation handler
     const createQuotation = async () => {
         setIsGeneratingPDF(true)
+        
         try {
 
             if (!validateForm()) {
@@ -290,7 +291,7 @@ export const QuotationProvider = ({ children }) => {
                             product: id,
                             name: p.name,
                             quantity: p.quantity,
-                            unit_price: p.selling_price ? Number(p.selling_price) : 0,
+                            unit_price: p.selling_price ? Number(p.selling_price) : "",
                             discount: p.percentage_discount ? Number(p.percentage_discount) : 0,
                         };
                     } else {
@@ -328,7 +329,7 @@ export const QuotationProvider = ({ children }) => {
             console.log("Creating quotation with payload:", payload);
 
             const response = await fetch(
-                "https://qms-2h5c.onrender.com/quotations/api/quotations/create/",
+                "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/",
                 {
                     method: id ? "PUT" : "POST",
                     headers: {

@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { UserCog, Plus, Search, Filter, Download, Trash2, ArrowUp, ArrowDown, ArrowLeftRight } from "lucide-react"
+import { UserCog, Plus, Search, Filter, Trash2, ArrowUp, ArrowDown, ArrowLeftRight, BarChart3 } from "lucide-react"
 import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
+import PerformanceModal from "@/components/PerformanceModal"
 
 
 export default function ViewMembers() {
@@ -14,6 +15,8 @@ export default function ViewMembers() {
   const [isLoading, setIsLoading] = useState(true)
   const [members, setMembers] = useState([])
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" }) // sorting state
+  const [showPerformanceModal, setShowPerformanceModal] = useState(false)
+  const [selectedMember, setSelectedMember] = useState(null)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -59,7 +62,6 @@ export default function ViewMembers() {
 
     if (result.isConfirmed) {
       try {
-
         Swal.fire({
           title: "Deleting...",
           text: "Please wait while we delete your Member.",
@@ -72,16 +74,13 @@ export default function ViewMembers() {
         console.log("[v0] Deleting member:", memberId)
 
         const token = localStorage.getItem("token") // if your API requires auth
-        const res = await fetch(
-          `https://qms-2h5c.onrender.com/accounts/api/users/${memberId}/delete/`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token && { Authorization: `Bearer ${token}` }),
-            },
-          }
-        )
+        const res = await fetch(`https://qms-2h5c.onrender.com/accounts/api/users/${memberId}/delete/`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        })
 
         if (!res.ok) {
           throw new Error("Failed to delete member")
@@ -97,8 +96,6 @@ export default function ViewMembers() {
       }
     }
   }
-
-
 
   const handleSort = (key) => {
     let direction = "asc"
@@ -152,24 +149,21 @@ export default function ViewMembers() {
         })
 
         const token = localStorage.getItem("token")
-        const res = await fetch(
-          `https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/${memberId}/toggleUser/`,
-          {
-            method: "POST",
-            headers: {
-              ...(token && { Authorization: `Bearer ${token}` }),
-            },
-          }
-        )
+        const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/${memberId}/toggleUser/`, {
+          method: "POST",
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        })
 
         if (!res.ok) {
           throw new Error("Failed to toggle role")
         }
 
         const updated = await res.json()
-        
+
         setMembers((prev) =>
-          prev.map((m) => (m.id === memberId ? { ...m, role: role=== "ADMIN" ? "SALESPERSON" : "ADMIN" } : m))
+          prev.map((m) => (m.id === memberId ? { ...m, role: role === "ADMIN" ? "SALESPERSON" : "ADMIN" } : m)),
         )
 
         Swal.fire("Updated!", `Role changed to ${updated.role}`, "success")
@@ -180,6 +174,10 @@ export default function ViewMembers() {
     }
   }
 
+  const handleViewPerformance = (member) => {
+    setSelectedMember(member)
+    setShowPerformanceModal(true)
+  }
 
   if (isLoading) {
     return (
@@ -256,7 +254,6 @@ export default function ViewMembers() {
           <p className="text-sm text-gray-600">
             Showing {filteredMembers.length} of {members.length} members
           </p>
-
         </div>
       </div>
 
@@ -268,7 +265,7 @@ export default function ViewMembers() {
               <tr>
                 <th
                   className="text-left py-3 px-6 font-medium text-gray-900 cursor-pointer"
-                // onClick={() => handleSort("id")}
+                  // onClick={() => handleSort("id")}
                 >
                   SNo. <SortIcon column="id" />
                 </th>
@@ -300,7 +297,8 @@ export default function ViewMembers() {
                   className="text-left py-3 px-6 font-medium text-gray-900 cursor-pointer"
                   onClick={() => handleSort("date_joined")}
                 >
-                  Created at<SortIcon column="date_joined" />
+                  Created at
+                  <SortIcon column="date_joined" />
                 </th>
                 <th className="text-left py-3 px-6 font-medium text-gray-900">Actions</th>
               </tr>
@@ -318,10 +316,9 @@ export default function ViewMembers() {
                   </td>
                   <td className="py-4 px-6">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${member.role === "SALESPERSON"
-                        ? "bg-purple-100 text-purple-800"
-                        : "bg-blue-100 text-blue-800"
-                        }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        member.role === "SALESPERSON" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"
+                      }`}
                     >
                       {member.role}
                     </span>
@@ -329,8 +326,9 @@ export default function ViewMembers() {
                   <td className="py-4 px-6 text-gray-900">{member.phone_number}</td>
                   <td className="py-4 px-6">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${member.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                        }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        member.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                      }`}
                     >
                       {member.is_active ? "Active" : "Inactive"}
                     </span>
@@ -338,6 +336,13 @@ export default function ViewMembers() {
                   <td className="py-4 px-6 text-gray-900">{member.date_joined.split("T")[0]}</td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleViewPerformance(member)}
+                        className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                        title="View Performance"
+                      >
+                        <BarChart3 className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleToggleRole(member.id, member.role)}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -360,6 +365,13 @@ export default function ViewMembers() {
           </table>
         </div>
       </div>
+
+      {/* PerformanceModal component */}
+      <PerformanceModal
+        isOpen={showPerformanceModal}
+        onClose={() => setShowPerformanceModal(false)}
+        member={selectedMember}
+      />
     </div>
   )
 }

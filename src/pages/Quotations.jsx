@@ -41,6 +41,7 @@ const Quotations = () => {
   const [loading, setLoading] = useState(true)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
+  const [quotationSortConfig, setQuotationSortConfig] = useState({ key: null, direction: "asc" })
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
   const [expandedCustomer, setExpandedCustomer] = useState(null)
   const [isLogsModalOpen, setIsLogsModalOpen] = useState(false)
@@ -152,13 +153,13 @@ const Quotations = () => {
     try {
 
       Swal.fire({
-      title: "Deleting...",
-      text: "Please wait while we delete your Quotation.",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading()
-      },
-    })
+        title: "Deleting...",
+        text: "Please wait while we delete your Quotation.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
 
       const token = localStorage.getItem("token")
       const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/quotations/${id}/`, {
@@ -186,6 +187,49 @@ const Quotations = () => {
       Swal.fire("Error!", "Something went wrong while deleting.", "error")
     }
   }
+
+  const handleQuotationSort = (key) => {
+    let direction = "asc"
+    if (quotationSortConfig.key === key && quotationSortConfig.direction === "asc") {
+      direction = "desc"
+    }
+    setQuotationSortConfig({ key, direction })
+  }
+
+  const sortQuotations = (quotations) => {
+    if (!quotationSortConfig.key) return quotations
+    return [...quotations].sort((a, b) => {
+      let valueA = a[quotationSortConfig.key]
+      let valueB = b[quotationSortConfig.key]
+
+      // handle special cases
+      if (quotationSortConfig.key === "created_at" || quotationSortConfig.key === "follow_up_date") {
+        valueA = new Date(valueA)
+        valueB = new Date(valueB)
+      } else if (quotationSortConfig.key === "total") {
+        valueA = parseFloat(a.total) || 0
+        valueB = parseFloat(b.total) || 0
+      } else {
+        valueA = valueA ?? ""
+        valueB = valueB ?? ""
+      }
+
+      if (valueA < valueB) return quotationSortConfig.direction === "asc" ? -1 : 1
+      if (valueA > valueB) return quotationSortConfig.direction === "asc" ? 1 : -1
+      return 0
+    })
+  }
+
+  const QuotationSortIcon = ({ column }) => {
+    if (quotationSortConfig.key !== column) return null
+    return quotationSortConfig.direction === "asc" ? (
+      <ArrowUp className="inline w-4 h-4 ml-1" />
+    ) : (
+      <ArrowDown className="inline w-4 h-4 ml-1" />
+    )
+  }
+
+
 
   const handleSort = (key) => {
     let direction = "asc"
@@ -268,15 +312,15 @@ const Quotations = () => {
     try {
 
       Swal.fire({
-      title: "Updating...",
-      text: "Please wait while we update your Quotation status.",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading()
-      },
-    })
+        title: "Updating...",
+        text: "Please wait while we update your Quotation status.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
 
-      const res = await fetch(`https://qms-2h5c.onrender.com/accounts/api/quotations/${id}/status/`, {
+      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/quotations/${id}/status/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -320,14 +364,14 @@ const Quotations = () => {
     }
 
     try {
-    //   Swal.fire({
-    //   title: "Exporting...",
-    //   text: "Please wait while we export your all quotation.",
-    //   allowOutsideClick: false,
-    //   didOpen: () => {
-    //     Swal.showLoading()
-    //   },
-    // })
+      //   Swal.fire({
+      //   title: "Exporting...",
+      //   text: "Please wait while we export your all quotation.",
+      //   allowOutsideClick: false,
+      //   didOpen: () => {
+      //     Swal.showLoading()
+      //   },
+      // })
 
 
       const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/merge/", {
@@ -366,54 +410,54 @@ const Quotations = () => {
     closeDropdown()
   }
 
-const handleDuplicateQuotation = async (id) => {
-  closeDropdown();
+  const handleDuplicateQuotation = async (id) => {
+    closeDropdown();
 
-  const result = await Swal.fire({
-    title: "Duplicate Quotation?",
-    text: "This will create a copy of the quotation with a new quotation number.",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Yes, duplicate it!",
-  });
+    const result = await Swal.fire({
+      title: "Duplicate Quotation?",
+      text: "This will create a copy of the quotation with a new quotation number.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, duplicate it!",
+    });
 
-  if (!result.isConfirmed) return;
+    if (!result.isConfirmed) return;
 
-  try {
-    Swal.fire({
-      title: "Duplicating...",
-      text: "Please wait while we duplicate your quotation.",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading()
-      },
-    })
-
-    const response = await fetch(
-      `https://qms-2h5c.onrender.com/quotations/api/quotations/${id}/duplicate/`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
+    try {
+      Swal.fire({
+        title: "Duplicating...",
+        text: "Please wait while we duplicate your quotation.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
         },
+      })
+
+      const response = await fetch(
+        `https://qms-2h5c.onrender.com/quotations/api/quotations/${id}/duplicate/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to duplicate quotation");
+      } else {
+        Swal.fire("Duplicated", "quotation is successfully duplicated", "success")
       }
-    );
 
-    if (!response.ok) {
-      throw new Error("Failed to duplicate quotation");
-    } else {
-      Swal.fire("Duplicated", "quotation is successfully duplicated", "success")
+      const data = await response.json();
+
+    } catch (error) {
+      Swal.fire("Error!", error.message || "Failed to duplicate quotation", "error");
     }
-
-    const data = await response.json();
-
-  } catch (error) {
-    Swal.fire("Error!", error.message || "Failed to duplicate quotation", "error");
-  }
-};
+  };
 
 
   if (loading) {
@@ -595,18 +639,43 @@ const handleDuplicateQuotation = async (id) => {
                             <table className="w-full text-sm border border-gray-200 rounded-lg">
                               <thead className="bg-gray-200">
                                 <tr>
-                                  <th className="px-4 py-3 text-left">Quote ID</th>
-                                  <th className="px-4 py-3 text-left">Amount</th>
-                                  <th className="px-4 py-3 text-left">Status</th>
-                                  <th className="px-4 py-3 text-left">Created</th>
-                                  <th className="px-4 py-3 text-left">Valid Until</th>
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer"
+                                    onClick={() => handleQuotationSort("quotation_number")}
+                                  >
+                                    Quote ID <QuotationSortIcon column="quotation_number" />
+                                  </th>
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer"
+                                    onClick={() => handleQuotationSort("total")}
+                                  >
+                                    Amount <QuotationSortIcon column="total" />
+                                  </th>
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer"
+                                    onClick={() => handleQuotationSort("status")}
+                                  >
+                                    Status <QuotationSortIcon column="status" />
+                                  </th>
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer"
+                                    onClick={() => handleQuotationSort("created_at")}
+                                  >
+                                    Created <QuotationSortIcon column="created_at" />
+                                  </th>
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer"
+                                    onClick={() => handleQuotationSort("follow_up_date")}
+                                  >
+                                    Valid Until <QuotationSortIcon column="follow_up_date" />
+                                  </th>
                                   <th className="px-4 py-3 text-left">Assigned To</th>
                                   <th className="px-4 py-3 text-left">Actions</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {console.log(customer.quotations)}
-                                {customer.quotations.map((quotation) => (
+                                {sortQuotations(customer.quotations).map((quotation) => (
                                   <tr key={quotation.id} className="border-t hover:bg-white">
                                     <td className="px-4 py-2 font-medium text-gray-900">{quotation.quotation_number}</td>
                                     <td className="px-4 py-2 font-semibold text-gray-900">₹{quotation.total}</td>

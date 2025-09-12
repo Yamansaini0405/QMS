@@ -98,6 +98,10 @@ export default function Leads() {
   const convertedLeads = leads.filter((l) => l.status === "CONVERTED").length
 
 
+
+
+
+
   const stats = [
     {
       title: "Total Leads",
@@ -688,6 +692,7 @@ export default function Leads() {
                                         <option value="PENDING">Pending</option>
                                         <option value="QUALIFIED">Qualified</option>
                                         <option value="CONVERTED">Converted</option>
+                                        <option value="REVISED">Revised</option>
                                       </select>
                                     </td>
 
