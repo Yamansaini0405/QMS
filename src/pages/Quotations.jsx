@@ -40,8 +40,6 @@ const Quotations = () => {
   const [customers, setCustomers] = useState([])
   const [loading, setLoading] = useState(true)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [duplicateQuotationOpen, setDuplicateQuotationOpen] = useState(false)
-  const [selectedDuplicateQuotation, setSelectedDuplciateQuotation] = useState(null)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
   const [quotationSortConfig, setQuotationSortConfig] = useState({ key: null, direction: "asc" })
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })

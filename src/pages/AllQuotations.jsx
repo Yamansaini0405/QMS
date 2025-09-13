@@ -14,6 +14,8 @@ import {
   XCircle,
   AlertCircle,
   ArrowLeftRight,
+  ArrowUp,
+  ArrowDown
 } from "lucide-react"
 
 export default function AllQuotations() {
@@ -21,6 +23,7 @@ export default function AllQuotations() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("All")
+  const [quotationSortConfig, setQuotationSortConfig] = useState({ key: null, direction: "asc" })
 
   useEffect(() => {
     const fetchQuotations = async () => {
@@ -35,6 +38,7 @@ export default function AllQuotations() {
         })
         const data = await response.json()
         setQuotations(data.data || [])
+        console.log(data.data)
       } catch (error) {
         console.error("Error fetching quotations:", error)
         setQuotations([])
@@ -54,7 +58,7 @@ export default function AllQuotations() {
         return <CheckCircle className="w-4 h-4 text-green-500" />
       case "REJECTED":
         return <XCircle className="w-4 h-4 text-red-500" />
-         case "REVISED":
+      case "REVISED":
         return <ArrowLeftRight className="w-4 h-4 text-black" />
       default:
         return <AlertCircle className="w-4 h-4 text-gray-500" />
@@ -70,7 +74,7 @@ export default function AllQuotations() {
         return `${baseClasses} bg-green-100 text-green-800`
       case "REJECTED":
         return `${baseClasses} bg-red-100 text-red-800`
-        case "REVISED":
+      case "REVISED":
         return `${baseClasses} bg-black text-white`
       default:
         return `${baseClasses} bg-gray-100 text-gray-800`
@@ -123,6 +127,53 @@ export default function AllQuotations() {
       bgColor: "bg-emerald-100",
     },
   ]
+
+  //sorting quotation logic ---start--
+  const handleQuotationSort = (key) => {
+    let direction = "asc"
+    if (quotationSortConfig.key === key && quotationSortConfig.direction === "asc") {
+      direction = "desc"
+    }
+    setQuotationSortConfig({ key, direction })
+  }
+
+  const sortQuotations = (quotations) => {
+    if (!quotationSortConfig.key) return quotations
+    return [...quotations].sort((a, b) => {
+      let valueA = a[quotationSortConfig.key]
+      let valueB = b[quotationSortConfig.key]
+
+      // handle special cases
+      if (quotationSortConfig.key === "created_at" || quotationSortConfig.key === "follow_up_date") {
+        valueA = new Date(valueA)
+        valueB = new Date(valueB)
+      } else if (quotationSortConfig.key === "total") {
+        valueA = parseFloat(a.total) || 0
+        valueB = parseFloat(b.total) || 0
+      } else if (quotationSortConfig.key === "customer"){
+         valueA = a.customer?.name?.toLowerCase() || ""
+         valueB = b.customer?.name?.toLowerCase() || ""
+      } else {
+        valueA = valueA ?? ""
+        valueB = valueB ?? ""
+      }
+
+      if (valueA < valueB) return quotationSortConfig.direction === "asc" ? -1 : 1
+      if (valueA > valueB) return quotationSortConfig.direction === "asc" ? 1 : -1
+      return 0
+    })
+  }
+
+  const QuotationSortIcon = ({ column }) => {
+    if (quotationSortConfig.key !== column) return null
+    return quotationSortConfig.direction === "asc" ? (
+      <ArrowUp className="inline w-4 h-4 ml-1" />
+    ) : (
+      <ArrowDown className="inline w-4 h-4 ml-1" />
+    )
+  }
+
+  // --- end ---
 
   if (loading) {
     return (
@@ -208,17 +259,49 @@ export default function AllQuotations() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Quotation</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Customer</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Amount</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Created</th>
+                  
+                  <th
+                    className="px-4 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                    onClick={() => handleQuotationSort("quotation_number")}
+                  >
+                    Quotation <QuotationSortIcon column="quotation_number" />
+                  </th>
+                   <th
+                    className="px-4 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                    onClick={() => handleQuotationSort("customer")}
+                  >
+                    Customer <QuotationSortIcon column="customer" />
+                  </th>
+                  
+                  <th
+                    className="px-4 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                    onClick={() => handleQuotationSort("total")}
+                  >
+                    Amount <QuotationSortIcon column="total" />
+                  </th>
+                  
+                  <th
+                    className="px-4 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                    onClick={() => handleQuotationSort("status")}
+                  >
+                    Status <QuotationSortIcon column="status" />
+                  </th>
+                  
+                  
+                  <th
+                    className="px-4 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                    onClick={() => handleQuotationSort("created_at")}
+                  >
+                    Created <QuotationSortIcon column="created_at" />
+                  </th>
+                  
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Assigned To</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-gray-200">
-                {filteredQuotations.map((quotation) => (
+                {sortQuotations(filteredQuotations).map((quotation) => (
                   <tr key={quotation.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
@@ -236,7 +319,7 @@ export default function AllQuotations() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-3">
-                       
+
                         <div>
                           <p className="font-medium text-gray-900">{quotation.customer?.name}</p>
                           <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -246,7 +329,7 @@ export default function AllQuotations() {
                             </span>
                           </div>
                           <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
-                            
+
                             <span className="flex items-center space-x-1">
                               <Phone className="w-3 h-3" />
                               <span>{quotation.customer?.phone}</span>
@@ -269,7 +352,7 @@ export default function AllQuotations() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
-                        
+
                         <div>
                           <p className="text-sm text-gray-900">{new Date(quotation.created_at).toLocaleDateString()}</p>
                           {quotation.emailed_at && (
@@ -299,7 +382,7 @@ export default function AllQuotations() {
                             <Eye className="w-4.5 h-4.5" />
                           </button>
                         )}
-                        
+
                       </div>
                     </td>
                   </tr>
