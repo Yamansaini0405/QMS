@@ -10,13 +10,14 @@ import * as XLSX from "xlsx"
 
 export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [customerType, setCustomerType] = useState("All Types")
+  
   const [customers, setCustomers] = useState([])
   const [loading, setLoading] = useState(true)
   const [viewModalOpen, setViewModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
+ 
 
   useEffect(() => {
     const fetchCustomers = async () => {

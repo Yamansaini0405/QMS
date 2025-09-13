@@ -40,6 +40,8 @@ const Quotations = () => {
   const [customers, setCustomers] = useState([])
   const [loading, setLoading] = useState(true)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [duplicateQuotationOpen, setDuplicateQuotationOpen] = useState(false)
+  const [selectedDuplicateQuotation, setSelectedDuplciateQuotation] = useState(null)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
   const [quotationSortConfig, setQuotationSortConfig] = useState({ key: null, direction: "asc" })
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
@@ -136,7 +138,6 @@ const Quotations = () => {
       Swal.fire("Error!", "PDF not available for this quotation.", "error")
     }
   }
-
   const handleDeleteQuotation = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -293,6 +294,8 @@ const Quotations = () => {
     setIsEditModalOpen(true)
   }
 
+
+
   const handleSaveQuotation = (updatedQuotation) => {
     setCustomers((prev) =>
       prev.map((customer) => ({
@@ -410,54 +413,7 @@ const Quotations = () => {
     closeDropdown()
   }
 
-  const handleDuplicateQuotation = async (id) => {
-    closeDropdown();
 
-    const result = await Swal.fire({
-      title: "Duplicate Quotation?",
-      text: "This will create a copy of the quotation with a new quotation number.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, duplicate it!",
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      Swal.fire({
-        title: "Duplicating...",
-        text: "Please wait while we duplicate your quotation.",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading()
-        },
-      })
-
-      const response = await fetch(
-        `https://qms-2h5c.onrender.com/quotations/api/quotations/${id}/duplicate/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to duplicate quotation");
-      } else {
-        Swal.fire("Duplicated", "quotation is successfully duplicated", "success")
-      }
-
-      const data = await response.json();
-
-    } catch (error) {
-      Swal.fire("Error!", error.message || "Failed to duplicate quotation", "error");
-    }
-  };
 
 
   if (loading) {
@@ -741,8 +697,7 @@ const Quotations = () => {
                                                 </button>
                                                 <button
                                                   onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    handleDuplicateQuotation(quotation.id)
+                                                    navigate(`/quotations/duplicate/${quotation.id}`)
                                                   }}
                                                   className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                                 >

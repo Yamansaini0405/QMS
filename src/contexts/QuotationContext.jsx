@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2"
 
 
@@ -10,6 +10,7 @@ export const useQuotation = () => useContext(QuotationContext);
 export const QuotationProvider = ({ children }) => {
 
     const { id } = useParams();
+    const location = useLocation();
 
     const formatDate = (date) => {
         const d = new Date(date)
@@ -129,72 +130,73 @@ export const QuotationProvider = ({ children }) => {
                 createdBy: localStorage.getItem("role"),
                 digitalSignature: "",
             })
-        }; // create mode, skip fetching
-
-        const fetchQuotation = async () => {
-            setPageLoading(true);
-            try {
-                const token = localStorage.getItem("token");
-                const res = await fetch(
-                    `https://qms-2h5c.onrender.com/quotations/api/quotations/${id}/`,
-                    {
-                        headers: { Authorization: `Bearer ${token}` },
-                    }
-                );
-                if (!res.ok) throw new Error("Failed to fetch quotation");
-                const data = await res.json();
-                console.log("edit quotationData ", data);
-
-                const qutations = {
-                    quotationDate: formatDate(new Date(data.data.created_at)),
-                    validUntil: formatDate(new Date(data.data.follow_up_date)),
-                    validityNumber: 30, // derive if backend gives
-                    validityType: "days",
-                    followUpDate: formatDate(new Date(data.data.follow_up_date)),
-                    customerName: data.data.customer?.name || "",
-                    companyName: data.data.customer?.company_name || "",
-                    email: data.data.customer?.email || "",
-                    phone: data.data.customer?.phone || "",
-                    address: data.data.customer?.primary_address || "",
-                    products: data.data.items?.map((item) => ({
-                        id: item.product.id,
-                        name: item.product.name,
-                        quantity: item.quantity,
-                        selling_price: item.unit_price|| "",
-                        percentage_discount: item.discount || 0,
-                    })) || [],
-                    subtotal: data.data.subtotal || "0.00",
-                    discount: data.data.discount || "",
-                    tax: data.data.tax || "0.00",
-                    taxRate: data.data.tax_rate || "18",
-                    discountType: data.data.discount_type || "amount",
-                    totalAmount: data.data.total || "0.00",
-                    status: data.data.status,
-                    additionalNotes: data.data.additional_notes || "",
-                    createdBy: data.data.created_by || localStorage.getItem("role"),
-                    digitalSignature: data.data.digital_signature || "",
-                    specialDiscountEnabled: data.data.discount && data.data.discount !== 0 ? true : false,
-
-                }
-
-                if (!data.data.discount || data.data.discount === 0) {
-                    qutations.specialDiscountEnabled = false
-                    qutations.discount = ""
-                    qutations.discountType = "amount"
-                }
-                // Map backend response → formData structure
-                setFormData(qutations);
-                setSelectedTerms(data.data.terms || [])
-
-            } catch (err) {
-                console.error("Error fetching quotation:", err);
-            } finally {
-                setPageLoading(false);
-            }
-        };
-
-        fetchQuotation();
+        } else {
+            fetchQuotation();
+        }
     }, [id]);
+
+
+    const fetchQuotation = async () => {
+        setPageLoading(true);
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch(
+                `https://qms-2h5c.onrender.com/quotations/api/quotations/${id}/`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            if (!res.ok) throw new Error("Failed to fetch quotation");
+            const data = await res.json();
+            console.log("edit quotationData ", data);
+
+            const qutations = {
+                quotationDate: formatDate(new Date(data.data.created_at)),
+                validUntil: formatDate(new Date(data.data.follow_up_date)),
+                validityNumber: 30, // derive if backend gives
+                validityType: "days",
+                followUpDate: formatDate(new Date(data.data.follow_up_date)),
+                customerName: data.data.customer?.name || "",
+                companyName: data.data.customer?.company_name || "",
+                email: data.data.customer?.email || "",
+                phone: data.data.customer?.phone || "",
+                address: data.data.customer?.primary_address || "",
+                products: data.data.items?.map((item) => ({
+                    id: item.product.id,
+                    name: item.product.name,
+                    quantity: item.quantity,
+                    selling_price: item.unit_price || "",
+                    percentage_discount: item.discount || 0,
+                })) || [],
+                subtotal: data.data.subtotal || "0.00",
+                discount: data.data.discount || "",
+                tax: data.data.tax || "0.00",
+                taxRate: data.data.tax_rate || "18",
+                discountType: data.data.discount_type || "amount",
+                totalAmount: data.data.total || "0.00",
+                status: data.data.status,
+                additionalNotes: data.data.additional_notes || "",
+                createdBy: data.data.created_by || localStorage.getItem("role"),
+                digitalSignature: data.data.digital_signature || "",
+                specialDiscountEnabled: data.data.discount && data.data.discount !== 0 ? true : false,
+
+            }
+
+            if (!data.data.discount || data.data.discount === 0) {
+                qutations.specialDiscountEnabled = false
+                qutations.discount = ""
+                qutations.discountType = "amount"
+            }
+            // Map backend response → formData structure
+            setFormData(qutations);
+            setSelectedTerms(data.data.terms || [])
+
+        } catch (err) {
+            console.error("Error fetching quotation:", err);
+        } finally {
+            setPageLoading(false);
+        }
+    };
     // Fetch terms on mount
     useEffect(() => {
         const fetchTerms = async () => {
@@ -211,7 +213,6 @@ export const QuotationProvider = ({ children }) => {
             }
         };
         fetchTerms();
-
     }, []);
 
     const handleSaveProduct = async (name, selling_price) => {
@@ -251,7 +252,7 @@ export const QuotationProvider = ({ children }) => {
     // Create Quotation handler
     const createQuotation = async () => {
         setIsGeneratingPDF(true)
-        
+
         try {
 
             if (!validateForm()) {
@@ -259,26 +260,40 @@ export const QuotationProvider = ({ children }) => {
                 return;
             }
 
-            if(formData.totalAmount < 0){
+            if (formData.totalAmount < 0) {
                 Swal.fire("Warning!", "Total Amount must be greater than 0", "warning")
                 return;
             }
 
-            id ? Swal.fire({
-                title: "Updating...",
-                text: "Please wait while we update your Quotation.",
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading()
-                },
-            }) : Swal.fire({
-                title: "Creating...",
-                text: "Please wait while we create your Quotation.",
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading()
-                },
-            })
+            id ?
+
+                location.pathname.startsWith('/quotations/edit') ?
+                    Swal.fire({
+                        title: "Updating...",
+                        text: "Please wait while we update your Quotation.",
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading()
+                        },
+                    })
+
+                    :
+                    Swal.fire({
+                        title: "Duplicating...",
+                        text: "Please wait while we Duplicate your Quotation.",
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading()
+                        },
+                    })
+                : Swal.fire({
+                    title: "Creating...",
+                    text: "Please wait while we create your Quotation.",
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading()
+                    },
+                })
 
             const token = localStorage.getItem("token");
 
@@ -331,7 +346,7 @@ export const QuotationProvider = ({ children }) => {
             const response = await fetch(
                 "https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/",
                 {
-                    method: id ? "PUT" : "POST",
+                    method:  location.pathname.startsWith('/quotations/edit')  ? "PUT" : "POST",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
@@ -350,7 +365,7 @@ export const QuotationProvider = ({ children }) => {
             const result = await response.json();
             console.log("Quotation created successfully:", result);
 
-            Swal.fire(id ? "Updated" : "Created!", `The Quotation has been ${id ? "updated" : "created"}.`, "success")
+            Swal.fire(id ?  location.pathname.startsWith('/quotations/edit') ?  "Updated" : "Duplicated" : "Created!", `The Quotation has been ${id ? location.pathname.startsWith('/quotations/edit') ?  "updated" : "duplicated"  : "created"}.`, "success")
 
 
             // ✅ Reset formData after success

@@ -57,6 +57,7 @@ function App() {
               <Route path="/quotations/all" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><AllQuotations /></ProtectedRoute>} />
               <Route path="/quotations/new" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><NewQuotationPage /></ProtectedRoute>} />
               <Route path="/quotations/edit/:id" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><NewQuotationPage /></ProtectedRoute>} />
+              <Route path="/quotations/duplicate/:id" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><NewQuotationPage /></ProtectedRoute>} />
               <Route path="/customers/create" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><AddCustomer /></ProtectedRoute>} />
               <Route path="/products/create" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><AddProduct /></ProtectedRoute>} />
               <Route path="/terms/create" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AddTermsConditions /></ProtectedRoute>} />

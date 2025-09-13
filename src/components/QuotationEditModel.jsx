@@ -49,6 +49,10 @@ const [productSearchStates, setProductSearchStates] = useState({})
   const [productSearchResults, setProductSearchResults] = useState({})
   const [isSearchingProducts, setIsSearchingProducts] = useState({})
 
+    const [customerSearchQuery, setCustomerSearchQuery] = useState("")
+  const [customerSearchResults, setCustomerSearchResults] = useState([])
+  const [showCustomerResults, setShowCustomerResults] = useState(false)
+  const [isSearchingCustomers, setIsSearchingCustomers] = useState(false)
 
   const fetchTerms = async () => {
   try {
@@ -97,7 +101,7 @@ useEffect(() => {
 // fetch terms only when modal opens
 useEffect(() => {
   if (isOpen && quotation) {
-    // fetch available terms from backend
+    
     fetchTerms()
 
     // pre-fill already selected terms
@@ -225,7 +229,7 @@ const filteredTerms = availableTerms.filter((term) =>
     };
 
 
-  // format ISO date -> YYYY-MM-DD for input[type=date]
+  
   
 
   useEffect(() => {
@@ -428,6 +432,14 @@ const filteredTerms = availableTerms.filter((term) =>
     }
 
     try {
+      Swal.fire({
+              title: "Saving...",
+              text: "Please wait while we save your Lead.",
+              allowOutsideClick: false,
+              didOpen: () => {
+                Swal.showLoading()
+              },
+            })
       const token = localStorage.getItem("token")
 
       console.log("Final payload to backend:", payload)
@@ -452,15 +464,101 @@ const filteredTerms = availableTerms.filter((term) =>
 
       const result = await response.json()
       console.log("Quotation updated successfully:", result)
-      alert("Quotation updated successfully!")
+      
+      Swal.fire("Created!!", "quotation is created succesfully","success")
       onSave?.(result)
       onClose()
+
     } catch (error) {
       console.error("Error updating quotation:", error)
       alert("Error updating quotation. Please try again.")
+      Swal.fire("Error!","Error updating quotation. Please try again.","error")
     }
   }
 
+  const searchCustomers = async (query) => {
+    if (!query.trim()) {
+      setCustomerSearchResults([])
+      setShowCustomerResults(false)
+      return
+    }
+
+    setIsSearchingCustomers(true)
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/all/", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await response.json()
+
+      const filtered = (data.data || data || []).filter(
+        (customer) =>
+          customer.name.toLowerCase().includes(query.toLowerCase()) ||
+          customer.email.toLowerCase().includes(query.toLowerCase()) ||
+          (customer.company_name && customer.company_name.toLowerCase().includes(query.toLowerCase())) ||
+          (customer.phone && customer.phone.includes(query)),
+      )
+      setCustomerSearchResults(filtered)
+      setShowCustomerResults(true)
+    } catch (error) {
+      console.error("Error searching customers:", error)
+      setCustomerSearchResults([])
+      setShowCustomerResults(false)
+    } finally {
+      setIsSearchingCustomers(false)
+    }
+  }
+
+  const selectCustomer = (customer) => {
+    setFormData((prev) => ({
+      ...prev,
+      customerId: customer.id,
+      customerName: customer.name || "",
+      companyName: customer.company_name || "",
+      email: customer.email || "",
+      phone: customer.phone || "",
+      address: customer.primary_address || customer.billing_address || customer.shipping_address || "",
+      gstNumber: customer.gst_number || "",
+      website: customer.website || "",
+      shippingAddress: customer.shipping_address || "",
+      billingAddress: customer.billing_address || "",
+      title: customer.title || "",
+    }))
+
+    setCustomerSearchQuery("")
+    setShowCustomerResults(false)
+    setCustomerSearchResults([])
+  }
+
+  const handleCustomerSearchChange = (e) => {
+    const query = e.target.value
+    setCustomerSearchQuery(query)
+
+    // Clear customer data if search is cleared
+    if (!query.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        customerId: "",
+        customerName: "",
+        companyName: "",
+        email: "",
+        phone: "",
+        address: "",
+        gstNumber: "",
+        website: "",
+        shippingAddress: "",
+        billingAddress: "",
+        title: "",
+      }))
+    }
+
+    // Debounce search
+    const timeoutId = setTimeout(() => {
+      searchCustomers(query)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }
 
   if (!isOpen || !quotation) return null
 
@@ -485,6 +583,52 @@ const filteredTerms = availableTerms.filter((term) =>
             </div>
 
             <div className="space-y-4">
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search Customer *</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search by name, email, company, or phone..."
+                    value={customerSearchQuery}
+                    onChange={handleCustomerSearchChange}
+                    onFocus={() => customerSearchResults.length > 0 && setShowCustomerResults(true)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                  />
+                  {isSearchingCustomers && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Customer search results dropdown */}
+                {showCustomerResults && customerSearchResults.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {customerSearchResults.map((customer) => (
+                      <div
+                        key={customer.id}
+                        onClick={() => selectCustomer(customer)}
+                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="font-medium text-gray-900">{customer.name}</div>
+                        <div className="text-sm text-gray-600">{customer.company_name}</div>
+                        <div className="text-sm text-gray-500">
+                          {customer.email} • {customer.phone}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {showCustomerResults &&
+                  customerSearchResults.length === 0 &&
+                  customerSearchQuery.trim() &&
+                  !isSearchingCustomers && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-4 text-center text-gray-500">
+                      No customers found matching "{customerSearchQuery}"
+                    </div>
+                  )}
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Customer Name *</label>
