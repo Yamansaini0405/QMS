@@ -149,7 +149,7 @@ export default function ViewMembers() {
         })
 
         const token = localStorage.getItem("token")
-        const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/${memberId}/toggleUser/`, {
+        const res = await fetch(`https://qms-2h5c.onrender.com/accounts/api/${memberId}/toggleUser/`, {
           method: "POST",
           headers: {
             ...(token && { Authorization: `Bearer ${token}` }),

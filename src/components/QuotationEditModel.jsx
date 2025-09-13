@@ -445,7 +445,7 @@ const filteredTerms = availableTerms.filter((term) =>
       console.log("Final payload to backend:", payload)
 
       const response = await fetch(
-        `https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/`,
+        `https://qms-2h5c.onrender.com/quotations/api/quotations/create/`,
         {
           method: "PUT",
           headers: {

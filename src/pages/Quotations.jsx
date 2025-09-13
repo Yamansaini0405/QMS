@@ -323,7 +323,7 @@ const Quotations = () => {
         },
       })
 
-      const res = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/accounts/api/quotations/${id}/status/`, {
+      const res = await fetch(`https://qms-2h5c.onrender.com/accounts/api/quotations/${id}/status/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

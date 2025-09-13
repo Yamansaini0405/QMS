@@ -17,7 +17,7 @@ export default function PerformanceModal({ isOpen, onClose, member }) {
     try {
       setIsLoading(true)
       const token = localStorage.getItem("token")
-      const response = await fetch(`https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/${member.id}/stats/`, {
+      const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/${member.id}/stats/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
