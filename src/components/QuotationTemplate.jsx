@@ -15,8 +15,8 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
           <div className="flex-1 space-y-1">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl  font-serif text-blue-800">N.K. Prosales Private Limited</h1>
-                <p>391/1, Arharya puri, Gurgaon-122001 Ph-01124 - 2308638, Email : neelamgt2004@yahoo.co.in</p>
+                <h1 className="text-3xl font-serif text-[#1d3b82]">N.K. Prosales Private Limited</h1>
+                <p className="text-sm">391/1, Arharya puri, Gurgaon-122001 Ph-01124 - 2308638, Email : neelamgt2004@yahoo.co.in</p>
               </div>
               <div className="text-3xl font-bold bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent w-30 h-16 ">
                 <img src={Logo} alt="" />

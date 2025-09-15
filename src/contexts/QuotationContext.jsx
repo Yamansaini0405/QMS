@@ -73,8 +73,8 @@ export const QuotationProvider = ({ children }) => {
 
     const [formData, setFormData] = useState({
         quotationDate: formatDate(new Date()), // Auto-set to today's date
-        validUntil: "",
-        validityNumber: 30, // Added validity number field
+        validUntil: formatDate(new Date()),
+        validityNumber: 0, // Added validity number field
         validityType: "days", // Added validity type field (days/months)
         followUpDate: "", // Added follow-up date field
         customerName: "",
@@ -109,8 +109,8 @@ export const QuotationProvider = ({ children }) => {
         if (!id) {
             setFormData({
                 quotationDate: formatDate(new Date()), // Auto-set to today's date
-                validUntil: "",
-                validityNumber: 30, // Added validity number field
+                validUntil: formatDate(new Date()),
+                validityNumber: 0, // Added validity number field
                 validityType: "days", // Added validity type field (days/months)
                 followUpDate: "", // Added follow-up date field
                 customerName: "",
@@ -130,6 +130,7 @@ export const QuotationProvider = ({ children }) => {
                 createdBy: localStorage.getItem("role"),
                 digitalSignature: "",
             })
+
         } else {
             fetchQuotation();
         }
@@ -338,13 +339,16 @@ export const QuotationProvider = ({ children }) => {
                 terms: selectedTerms,
                 items,
                 quotation_id: id ? Number(id) : "",
-                send_immediately: true
+                send_immediately: true,
+                createdBy: localStorage.getItem("role"),
+                digitalSignature:formData.digitalSignature,
+                additionalNotes: formData.additionalNotes
             };
 
             console.log("Creating quotation with payload:", payload);
 
             const response = await fetch(
-                "https://qms-2h5c.onrender.com/quotations/api/quotations/create/",
+                " https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/",
                 {
                     method:  location.pathname.startsWith('/quotations/edit')  ? "PUT" : "POST",
                     headers: {
@@ -371,8 +375,8 @@ export const QuotationProvider = ({ children }) => {
             // ✅ Reset formData after success
             setFormData({
                 quotationDate: formatDate(new Date()),
-                validUntil: "",
-                validityNumber: 30,
+                validUntil: formatDate(new Date()),
+                validityNumber: 0,
                 validityType: "days",
                 followUpDate: "",
                 customerName: "",
@@ -626,8 +630,7 @@ export const QuotationProvider = ({ children }) => {
             return sum + (baseAmount - discount)
         }, 0)
 
-        const taxRate = Number.parseFloat(formData.taxRate) || 0
-        const tax = (subtotal * taxRate) / 100
+        
 
         let globalDiscount = 0
         if (formData.specialDiscountEnabled) {
@@ -638,9 +641,10 @@ export const QuotationProvider = ({ children }) => {
                 globalDiscount = discountValue
             }
         }
-
-
-        const totalAmount = subtotal + tax - globalDiscount
+        const newSubtotal = subtotal-globalDiscount;
+        const taxRate = Number.parseFloat(formData.taxRate) || 0
+        const tax = (newSubtotal * taxRate) / 100
+        const totalAmount = newSubtotal + tax
 
         setFormData((prev) => ({
             ...prev,

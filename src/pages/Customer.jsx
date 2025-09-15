@@ -282,13 +282,13 @@ export default function CustomersPage() {
               />
             </div>
           </div>
-          <div>
+          {localStorage.getItem("role") === "ADMIN" ? <div>
             <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               onClick={() => handleExportExcel()}>
               <Download className="w-4 h-4" />
               <span>Export All {filteredCustomers.length}</span>
             </button>
-          </div>
+          </div> : ""}
 
 
         </div>
@@ -300,7 +300,7 @@ export default function CustomersPage() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">S.No.</th>
+                
                 <th
                   className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
                   onClick={() => handleSort("name")}
@@ -337,9 +337,7 @@ export default function CustomersPage() {
             <tbody className="divide-y divide-gray-200">
               {filteredCustomers.map((cust, index) => (
                 <tr key={index} className="hover:bg-gray-50 transition-colors duration-200">
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-900">{index + 1}</span>
-                  </td>
+                  
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">

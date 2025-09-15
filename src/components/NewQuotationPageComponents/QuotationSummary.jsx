@@ -19,10 +19,10 @@ export default function QuotationSummary() {
     }, [formData.discount, formData.discountType, formData.taxRate, formData.specialDiscountEnabled])
 
     useEffect(() => {
-  if (formData.discount) {
-    calculateTotals(formData.products)
-  }
-}, [formData.discount])
+        if (formData.discount) {
+            calculateTotals(formData.products)
+        }
+    }, [formData.discount])
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -38,6 +38,79 @@ export default function QuotationSummary() {
                 <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Subtotal:</span>
                     <span className="text-sm font-medium">Rs. {formData.subtotal}</span>
+                </div>
+
+
+                <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="special-discount"
+                                checked={!!formData.discount}
+                                onChange={(e) => {
+                                    const checked = e.target.checked;
+
+                                    updateFormData("specialDiscountEnabled", checked);
+
+                                    if (!checked) {
+                                        // User turned OFF special discount → clear discount value
+                                        updateFormData("discount", "");
+                                    } else {
+                                        // User turned it back ON → set default discount if empty
+                                        if (!formData.discount) {
+                                            updateFormData("discount", "0");
+                                        }
+                                    }
+
+                                    calculateTotals(formData.products);
+                                }}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+
+                            <label htmlFor="special-discount" className="text-sm text-gray-600">
+                                Special Discount
+                            </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                className="w-16 h-8 px-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="0.00"
+                                type="number"
+                                value={formData.discount}
+                                onChange={(e) => {
+                                    updateFormData("discount", e.target.value)
+                                    calculateTotals(formData.products)
+                                }}
+                            />
+                            <span className="text-sm font-medium">
+                                {formData.discountType === "percentage" ? "%" : "Rs."} {formData.discount || "0.00"}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Discount Type:</span>
+                        <div className="flex items-center space-x-4">
+                            <label className="flex items-center space-x-1">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.discountType === "percentage"}
+                                    onChange={() => handleDiscountTypeChange("percentage")}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <span className="text-sm text-gray-600">Percentage</span>
+                            </label>
+                            <label className="flex items-center space-x-1">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.discountType === "amount"}
+                                    onChange={() => handleDiscountTypeChange("amount")}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <span className="text-sm text-gray-600">Amount</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex justify-between items-center">
@@ -57,76 +130,8 @@ export default function QuotationSummary() {
                     </div>
                     <span className="text-sm font-medium">Rs. {formData.tax}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                        <input
-                            type="checkbox"
-                            id="special-discount"
-                            checked={!!formData.discount}
-                            onChange={(e) => {
-                                const checked = e.target.checked;
 
-                                updateFormData("specialDiscountEnabled", checked);
 
-                                if (!checked) {
-                                    // User turned OFF special discount → clear discount value
-                                    updateFormData("discount", "");
-                                } else {
-                                    // User turned it back ON → set default discount if empty
-                                    if (!formData.discount) {
-                                        updateFormData("discount", "0");
-                                    }
-                                }
-
-                                calculateTotals(formData.products);
-                            }}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        />
-
-                        <label htmlFor="special-discount" className="text-sm text-gray-600">
-                            Special Discount
-                        </label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <input
-                            className="w-16 h-8 px-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="0.00"
-                            type="number"
-                            value={formData.discount}
-                            onChange={(e) => {
-                                updateFormData("discount", e.target.value)
-                                calculateTotals(formData.products)
-                            }}
-                        />
-                        <span className="text-sm font-medium">
-                            {formData.discountType === "percentage" ? "%" : "Rs."} {formData.discount || "0.00"}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Discount Type:</span>
-                    <div className="flex items-center space-x-4">
-                        <label className="flex items-center space-x-1">
-                            <input
-                                type="checkbox"
-                                checked={formData.discountType === "percentage"}
-                                onChange={() => handleDiscountTypeChange("percentage")}
-                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-600">Percentage</span>
-                        </label>
-                        <label className="flex items-center space-x-1">
-                            <input
-                                type="checkbox"
-                                checked={formData.discountType === "amount"}
-                                onChange={() => handleDiscountTypeChange("amount")}
-                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-600">Amount</span>
-                        </label>
-                    </div>
-                </div>
 
                 <div className="border-t border-gray-200 pt-4">
                     <div className="flex justify-between items-center">

@@ -501,13 +501,13 @@ const Quotations = () => {
               <option value="REVISED">Revised</option>
             </select>
 
-            <button
+            {localStorage.getItem("role") === "ADMIN" ? <button
               onClick={handleExport}
               className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200"
             >
               <Download className="w-4 h-4" />
               <span>Export All ({allQuotations.length})</span>
-            </button>
+            </button> : ""}
           </div>
         </div>
 

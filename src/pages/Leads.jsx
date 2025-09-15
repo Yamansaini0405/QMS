@@ -400,42 +400,42 @@ export default function Leads() {
   }
 
   const handleExportExcel = () => {
-  if (!filteredCustomers.length) {
-    Swal.fire("No Leads to export", "No leads found for filtered customers", "warning")
-    return
-  }
-
-  // Flatten leads for all filtered customers
-  const exportData = []
-  filteredCustomers.forEach((c, cIndex) => {
-    if (c.leads && c.leads.length > 0) {
-      c.leads.forEach((lead, lIndex) => {
-        exportData.push({
-          "S.No.": exportData.length + 1,
-          Customer: c.name,
-          Company: c.company_name || "",
-          Email: c.email || "",
-          Phone: c.phone || "",
-          LeadStatus: lead.status || "",
-          LeadSource: lead.lead_source || "",
-          Assignee: lead.assigned_to?.name || "Unassigned",
-          CreatedAt: lead.created_at ? lead.created_at.split("T")[0] : "",
-        })
-      })
+    if (!filteredCustomers.length) {
+      Swal.fire("No Leads to export", "No leads found for filtered customers", "warning")
+      return
     }
-  })
 
-  if (!exportData.length) {
-    Swal.fire("No Leads", "Filtered customers have no leads to export", "info")
-    return
+    // Flatten leads for all filtered customers
+    const exportData = []
+    filteredCustomers.forEach((c, cIndex) => {
+      if (c.leads && c.leads.length > 0) {
+        c.leads.forEach((lead, lIndex) => {
+          exportData.push({
+            "S.No.": exportData.length + 1,
+            Customer: c.name,
+            Company: c.company_name || "",
+            Email: c.email || "",
+            Phone: c.phone || "",
+            LeadStatus: lead.status || "",
+            LeadSource: lead.lead_source || "",
+            Assignee: lead.assigned_to?.name || "Unassigned",
+            CreatedAt: lead.created_at ? lead.created_at.split("T")[0] : "",
+          })
+        })
+      }
+    })
+
+    if (!exportData.length) {
+      Swal.fire("No Leads", "Filtered customers have no leads to export", "info")
+      return
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Leads")
+
+    XLSX.writeFile(workbook, "leads.xlsx")
   }
-
-  const worksheet = XLSX.utils.json_to_sheet(exportData)
-  const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Leads")
-
-  XLSX.writeFile(workbook, "leads.xlsx")
-}
 
 
   if (loading) {
@@ -496,7 +496,7 @@ export default function Leads() {
         </div>
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 md:space-x-4">
-          <div className="flex justify-center items-center">
+          <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -504,20 +504,21 @@ export default function Leads() {
                 placeholder="Search leads..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-[60rem] pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 mr-4"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 mr-4"
               />
-              
+
             </div>
-            <div>
-              <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-              onClick={() => handleExportExcel()}>
-              <Download className="w-4 h-4" />
-              <span>Export All {filteredCustomers.reduce((count, customer) => {
-  return count + (customer.leads ? customer.leads.length : 0)
-}, 0)}</span>
-            </button>
-            </div>
+            
           </div>
+          {localStorage.getItem("role") === "ADMIN" ? <div>
+              <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                onClick={() => handleExportExcel()}>
+                <Download className="w-4 h-4" />
+                <span>Export All {filteredCustomers.reduce((count, customer) => {
+                  return count + (customer.leads ? customer.leads.length : 0)
+                }, 0)}</span>
+              </button>
+            </div> :""}
 
           {/* <div className="flex items-center space-x-4">
             <select

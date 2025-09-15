@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react"
 import { X, User, Building2, MapPin, Save } from "lucide-react"
 import { data } from "react-router-dom"
+import Swal from "sweetalert2"
+
 
 export default function CustomerEditModal({ customer, isOpen, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -48,44 +50,51 @@ export default function CustomerEditModal({ customer, isOpen, onClose, onSave })
   const handleSave = async () => {
     setLoading(true)
     try {
-      console.log("[v1] Saving customer data:", formData)
+      Swal.fire({
+        title: "Updating...",
+        text: "Please wait while we update your customer.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
 
-    // Example API call (PUT or PATCH depending on your backend)
-    const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/customers/create/?id=${customer.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("token")}`, // ✅ send token
+      // Example API call (PUT or PATCH depending on your backend)
+      const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/customers/create/?id=${customer.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`, // ✅ send token
 
-      },
-      body: JSON.stringify(formData),
-    })
+        },
+        body: JSON.stringify(formData),
+      })
 
-    if (!response.ok) {
-      throw new Error(`Failed to update customer: ${response.statusText}`)
+      if (!response.ok) {
+        throw new Error(`Failed to update customer: ${response.statusText}`)
+      }
+
+      const updatedCustomer = await response.json()
+      console.log("[v1] Customer updated successfully:", formData, updatedCustomer)
+      Swal.fire("Updated", "Customer updated successfully", "success")
+      onSave(updatedCustomer) // send back to parent
+      onClose()
+    } catch (error) {
+      console.error("Error updating customer:", error)
+      alert("Error updating customer")
+    } finally {
+      setLoading(false)
     }
-
-    const updatedCustomer = await response.json()
-    console.log("[v1] Customer updated successfully:", formData, updatedCustomer)
-    alert("Customer updated successfully!")
-    onSave(updatedCustomer) // send back to parent
-    onClose()
-  } catch (error) {
-    console.error("Error updating customer:", error)
-    alert("Error updating customer")
-  } finally {
-    setLoading(false)
   }
-}
 
 
   if (!isOpen || !customer) return null
 
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm  flex items-center justify-center z-50"
-    onClick={onClose}>
+      onClick={onClose}>
       <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto no-scrollbar"
-      onClick={(e) => e.stopPropagation()}>
+        onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
