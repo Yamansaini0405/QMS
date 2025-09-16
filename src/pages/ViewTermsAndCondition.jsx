@@ -53,21 +53,14 @@ export default function ViewTermsAndCondition() {
     })
   }
 
-  const SortIcon = ({ column }) => {
-    const inactive = sortConfig.key !== column
-    const direction = inactive ? "none" : sortConfig.direction
-    return (
-      <span className="inline-flex items-center">
-        {direction === "none" ? (
-          <ArrowUpDown className="ml-1 h-4 w-4 text-gray-300" />
-        ) : direction === "asc" ? (
-          <ArrowUp className="ml-1 h-4 w-4 text-gray-500" />
-        ) : (
-          <ArrowDown className="ml-1 h-4 w-4 text-gray-500" />
-        )}
-      </span>
+ const SortIcon = ({ column }) => {
+    if (sortConfig.key !== column) return null
+    return sortConfig.direction === "asc" ? (
+      <ArrowUp className="inline w-4 h-4 ml-1" />
+    ) : (
+      <ArrowDown className="inline w-4 h-4 ml-1" />
     )
-  }
+  }  
 
   const sortedTerms = [...filteredTerms].sort((a, b) => {
     if (!sortConfig.key) return 0
