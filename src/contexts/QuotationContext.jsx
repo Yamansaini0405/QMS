@@ -691,7 +691,7 @@ export const QuotationProvider = ({ children }) => {
             phone: customer.phone,
             address: customer.primary_address,
         }));
-        setCustomerSearchQuery(customer.name);
+        setCustomerSearchQuery("");
         setShowCustomerSearch(false);
         setCustomerSearchResults([]);
     };

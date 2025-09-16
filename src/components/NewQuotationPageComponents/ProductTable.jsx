@@ -140,7 +140,7 @@ useEffect(() => {
               </td>
               <td className="py-3 px-2">
                 <input
-                  type="number"
+                  type="text"
                   value={product.selling_price}
                   placeholder="0"
                   name="selling_price"

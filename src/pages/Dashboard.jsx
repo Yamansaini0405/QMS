@@ -44,7 +44,7 @@ const Dashboard = () => {
   console.log(quotations)
   console.log(leads)
    const totalQuotations = quotations.length
-  const pendingQuotations = quotations.filter(q => q.status?.toLowerCase() === "pending").length
+  const pendingQuotations = quotations.filter(q => q.status?.toLowerCase() === "pending" || q.status?.toLowerCase() ===  "sent").length
   const totalRevenue = quotations
     .filter(q => q.status?.toLowerCase() === "accepted")
     .reduce((sum, q) => sum + (Number(q.total) || 0), 0)
