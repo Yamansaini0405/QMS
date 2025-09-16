@@ -348,7 +348,7 @@ export const QuotationProvider = ({ children }) => {
             console.log("Creating quotation with payload:", payload);
 
             const response = await fetch(
-                " https://4g1hr9q7-8000.inc1.devtunnels.ms/quotations/api/quotations/create/",
+                " https://qms-2h5c.onrender.com/quotations/api/quotations/create/",
                 {
                     method:  location.pathname.startsWith('/quotations/edit')  ? "PUT" : "POST",
                     headers: {

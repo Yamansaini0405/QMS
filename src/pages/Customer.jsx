@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Users, Building2, Phone, Star, Search, Download, Eye, Edit, Trash2, ArrowUp, ArrowDown } from "lucide-react"
+import { Users, Building2, Phone, Star, Search, Download, Eye, Edit, Trash2, ArrowUp, ArrowDown, Clock } from "lucide-react"
 import CustomerViewModal from "@/components/CustomerViewModal"
 import CustomerEditModal from "@/components/CustomerEditModal"
+import CustomerActivityModal from "@/components/CustomerActivityModal"
 import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
 import * as XLSX from "xlsx"
@@ -15,6 +16,7 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true)
   const [viewModalOpen, setViewModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
+   const [activityModalOpen, setActivityModalOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
  
@@ -119,19 +121,25 @@ export default function CustomersPage() {
   )
 
   const handleViewCustomer = (customer) => {
-    console.log("[v0] Opening view modal for customer:", customer.name)
+    console.log(" Opening view modal for customer:", customer.name)
     setSelectedCustomer(customer)
     setViewModalOpen(true)
   }
 
   const handleEditCustomer = (customer) => {
-    console.log("[v0] Opening edit modal for customer:", customer.name)
+    console.log(" Opening edit modal for customer:", customer.name)
     setSelectedCustomer(customer)
     setEditModalOpen(true)
   }
 
+   const handleViewActivity = (customer) => {
+    console.log(" Opening activity modal for customer:", customer.name, customer.id)
+    setSelectedCustomer(customer)
+    setActivityModalOpen(true)
+  }
+
   const handleSaveCustomer = (updatedCustomer) => {
-    console.log("[v0] Saving customer:", updatedCustomer.name)
+    console.log(" Saving customer:", updatedCustomer.name)
     setCustomers((prev) => prev.map((customer) => (customer.id === updatedCustomer.id ? updatedCustomer : customer)))
     setEditModalOpen(false)
   }
@@ -300,7 +308,6 @@ export default function CustomersPage() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                
                 <th
                   className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
                   onClick={() => handleSort("name")}
@@ -337,7 +344,6 @@ export default function CustomersPage() {
             <tbody className="divide-y divide-gray-200">
               {filteredCustomers.map((cust, index) => (
                 <tr key={index} className="hover:bg-gray-50 transition-colors duration-200">
-                  
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
@@ -376,6 +382,13 @@ export default function CustomersPage() {
                       >
                         <Eye className="w-4 h-4" />
                       </button>
+                      {localStorage.getItem("role") === "ADMIN"? <button
+                        onClick={() => handleViewActivity(cust)}
+                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-200"
+                        title="View Activity"
+                      >
+                        <Clock className="w-4 h-4" />
+                      </button>:""}
                       <button
                         onClick={() => handleEditCustomer(cust)}
                         className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
@@ -383,13 +396,17 @@ export default function CustomersPage() {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      {localStorage.getItem("role") == "ADMIN" ? <button
-                        onClick={() => handleDeleteCustomer(cust.id)}
-                        className="p-1 text-red-600 transition-colors duration-200"
-                        title="Delete Customer"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button> : ""}
+                      {localStorage.getItem("role") == "ADMIN" ? (
+                        <button
+                          onClick={() => handleDeleteCustomer(cust.id)}
+                          className="p-1 text-red-600 transition-colors duration-200"
+                          title="Delete Customer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        ""
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -405,6 +422,12 @@ export default function CustomersPage() {
         isOpen={editModalOpen}
         onClose={() => setEditModalOpen(false)}
         onSave={handleSaveCustomer}
+      />
+
+      <CustomerActivityModal
+        customer={selectedCustomer}
+        isOpen={activityModalOpen}
+        onClose={() => setActivityModalOpen(false)}
       />
     </div>
   )
