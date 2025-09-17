@@ -56,7 +56,7 @@ const [productSearchStates, setProductSearchStates] = useState({})
 
   const fetchTerms = async () => {
   try {
-    const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/terms/", {
+    const response = await fetch("http://69.62.80.202/quotations/api/terms/", {
       // headers: {
       //   Authorization: `Bearer ${localStorage.getItem("token")}`,
       // },
@@ -73,7 +73,7 @@ const [productSearchStates, setProductSearchStates] = useState({})
 const fetchProducts = async () => {
   try {
     const response = await fetch(
-      "https://qms-2h5c.onrender.com/quotations/api/products/",
+      "http://69.62.80.202/quotations/api/products/",
       {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       }
@@ -136,7 +136,7 @@ const filteredTerms = availableTerms.filter((term) =>
         setIsSearchingProducts((prev) => ({ ...prev, [productIndex]: true }));
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/products/", {
+            const response = await fetch("http://69.62.80.202/quotations/api/products/", {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             const data = await response.json();
@@ -445,7 +445,7 @@ const filteredTerms = availableTerms.filter((term) =>
       console.log("Final payload to backend:", payload)
 
       const response = await fetch(
-        `https://qms-2h5c.onrender.com/quotations/api/quotations/create/`,
+        `http://69.62.80.202/quotations/api/quotations/create/`,
         {
           method: "PUT",
           headers: {
@@ -486,7 +486,7 @@ const filteredTerms = availableTerms.filter((term) =>
     setIsSearchingCustomers(true)
     try {
       const token = localStorage.getItem("token")
-      const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/all/", {
+      const response = await fetch("http://69.62.80.202/quotations/api/customers/all/", {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await response.json()

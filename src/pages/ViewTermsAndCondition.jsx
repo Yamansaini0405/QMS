@@ -23,7 +23,7 @@ export default function ViewTermsAndCondition() {
       try {
 
         console.log("[v0] Fetching terms and conditions...")
-        const response = await fetch(`https://qms-2h5c.onrender.com/quotations/api/terms/`)
+        const response = await fetch(`http://69.62.80.202/quotations/api/terms/`)
         if (!response.ok) throw new Error("Failed to fetch terms")
         const data = await response.json()
         console.log("[v0] Fetched terms:", data)
@@ -121,7 +121,7 @@ export default function ViewTermsAndCondition() {
 
         const token = localStorage.getItem("token")
         const res = await fetch(
-          `https://qms-2h5c.onrender.com/quotations/api/terms/${termId}/delete/`,
+          `http://69.62.80.202/quotations/api/terms/${termId}/delete/`,
           {
             method: "DELETE",
             headers: {

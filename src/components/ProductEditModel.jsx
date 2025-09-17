@@ -82,7 +82,7 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
         warranty_months: formData.warranty_months ? Number(formData.warranty_months) : null,
       }
 
-      const res = await fetch(`https://qms-2h5c.onrender.com/quotations/api/products/create/?id=${product.id}`, {
+      const res = await fetch(`http://69.62.80.202/quotations/api/products/create/?id=${product.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -122,7 +122,7 @@ export default function AddCustomer() {
       },
     })
 
-      const res = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/create/", {
+      const res = await fetch("http://69.62.80.202/quotations/api/customers/create/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -86,7 +86,7 @@ const handleSaveTerms = async () => {
 
     // Send to API
     const response = await fetch(
-      "https://qms-2h5c.onrender.com/quotations/api/terms/create/",
+      "http://69.62.80.202/quotations/api/terms/create/",
       {
         method: "POST",
         headers: {

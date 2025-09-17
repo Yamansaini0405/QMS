@@ -14,7 +14,7 @@ export default function ProfilePage() {
     const fetchUserData = async () => {
       try {
         
-        const response = await fetch("https://qms-2h5c.onrender.com/accounts/api/user/current/", {
+        const response = await fetch("http://69.62.80.202/accounts/api/user/current/", {
           headers : {
             Authorization : `Bearer ${localStorage.getItem("token")}`
           }

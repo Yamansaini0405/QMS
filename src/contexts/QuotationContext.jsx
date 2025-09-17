@@ -142,7 +142,7 @@ export const QuotationProvider = ({ children }) => {
         try {
             const token = localStorage.getItem("token");
             const res = await fetch(
-                `https://qms-2h5c.onrender.com/quotations/api/quotations/${id}/`,
+                `http://69.62.80.202/quotations/api/quotations/${id}/`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
@@ -202,7 +202,7 @@ export const QuotationProvider = ({ children }) => {
     useEffect(() => {
         const fetchTerms = async () => {
             try {
-                const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/terms/", {
+                const response = await fetch("http://69.62.80.202/quotations/api/terms/", {
                     headers: {
                         "Authorization": `Bearer ${localStorage.getItem("token")}`,
                     },
@@ -228,7 +228,7 @@ export const QuotationProvider = ({ children }) => {
             console.log("Sending payload:", payload)
 
             const res = await fetch(
-                "https://qms-2h5c.onrender.com/quotations/api/products/create/",
+                "http://69.62.80.202/quotations/api/products/create/",
                 {
                     method: "POST",
 
@@ -348,7 +348,7 @@ export const QuotationProvider = ({ children }) => {
             console.log("Creating quotation with payload:", payload);
 
             const response = await fetch(
-                " https://qms-2h5c.onrender.com/quotations/api/quotations/create/",
+                "http://69.62.80.202/quotations/api/quotations/create/",
                 {
                     method:  location.pathname.startsWith('/quotations/edit')  ? "PUT" : "POST",
                     headers: {
@@ -450,7 +450,7 @@ export const QuotationProvider = ({ children }) => {
         setIsSearchingProducts((prev) => ({ ...prev, [productIndex]: true }));
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/products/", {
+            const response = await fetch("http://69.62.80.202/quotations/api/products/", {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             const data = await response.json()
@@ -492,7 +492,10 @@ export const QuotationProvider = ({ children }) => {
 
             if (response.ok) {
                 const result = await response.json()
-                console.log("[v0] Quotation sent successfully:", result)
+                console.log("[v0] Quotation sent successfully:"
+
+                    
+                )
                 alert("Quotation created and sent successfully!")
             } else {
                 throw new Error("Failed to send quotation to backend")
@@ -664,7 +667,7 @@ export const QuotationProvider = ({ children }) => {
         setIsSearchingCustomers(true);
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/all/", {
+            const response = await fetch("http://69.62.80.202/quotations/api/customers/all/", {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             const data = await response.json();

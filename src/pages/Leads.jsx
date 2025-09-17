@@ -34,7 +34,7 @@ export default function Leads() {
     const fetchCustomers = async () => {
       try {
         const token = localStorage.getItem("token")
-        const res = await fetch("https://qms-2h5c.onrender.com/quotations/api/customers/", {
+        const res = await fetch("http://69.62.80.202/quotations/api/customers/", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -66,7 +66,7 @@ export default function Leads() {
         console.log("[v0] Fetching leads from backend...")
         const token = localStorage.getItem("token") // 🔑 get token
 
-        const res = await fetch("https://qms-2h5c.onrender.com/quotations/api/leads/", {
+        const res = await fetch("http://69.62.80.202/quotations/api/leads/", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -263,7 +263,7 @@ export default function Leads() {
         },
       })
 
-      const res = await fetch(`https://qms-2h5c.onrender.com/quotations/api/leads/${id}/`, {
+      const res = await fetch(`http://69.62.80.202/quotations/api/leads/${id}/`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -297,7 +297,7 @@ export default function Leads() {
 
       console.log("[v0] Fetching quotation for lead:", quotationId)
 
-      const res = await fetch(`https://qms-2h5c.onrender.com/quotations/api/quotations/${quotationId}/`, {
+      const res = await fetch(`http://69.62.80.202/quotations/api/quotations/${quotationId}/`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -339,7 +339,7 @@ export default function Leads() {
           Swal.showLoading()
         },
       })
-      const res = await fetch(`https://qms-2h5c.onrender.com/accounts/api/leads/${id}/status/`, {
+      const res = await fetch(`http://69.62.80.202/accounts/api/leads/${id}/status/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

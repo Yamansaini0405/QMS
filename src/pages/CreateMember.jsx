@@ -140,7 +140,7 @@ export default function CreateMember() {
       },
     })
 
-      const response = await fetch("https://qms-2h5c.onrender.com/accounts/api/admin/create/", {
+      const response = await fetch("http://69.62.80.202/accounts/api/admin/create/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
