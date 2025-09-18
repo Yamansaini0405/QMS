@@ -32,7 +32,7 @@ export default function AddProduct() {
     const fetchCategories = async () => {
       try {
         const token = localStorage.getItem("token")
-        const res = await fetch("http://69.62.80.202/quotations/api/categories/", {
+        const res = await fetch("https://api.nkprosales.com/quotations/api/categories/", {
           headers: { "Authorization": `Bearer ${token}` }
         })
         const data = await res.json()
@@ -125,7 +125,7 @@ export default function AddProduct() {
       console.log("Sending payload:", payload)
 
       const res = await fetch(
-        "http://69.62.80.202/quotations/api/products/create/",
+        "https://api.nkprosales.com/quotations/api/products/create/",
         {
           method: "POST",
           headers: {

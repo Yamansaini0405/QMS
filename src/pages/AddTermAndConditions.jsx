@@ -86,7 +86,7 @@ const handleSaveTerms = async () => {
 
     // Send to API
     const response = await fetch(
-      "http://69.62.80.202/quotations/api/terms/create/",
+      "https://api.nkprosales.com/quotations/api/terms/create/",
       {
         method: "POST",
         headers: {

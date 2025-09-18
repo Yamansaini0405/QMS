@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem("refreshToken")
 
       if (token) {
-        await fetch("http://69.62.80.202/accounts/api/logout/", {
+        await fetch("https://api.nkprosales.com/accounts/api/logout/", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,

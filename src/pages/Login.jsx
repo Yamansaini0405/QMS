@@ -59,8 +59,8 @@ const Login = () => {
     try {
       const apiEndpoint =
         formData.role === "admin"
-          ? "http://69.62.80.202/accounts/api/admin/login/"
-          : "http://69.62.80.202/accounts/api/salesperson/login/"
+          ? "https://api.nkprosales.com/accounts/api/admin/login/"
+          : "https://api.nkprosales.com/accounts/api/salesperson/login/"
 
       const response = await fetch(apiEndpoint, {
         method: "POST",

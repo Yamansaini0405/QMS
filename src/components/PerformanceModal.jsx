@@ -17,7 +17,7 @@ export default function PerformanceModal({ isOpen, onClose, member }) {
     try {
       setIsLoading(true)
       const token = localStorage.getItem("token")
-      const response = await fetch(`http://69.62.80.202/quotations/api/${member.id}/stats/`, {
+      const response = await fetch(`https://api.nkprosales.com/quotations/api/${member.id}/stats/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

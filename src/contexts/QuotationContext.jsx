@@ -142,7 +142,7 @@ export const QuotationProvider = ({ children }) => {
         try {
             const token = localStorage.getItem("token");
             const res = await fetch(
-                `http://69.62.80.202/quotations/api/quotations/${id}/`,
+                `https://api.nkprosales.com/quotations/api/quotations/${id}/`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
@@ -202,7 +202,7 @@ export const QuotationProvider = ({ children }) => {
     useEffect(() => {
         const fetchTerms = async () => {
             try {
-                const response = await fetch("http://69.62.80.202/quotations/api/terms/", {
+                const response = await fetch("https://api.nkprosales.com/quotations/api/terms/", {
                     headers: {
                         "Authorization": `Bearer ${localStorage.getItem("token")}`,
                     },
@@ -228,7 +228,7 @@ export const QuotationProvider = ({ children }) => {
             console.log("Sending payload:", payload)
 
             const res = await fetch(
-                "http://69.62.80.202/quotations/api/products/create/",
+                "https://api.nkprosales.com/quotations/api/products/create/",
                 {
                     method: "POST",
 
@@ -348,7 +348,7 @@ export const QuotationProvider = ({ children }) => {
             console.log("Creating quotation with payload:", payload);
 
             const response = await fetch(
-                "http://69.62.80.202/quotations/api/quotations/create/",
+                "https://api.nkprosales.com/quotations/api/quotations/create/",
                 {
                     method:  location.pathname.startsWith('/quotations/edit')  ? "PUT" : "POST",
                     headers: {
@@ -450,7 +450,7 @@ export const QuotationProvider = ({ children }) => {
         setIsSearchingProducts((prev) => ({ ...prev, [productIndex]: true }));
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("http://69.62.80.202/quotations/api/products/", {
+            const response = await fetch("https://api.nkprosales.com/quotations/api/products/", {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             const data = await response.json()
@@ -667,7 +667,7 @@ export const QuotationProvider = ({ children }) => {
         setIsSearchingCustomers(true);
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("http://69.62.80.202/quotations/api/customers/all/", {
+            const response = await fetch("https://api.nkprosales.com/quotations/api/customers/all/", {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             const data = await response.json();

@@ -13,7 +13,7 @@ const Header = () => {
       const token = localStorage.getItem("refreshToken")
 
       if (token) {
-        await fetch("http://69.62.80.202/accounts/api/logout/", {
+        await fetch("https://api.nkprosales.com/accounts/api/logout/", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -43,7 +43,7 @@ const Header = () => {
         if (!token) return;
 
         const response = await fetch(
-          "http://69.62.80.202/accounts/api/user/current/",
+          "https://api.nkprosales.com/accounts/api/user/current/",
           {
             method: "GET",
             headers: {

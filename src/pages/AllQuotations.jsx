@@ -30,7 +30,7 @@ export default function AllQuotations() {
       setLoading(true)
       try {
         // Replace with your actual API endpoint
-        const response = await fetch("http://69.62.80.202/quotations/api/quotations/", {
+        const response = await fetch("https://api.nkprosales.com/quotations/api/quotations/", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",

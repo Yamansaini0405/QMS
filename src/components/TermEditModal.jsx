@@ -97,7 +97,7 @@ export default function TermEditModal({ term, isOpen, onClose, onSave }) {
       }
 
       // Simulate API call - replace with actual API endpoint
-      const response = await fetch(`http://69.62.80.202/quotations/api/terms/${termId}/update/`, {
+      const response = await fetch(`https://api.nkprosales.com/quotations/api/terms/${termId}/update/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

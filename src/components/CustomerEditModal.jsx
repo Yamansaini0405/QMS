@@ -60,7 +60,7 @@ export default function CustomerEditModal({ customer, isOpen, onClose, onSave })
       })
 
       // Example API call (PUT or PATCH depending on your backend)
-      const response = await fetch(`http://69.62.80.202/quotations/api/customers/create/?id=${customer.id}`, {
+      const response = await fetch(`https://api.nkprosales.com/quotations/api/customers/create/?id=${customer.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

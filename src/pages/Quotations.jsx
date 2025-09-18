@@ -62,7 +62,7 @@ const Quotations = () => {
       setLoading(true)
       try {
         const token = localStorage.getItem("token")
-        const response = await fetch("http://69.62.80.202/quotations/api/customers/all/", {
+        const response = await fetch("https://api.nkprosales.com/quotations/api/customers/all/", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -161,7 +161,7 @@ const Quotations = () => {
       })
 
       const token = localStorage.getItem("token")
-      const response = await fetch(`http://69.62.80.202/quotations/api/quotations/${id}/`, {
+      const response = await fetch(`https://api.nkprosales.com/quotations/api/quotations/${id}/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -321,7 +321,7 @@ const Quotations = () => {
         },
       })
 
-      const res = await fetch(`http://69.62.80.202/accounts/api/quotations/${id}/status/`, {
+      const res = await fetch(`https://api.nkprosales.com/accounts/api/quotations/${id}/status/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -375,7 +375,7 @@ const Quotations = () => {
       // })
 
 
-      const response = await fetch("http://69.62.80.202/quotations/api/merge/", {
+      const response = await fetch("https://api.nkprosales.com/quotations/api/merge/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

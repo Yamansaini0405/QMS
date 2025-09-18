@@ -17,7 +17,7 @@ export default function CustomerActivityModal({ customer, isOpen, onClose }) {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch(`http://69.62.80.202/quotations/api/customers/${customerId}/`,{
+      const response = await fetch(`https://api.nkprosales.com/quotations/api/customers/${customerId}/`,{
         headers: {
             Authorization : `Bearer ${localStorage.getItem("token")}`
         }
