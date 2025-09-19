@@ -107,7 +107,7 @@ useEffect(() => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   {productSearchStates[index]?.showResults && (
-                    <div className="absolute z-100 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-scroll no-scrollbar">
+                    <div className="absolute z-100 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-scroll ">
                       {isSearchingProducts[index] ? (
                         <div className="px-4 py-3 text-sm text-gray-500">Searching products...</div>
                       ) : productSearchResults[index]?.length > 0 ? (

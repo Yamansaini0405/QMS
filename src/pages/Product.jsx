@@ -103,14 +103,14 @@ export default function Products() {
   const avgPrice = products.reduce((sum, p) => sum + Number(p.selling_price || 0), 0) / (products.length || 1)
 
   // Monthly sales calculation
-  const monthlySales = products.reduce((acc, p) => {
-    const date = new Date(p.created_at)
-    const month = date.toLocaleString("default", { month: "short", year: "numeric" }) // e.g., "Aug 2025"
-    if (!acc[month]) acc[month] = 0
-    acc[month] += Number(p.selling_price || 0)
-    return acc
-  }, {})
-  const totalMonthlySales = Object.values(monthlySales).reduce((sum, val) => sum + val, 0)
+  // const monthlySales = products.reduce((acc, p) => {
+  //   const date = new Date(p.created_at)
+  //   const month = date.toLocaleString("default", { month: "short", year: "numeric" }) // e.g., "Aug 2025"
+  //   if (!acc[month]) acc[month] = 0
+  //   acc[month] += Number(p.selling_price || 0)
+  //   return acc
+  // }, {})
+  // const totalMonthlySales = Object.values(monthlySales).reduce((sum, val) => sum + val, 0)
 
   const stats = [
     {
@@ -141,13 +141,13 @@ export default function Products() {
       color: "text-purple-500",
       bgColor: "bg-purple-100",
     },
-    {
-      title: "Monthly Sales",
-      value: totalMonthlySales.toFixed(2),
-      icon: TrendingUp,
-      color: "text-pink-500",
-      bgColor: "bg-pink-100",
-    },
+    // {
+    //   title: "Monthly Sales",
+    //   value: totalMonthlySales.toFixed(2),
+    //   icon: TrendingUp,
+    //   color: "text-pink-500",
+    //   bgColor: "bg-pink-100",
+    // },
   ]
 
   const handleSort = (key) => {
@@ -314,7 +314,7 @@ if (!result.isConfirmed) return
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
