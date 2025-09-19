@@ -41,7 +41,7 @@ useEffect(() => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-scroll no-scrollbar">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 ">
       <div className="flex items-center space-x-2 mb-6">
         <Package className="w-5 h-5 text-gray-600" />
         <h2 className="text-lg font-semibold text-gray-900">Add Products/Services</h2>
@@ -107,7 +107,7 @@ useEffect(() => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   {productSearchStates[index]?.showResults && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-100 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-scroll no-scrollbar">
                       {isSearchingProducts[index] ? (
                         <div className="px-4 py-3 text-sm text-gray-500">Searching products...</div>
                       ) : productSearchResults[index]?.length > 0 ? (
