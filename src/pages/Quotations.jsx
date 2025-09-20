@@ -489,30 +489,25 @@ const Quotations = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            {/* <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-            >
-              <option>All Status</option>
-              <option value="PENDING">Pending</option>
-              <option value="ACCEPTED">Accepted</option>
-              <option value="REJECTED">Rejected</option>
-              <option value="REVISED">Revised</option>
-            </select> */}
+
 
             {localStorage.getItem("role") === "ADMIN" ? <button
               onClick={handleExport}
               className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200"
             >
               <Download className="w-4 h-4" />
-              <span>Export All ({allQuotations.length})</span>
+              <span>Export All  ({filteredCustomers.reduce((total, customer) => {
+            return total + (customer.quotations ? customer.quotations.length : 0)
+          }, 0)})</span>
             </button> : ""}
           </div>
         </div>
 
         <p className="text-sm text-gray-500 mt-4">
-          Showing {filteredCustomers.length} customers with {allQuotations.length} total quotations
+          Showing {filteredCustomers.length} customers with {filteredCustomers.reduce((total, customer) => {
+            return total + (customer.quotations ? customer.quotations.length : 0)
+          }, 0)} total quotations
+          
         </p>
       </div>
 
