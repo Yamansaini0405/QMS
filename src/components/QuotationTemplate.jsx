@@ -35,27 +35,29 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
         </div>
 
         {/* Quotation Details */}
-        <div className="flex justify-between items-start mt-6">
+        <div className="flex justify-center items-center mt-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">QUOTATION</h2>
-            <div className="text-sm text-gray-600 space-y-1">
+            <h2 className="text-2xl text-center  font-bold text-gray-900 mb-2">QUOTATION</h2>
+            
+          </div>
+        </div>
+        <div className="text-sm text-gray-600 space-y-1 text-end">
               <p>
                 <strong>Date:</strong> {formData.quotationDate || "23/08/2025"}
               </p>
-              <p>
-                <strong>Valid Until:</strong> {formData.validUntil || "21-09-2025"}
-              </p>
+
             </div>
-          </div>
-        </div>
       </div>
 
       {/* Customer Information */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Bill To:</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-1">To:</h2>
         <div className="bg-gray-50 p-4 rounded-lg">
           {formData.customerName ? (
             <>
+            <p className="font-semibold">
+                <span className="font-semibold text-md">Company Name:</span> {formData.companyName}
+              </p>
               <p className="font-semibold">
                 <span className="font-semibold text-md">Customer Name:</span> {formData.customerName}
               </p>
@@ -154,7 +156,7 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
             </div>
             {formData.discount && (
               <div className="flex justify-between">
-                <span>Discount:</span>
+                <span>Special Discount:</span>
                 {formData.discountType === "percentage" ? (
                   <span>
                     {formData.discount}% (Rs. {((formData.subtotal * formData.discount) / 100).toFixed(2)})
@@ -212,6 +214,9 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
             <strong>Additional Notes:</strong> {formData.additionalNotes}
           </p>
         )}
+        <p className="mt-4">
+          <strong>Valid Until:</strong> {formData.validUntil || "21-09-2025"}
+        </p>
       </div>
 
       <div className="pt-6 mt-8">
@@ -245,7 +250,9 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
       {/* Signature */}
       <div className="flex justify-center items-center mt-8">
         <div>
-          <p className="text-sm text-gray-600">Thank you for your business!</p>
+          <p className="text-sm text-gray-900">Thank you for your business!</p>
+          <p className="text-sm text-gray-600">Created By: {localStorage.getItem("user")}</p>
+
         </div>
         {/* <div className="text-center">
           <div className="border-t border-gray-400 w-48 mb-2"></div>
