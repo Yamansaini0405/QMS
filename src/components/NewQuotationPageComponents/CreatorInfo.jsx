@@ -14,7 +14,7 @@ export default function CreatorInfo() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Created By *</label>
           <input
-            value={formData.createdBy}
+            value={localStorage.getItem("user")}
             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             readOnly
           />

@@ -25,7 +25,6 @@ export default function ProfilePage() {
           throw new Error("Error to fetch details")
         }
         const data = await response.json()
-        console.log(data)
         setUserData(data.data.user)
       } catch (error) {
         console.error("Error fetching user data:", error)

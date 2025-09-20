@@ -58,7 +58,8 @@ const Header = () => {
         }
 
         const data = await response.json();
-        console.log("Current user:", data.data.user); // 👀 see the structure
+        console.log("Current user:", data.data.user);
+        localStorage.setItem("user",data.data.user.username)
         setUser(data.data.user.username);
         setRole(data.data.user.role)
         console.log(data.data.user.role)

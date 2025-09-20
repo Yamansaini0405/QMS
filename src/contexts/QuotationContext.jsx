@@ -340,7 +340,7 @@ export const QuotationProvider = ({ children }) => {
                 items,
                 quotation_id: id ? Number(id) : "",
                 send_immediately: true,
-                createdBy: localStorage.getItem("role"),
+                createdBy: localStorage.getItem("user"),
                 digitalSignature:formData.digitalSignature,
                 additionalNotes: formData.additionalNotes
             };
