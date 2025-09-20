@@ -389,13 +389,13 @@ export default function CustomersPage() {
                       >
                         <Clock className="w-4 h-4" />
                       </button>:""}
-                      <button
+                      {localStorage.getItem("role") == "ADMIN" ? <button
                         onClick={() => handleEditCustomer(cust)}
                         className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
                         title="Edit Customer"
                       >
                         <Edit className="w-4 h-4" />
-                      </button>
+                      </button> :""}
                       {localStorage.getItem("role") == "ADMIN" ? (
                         <button
                           onClick={() => handleDeleteCustomer(cust.id)}

@@ -104,7 +104,7 @@ const Sidebar = () => {
       title: "Terms",
       icon: ScrollText,
       hasSubmenu: true,
-      roles: ["ADMIN"], // only admin
+      roles: ["ADMIN", "SALESPERSON"], // only admin
       subItems: [
         { title: "Create Terms", path: "/terms/create", icon: Plus },
         { title: "View Terms", path: "/terms", icon: Eye },

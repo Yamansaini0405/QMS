@@ -488,20 +488,20 @@ if (!result.isConfirmed) return
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button
+                      {localStorage.getItem("role") == "ADMIN" ? <button
                         onClick={() => handleEditProduct(product)}
                         className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
                         title="Edit product"
                       >
                         <Edit className="w-4 h-4" />
-                      </button>
-                      <button
+                      </button>:""}
+                      {localStorage.getItem("role") == "ADMIN" ?<button
                         onClick={() => handleDeleteProduct(product.id)}
                         className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
                         title="Delete product"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </button>:""}
                     </div>
                   </td>
                 </tr>

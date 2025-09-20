@@ -60,13 +60,13 @@ function App() {
               <Route path="/quotations/duplicate/:id" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><NewQuotationPage /></ProtectedRoute>} />
               <Route path="/customers/create" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><AddCustomer /></ProtectedRoute>} />
               <Route path="/products/create" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><AddProduct /></ProtectedRoute>} />
-              <Route path="/terms/create" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AddTermsConditions /></ProtectedRoute>} />
+              <Route path="/terms/create" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><AddTermsConditions /></ProtectedRoute>} />
               <Route path="/leads/create" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><AddLeads /></ProtectedRoute>} />
               <Route path="/leads" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><Leads /></ProtectedRoute>} />
               <Route path="/customers" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><Customer /></ProtectedRoute>} />
               <Route path="/products" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><Products /></ProtectedRoute>} />
               <Route path="/members/create" element={<ProtectedRoute allowedRoles={["ADMIN"]}><CreateMember /></ProtectedRoute>} />
-              <Route path="/terms" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ViewTermsAndCondition /></ProtectedRoute>} />
+              <Route path="/terms" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><ViewTermsAndCondition /></ProtectedRoute>} />
               <Route path="/members" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ViewMembers /></ProtectedRoute>} /> 
               <Route path="/profile" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><ProfilePage /></ProtectedRoute>} /> 
               {/* ...other admin routes... */}
