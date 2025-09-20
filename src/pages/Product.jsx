@@ -179,9 +179,9 @@ export default function Products() {
   const filteredProducts = sortedProducts.filter((product) => {
     // Search filter
     const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase())
+      product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category?.toLowerCase().includes(searchTerm.toLowerCase())
 
     // Category filter
     const matchesCategory = categoryFilter === "All Categories" || product.category === categoryFilter
