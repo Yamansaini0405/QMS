@@ -7,10 +7,10 @@ import Swal from "sweetalert2"
 
 export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
   const [formData, setFormData] = useState({
-    id:"",
+    id: "",
     name: "",
     description: "",
-    category: "hardware",
+    category: "",
     brand: "",
     active: true,
     cost_price: 0,
@@ -21,7 +21,52 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
     dimensions: "",
     warranty_months: "",
   })
+  const [categories, setCategories] = useState([])
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [filteredCategories, setFilteredCategories] = useState([])
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        const res = await fetch("https://api.nkprosales.com/quotations/api/categories/", {
+          headers: { "Authorization": `Bearer ${token}` }
+        })
+        const data = await res.json()
+        setCategories(data || [])
+        console.log("category", data);
+      } catch (err) {
+        console.error("Error fetching categories:", err)
+      }
+    }
+    fetchCategories()
+  }, [])
+
+  const handleCategoryChange = (e) => {
+    const value = e.target.value
+    setFormData({ ...formData, category: value })
+
+    if (value.trim() === "") {
+      setFilteredCategories(categories)
+    } else {
+      const filtered = categories.filter((cat) =>
+        cat.name.toLowerCase().includes(value.toLowerCase())
+      )
+      setFilteredCategories(filtered)
+
+    }
+    setShowDropdown(true)
+  }
+
+  // when selecting category from dropdown
+  const handleSelectCategory = (categoryName) => {
+    setFormData({
+      ...formData,
+      category: categoryName
+    })
+    setShowDropdown(false)
+  }
 
   useEffect(() => {
     if (product && isOpen) {
@@ -63,13 +108,13 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
     try {
 
       Swal.fire({
-                title: "Updating...",
-                text: "Please wait while we update your Product.",
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading()
-                },
-            })
+        title: "Updating...",
+        text: "Please wait while we update your Product.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
 
       const token = localStorage.getItem("token")
       const payload = {
@@ -92,13 +137,13 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
       })
       console.log("sending data", payload)
       if (!res.ok) throw new Error("Failed to update product")
-        Swal.fire("Updated!", "Product has been updated", "success")
+      Swal.fire("Updated!", "Product has been updated", "success")
       const updatedProduct = await res.json()
       onSave(updatedProduct)
       onClose()
     } catch (error) {
       console.error("Error updating product:", error)
-      Swal.fire("Error!", "Failed to updated product","error")
+      Swal.fire("Error!", "Failed to updated product", "error")
     } finally {
       setLoading(false)
     }
@@ -108,9 +153,9 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-    onClick={onClose}>
+      onClick={onClose}>
       <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto no-scrollbar"
-      onClick={(e) => e.stopPropagation()}>
+        onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
@@ -156,20 +201,37 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                <select
-                  name="category"
+              <div className="mb-4 relative">
+                <label className="block text-sm font-medium mb-1">Category</label>
+                <input
+                  type="text"
                   value={formData.category}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="hardware">Hardware</option>
-                  <option value="software">Software</option>
-                  <option value="services">Services</option>
-                  <option value="support">Support</option>
-                  <option value="consulting">Consulting</option>
-                </select>
+                  onChange={handleCategoryChange}
+                  onFocus={() => setShowDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+
+                  placeholder="Search category..."
+                  className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+
+                {/* Dropdown */}
+                {showDropdown && (
+                  <ul className="absolute z-10 bg-white border rounded-lg w-full max-h-40 overflow-y-auto mt-1 shadow-lg" >
+                    {filteredCategories.length > 0 ? (
+                      filteredCategories.map((cat, idx) => (
+                        <li
+                          key={idx}
+                          onMouseDown={() => handleSelectCategory(cat.name)}
+                          className="px-3 py-2 cursor-pointer hover:bg-blue-100"
+                        >
+                          {cat.name}
+                        </li>
+                      ))
+                    ) : (
+                      <li className="px-3 py-2 text-gray-500 italic">No category found</li>
+                    )}
+                  </ul>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>

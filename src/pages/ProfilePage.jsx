@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { User, Mail, Phone, MapPin, Calendar, Shield, Edit3 } from "lucide-react"
+import { User, Mail, Phone, MapPin, Calendar, Shield, Edit3, PhoneCall } from "lucide-react"
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState(null)
@@ -25,6 +25,7 @@ export default function ProfilePage() {
           throw new Error("Error to fetch details")
         }
         const data = await response.json()
+        console.log("current profile",data.data.user)
         setUserData(data.data.user)
       } catch (error) {
         console.error("Error fetching user data:", error)
@@ -164,13 +165,12 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Role */}
+              {/* Phone */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                <div className="flex items-center">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRoleColor(userData.role)}`}>
-                    {userData.role}
-                  </span>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Phone no: </label>
+                <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 flex items-center gap-2">
+                  <PhoneCall className="w-4 h-4 text-gray-500" />
+                  {userData.phone}
                 </div>
               </div>
 
@@ -183,18 +183,16 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Status */}
+              {/* Role */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Account Status</label>
-                <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${userData.is_active ? "bg-green-500" : "bg-red-500"}`}></div>
-                  <span className={`text-sm font-medium ${userData.is_active ? "text-green-700" : "text-red-700"}`}>
-                    {userData.is_active ? "Active" : "Inactive"}
+                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                <div className="flex items-center">
+                  <span className={`px-3 py-2 rounded-full text-sm font-medium ${getRoleColor(userData.role)}`}>
+                    {userData.role}
                   </span>
                 </div>
               </div>
-
-              
+  
             </div>
           </div>
 
