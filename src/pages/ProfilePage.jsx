@@ -170,7 +170,7 @@ export default function ProfilePage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Phone no: </label>
                 <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 flex items-center gap-2">
                   <PhoneCall className="w-4 h-4 text-gray-500" />
-                  {userData.phone}
+                  {userData.phone_number}
                 </div>
               </div>
 

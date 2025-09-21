@@ -116,6 +116,7 @@ const Sidebar = () => {
     <div className="w-72 bg-white shadow-lg border-r border-gray-200 flex flex-col">
       {/* Logo */}
       <div className="px-6 py-4.5 border-b border-gray-200">
+        <Link to="/dashboard">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
             <FileText className="w-6 h-6 text-white" />
@@ -125,6 +126,8 @@ const Sidebar = () => {
             <p className="text-sm text-gray-500">{role === "ADMIN" ? "Admin Panel" : "Salesperson Panel"}</p>
           </div>
         </div>
+        
+        </Link>
       </div>
 
       {/* Navigation */}
