@@ -288,7 +288,7 @@ export default function ViewTermsAndCondition() {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                     {localStorage.getItem("role") === "admin" ?  <button
+                     {localStorage.getItem("role") === "ADMIN" ?  <button
                         onClick={() => handleDeleteTerm(term.id)}
                         className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
                         title="Delete Terms"

@@ -192,17 +192,7 @@ const Sidebar = () => {
       {/* Quick Links */}
       <div className="p-4 border-t border-gray-200">
         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">© 2025 QMS. All Rights Reserved.</h3>
-        <div className="space-y-2">
-          {role === "admin" && ( // 👈 Settings only for Admin
-            <Link
-              to="/settings"
-              className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
-            >
-              <Settings className="w-4 h-4" />
-              <span>Settings</span>
-            </Link>
-          )}
-        </div>
+      
       </div>
     </div>
   )

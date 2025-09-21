@@ -72,7 +72,7 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
   }
   useEffect(() => {
     fetchTerms()
-  })
+  },[])
 
   const fetchProducts = async () => {
     try {
