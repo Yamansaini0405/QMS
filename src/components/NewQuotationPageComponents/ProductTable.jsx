@@ -41,7 +41,7 @@ useEffect(() => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 ">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-x-scroll no-scrollbar">
       <div className="flex items-center space-x-2 mb-6">
         <Package className="w-5 h-5 text-gray-600" />
         <h2 className="text-lg font-semibold text-gray-900">Add Products/Services</h2>

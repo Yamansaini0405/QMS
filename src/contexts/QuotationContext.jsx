@@ -93,6 +93,7 @@ export const QuotationProvider = ({ children }) => {
         status: "",
         createdBy: localStorage.getItem("role"),
         digitalSignature: "",
+        send_immediately:false,
     });
 
 
@@ -339,7 +340,7 @@ export const QuotationProvider = ({ children }) => {
                 terms: selectedTerms,
                 items,
                 quotation_id: id ? Number(id) : "",
-                send_immediately: true,
+                send_immediately: formData.send_immediately === true ? true : false,
                 createdBy: localStorage.getItem("user"),
                 digitalSignature:formData.digitalSignature,
                 additionalNotes: formData.additionalNotes
@@ -396,6 +397,7 @@ export const QuotationProvider = ({ children }) => {
                 additionalNotes: "",
                 createdBy: localStorage.getItem("role"),
                 digitalSignature: "",
+                send_immediately:false,
             });
 
             setSelectedTerms([]); // also reset terms if needed

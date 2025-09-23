@@ -4,7 +4,7 @@ import { Settings, Calendar } from "lucide-react"
 import { useQuotation } from "../../contexts/QuotationContext"
 
 export default function AdditionalSettings() {
-  const { formData, updateFormData } = useQuotation()
+  const { formData, updateFormData, setFormData } = useQuotation()
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -119,6 +119,25 @@ export default function AdditionalSettings() {
           onChange={(e) => updateFormData("additionalNotes", e.target.value)}
         />
       </div>
+        <div className="mt-6 flex items-center">
+          <label className="block text-sm font-medium text-gray-700 mr-4">
+            Send Immediately
+          </label>
+          <button
+            type="button"
+            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none ${
+              formData.send_immediately ? "bg-blue-600" : "bg-gray-300"
+            }`}
+            onClick={() => updateFormData("send_immediately", !formData.send_immediately)}
+            aria-pressed={formData.send_immediately}
+          >
+            <span
+              className={`inline-block w-5 h-5 transform bg-white rounded-full transition-transform ${
+                formData.send_immediately ? "translate-x-5" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
     </div>
   )
 }

@@ -353,7 +353,14 @@ export default function Leads() {
       }
 
       // ✅ Update UI
-      setLeads((prev) => prev.map((lead) => (lead.id === id ? { ...lead, status: newStatus } : lead)))
+      setCustomers(prev =>
+        prev.map(customer => ({
+          ...customer,
+          leads: customer.leads
+            ? customer.leads.filter(lead => lead.id !== id)
+            : []
+        }))
+      );
 
       console.log("[v0] Status updated in backend:", id, newStatus)
       Swal.fire("Updated!", "The lead has been updated.", "success")
@@ -739,7 +746,7 @@ export default function Leads() {
                                       <Eye className="w-4 h-4" />
                                     </button> */}
                                       <button
-                                        onClick={() => handleDeleteLead(lead.id)}
+                                        onClick={() => handleDeleteLead(lead.id, customer)}
                                         className="p-1 text-gray-400 hover:text-red-600"
                                         title="Delete Lead"
                                       >
