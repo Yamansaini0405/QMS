@@ -16,9 +16,12 @@ import {
     ArrowLeftRight,
     ArrowUp,
     ArrowDown,
-    Edit
+    Edit,
+    Trash2
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import Swal from "sweetalert2";
+
 
 export default function DraftQuotations() {
     const [quotations, setQuotations] = useState([])
@@ -53,6 +56,53 @@ export default function DraftQuotations() {
 
         fetchQuotations()
     }, [])
+
+    const handleDeleteQuotation = async (id) => {
+        const result = await Swal.fire({
+          title: "Are you sure?",
+          text: "This quotation will be permanently deleted!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Yes, delete it!",
+        })
+    
+        if (!result.isConfirmed) return
+    
+        try {
+    
+          Swal.fire({
+            title: "Deleting...",
+            text: "Please wait while we delete your Quotation.",
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading()
+            },
+          })
+    
+          const token = localStorage.getItem("token")
+          const response = await fetch(`https://api.nkprosales.com/quotations/api/quotations/${id}/`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+    
+          if (!response.ok) {
+            const errorText = await response.text()
+            Swal.fire("Error!", `Failed to delete: ${errorText}`, "error")
+            throw new Error(`Delete failed: ${response.status} - ${errorText}`)
+          }
+
+           setQuotations((prev) => prev.filter((q) => q.id !== id));
+    
+          Swal.fire("Deleted!", "The quotation has been deleted.", "success")
+        } catch (error) {
+          console.error("Failed to delete quotation:", error)
+          Swal.fire("Error!", "Something went wrong while deleting.", "error")
+        }
+      }
 
     const getStatusIcon = (status) => {
         switch (status) {
@@ -317,16 +367,28 @@ export default function DraftQuotations() {
                                                 <span className="text-sm text-gray-900">{quotation.assigned_to?.name || "Unassigned"}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center space-x-2 bg-green-700 rounded-lg px-1">
+                                        <td className="px-6 py-8 flex items-center justify-center gap-1">
+                                            <div className="flex items-center space-x-2 bg-green-700 rounded-lg p-1.5">
                                                 <button
                                                     onClick={() => navigate(`/quotations/edit/${quotation.id}`)}
-                                                    className="p-1 text-white hover:text-green-600 flex items-center justify-center gap-1"
+                                                    className=" text-white hover:text-green-600 flex items-center justify-center gap-1"
                                                     title="Edit Quotation"
                                                 >
-                                                    <Edit className="w-4 h-4" />Edit
+                                                    <Edit className="w-4 h-4" />
                                                 </button>
+                                                
 
+                                            </div>
+                                            <div className="flex items-center space-x-2 bg-red-700 rounded-lg p-1.5">
+                                                <button
+                                                    onClick={() => {
+                                                        handleDeleteQuotation(quotation.id)
+                                                    }}
+                                                    className="flex items-center space-x-2 w-full text-sm text-white"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                    
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
