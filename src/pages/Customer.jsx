@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Users, Building2, Phone, Star, Search, Download, Eye, Edit, Trash2, ArrowUp, ArrowDown, Clock } from "lucide-react"
+import { Users, Building2, Phone, Star, Search, Download, Eye, Edit, Trash2, ArrowUp, ArrowDown, Clock, User2 } from "lucide-react"
 import CustomerViewModal from "@/components/CustomerViewModal"
 import CustomerEditModal from "@/components/CustomerEditModal"
 import CustomerActivityModal from "@/components/CustomerActivityModal"
@@ -414,6 +414,12 @@ export default function CustomersPage() {
             </tbody>
           </table>
         </div>
+        {filteredCustomers?.length === 0 && (
+          <div className="text-center py-12">
+            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No Customer found</p>
+          </div>
+        )}
       </div>
       <CustomerViewModal customer={selectedCustomer} isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} />
 

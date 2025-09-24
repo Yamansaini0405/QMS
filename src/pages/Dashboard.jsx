@@ -234,6 +234,12 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
+          {topPerformers?.length === 0 && (
+            <div className="text-center py-8">
+              <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No Top Performer found</p>
+            </div>
+          )}
         </div>
       </div> : ""}
 
@@ -244,14 +250,15 @@ const Dashboard = () => {
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center justify-center gap-1">
-                <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
-                <FileText className="w-4 h-4 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900">Recent Quotations</h2>
+
+                <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-purple-500" />
+                </div>
+                <h2 className="text-2xl font-semibold text-gray-900">Recent Quotations</h2>
               </div>
               <div className="flex items-center space-x-3">
                 <Link to="/quotations/new">
-                  <button className="flex items-center space-x-2 px-4 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                  <button className="flex items-center space-x-2 px-4 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors duration-200">
                     <Plus className="w-4 h-4" />
                     <span>New Quotation</span>
                   </button>
@@ -290,6 +297,12 @@ const Dashboard = () => {
                 </div>
               ))}
             </div>
+            {recentQuotations?.length === 0 && (
+              <div className="text-center py-12">
+                <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No Recent Quotations found</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -298,14 +311,15 @@ const Dashboard = () => {
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center justify-center gap-1">
-                <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
-                  <Target className="w-4 h-4 text-white" />
+              
+                <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
+                  <Target className="w-6 h-6 text-orange-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Recent Leads</h2>
+                <h2 className="text-2xl font-semibold text-gray-900">Recent Leads</h2>
               </div>
               <div className="flex items-center space-x-3">
                 <Link to="/leads/create">
-                  <button className="flex items-center space-x-2 px-4 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-emerald-700 transition-colors duration-200">
+                  <button className="flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 transition-colors duration-200">
                     <Plus className="w-4 h-4" />
                     <span>New Lead</span>
                   </button>
@@ -339,6 +353,12 @@ const Dashboard = () => {
                 </div>
               ))}
             </div>
+            {recentLeads?.length === 0 && (
+              <div className="text-center py-12">
+                <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No Recent Leads found</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -174,6 +174,13 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+          <button
+            onClick={openPasswordDialog}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            <Lock className="w-4 h-4" />
+            Change Password
+          </button>
         </div>
       </div>
 
@@ -284,27 +291,11 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Security */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <Lock className="w-5 h-5 text-gray-600" />
-                <h2 className="text-lg font-semibold text-gray-900">Security</h2>
-              </div>
-              <button
-                onClick={openPasswordDialog}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-              >
-                <Lock className="w-4 h-4" />
-                Change Password
-              </button>
-            </div>
-            <p className="text-gray-600">Manage your account security and password settings.</p>
-          </div>
+          
         </div>
       </div>
 
-     
+
 
       {/* Password Change Dialog */}
       {showPasswordDialog && (
@@ -390,11 +381,10 @@ export default function ProfilePage() {
               {/* Message Display */}
               {passwordMessage.text && (
                 <div
-                  className={`p-3 rounded-lg ${
-                    passwordMessage.type === "success"
+                  className={`p-3 rounded-lg ${passwordMessage.type === "success"
                       ? "bg-green-50 text-green-800 border border-green-200"
                       : "bg-red-50 text-red-800 border border-red-200"
-                  }`}
+                    }`}
                 >
                   {passwordMessage.text}
                 </div>

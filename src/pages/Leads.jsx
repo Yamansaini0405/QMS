@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trash2, Building2 } from "lucide-react"
+import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trash2, Building2, FileText } from "lucide-react"
 import LeadViewModal from "../components/LeadViewModal"
 import { Link } from "react-router-dom"
 import QuotationEditModal from "@/components/QuotationEditModel"
@@ -515,17 +515,17 @@ export default function Leads() {
               />
 
             </div>
-            
+
           </div>
           {localStorage.getItem("role") === "ADMIN" ? <div>
-              <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                onClick={() => handleExportExcel()}>
-                <Download className="w-4 h-4" />
-                <span>Export All {filteredCustomers.reduce((count, customer) => {
-                  return count + (customer.leads ? customer.leads.length : 0)
-                }, 0)}</span>
-              </button>
-            </div> :""}
+            <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              onClick={() => handleExportExcel()}>
+              <Download className="w-4 h-4" />
+              <span>Export All {filteredCustomers.reduce((count, customer) => {
+                return count + (customer.leads ? customer.leads.length : 0)
+              }, 0)}</span>
+            </button>
+          </div> : ""}
 
           {/* <div className="flex items-center space-x-4">
             <select
@@ -769,6 +769,12 @@ export default function Leads() {
             </tbody>
           </table>
         </div>
+        {filteredCustomers?.length === 0 && (
+          <div className="text-center py-12">
+            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No Leads found</p>
+          </div>
+        )}
       </div>
       <CustomerViewModal customer={selectedCustomer} isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} />
 

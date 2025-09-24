@@ -510,6 +510,12 @@ if (!result.isConfirmed) return
             </tbody>
           </table>
         </div>
+        {filteredProducts?.length === 0 && (
+          <div className="text-center py-12">
+            <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No Products found</p>
+          </div>
+        )}
       </div>
       <ProductViewModal product={selectedProduct} isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} />
 

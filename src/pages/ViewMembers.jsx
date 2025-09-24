@@ -364,6 +364,12 @@ export default function ViewMembers() {
             </tbody>
           </table>
         </div>
+        {filteredMembers?.length === 0 && (
+          <div className="text-center py-12">
+            <UserCog className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No Members found</p>
+          </div>
+        )}
       </div>
 
       {/* PerformanceModal component */}
