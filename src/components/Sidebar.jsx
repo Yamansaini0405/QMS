@@ -13,9 +13,10 @@ import {
   Plus,
   Eye,
   UserPlus,
-  Settings,
   Shield,
   ScrollText,
+  SaveAll,
+  Menu,
 } from "lucide-react"
 
 
@@ -52,7 +53,8 @@ const Sidebar = () => {
       subItems: [
         { title: "Create Quotation", path: "/quotations/new", icon: Plus },
         { title: "All Quotations", path: "/quotations", icon: Eye },
-        { title: "List of Quotations", path: "/quotations/all", icon: Eye },
+        { title: "List of Quotations", path: "/quotations/all", icon: Menu },
+        { title: "Draft Quotations", path: "/quotations/draft", icon: SaveAll },
       ],
     },
     {
