@@ -81,7 +81,7 @@ const Quotations = () => {
     fetchCustomers()
   }, [])
 
-  const allQuotations = customers.flatMap((customer) => customer.quotations || [])
+  const allQuotations = customers.flatMap((customer) => (customer.quotations || []).filter((q) => q.status !== "DRAFT"))
 
   const totalValue = allQuotations.reduce((sum, q) => {
     const value = typeof q.total === "string" ? Number.parseFloat(q.total.replace(/[^\d.]/g, "")) : Number(q.total) || 0
@@ -549,7 +549,7 @@ const Quotations = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredCustomers
-                .filter((c) => c.quotations && c.quotations.length > 0)
+                .filter((c) => c.quotations && c.quotations.filter(q => q.status !== "DRAFT").length > 0)
                 .map((customer, index) => (
                   <>
                     {/* Customer Row */}
@@ -624,7 +624,7 @@ const Quotations = () => {
                               </thead>
                               <tbody>
                                 {console.log(customer.quotations)}
-                                {sortQuotations(customer.quotations).map((quotation) => (
+                                {sortQuotations(customer.quotations.filter(q => q.status !== "DRAFT")).map((quotation) => (
                                   <tr key={quotation.id} className="border-t hover:bg-white">
                                     <td className="px-4 py-2 font-medium text-gray-900">{quotation.quotation_number}</td>
                                     <td className="px-4 py-2 font-semibold text-gray-900">₹{quotation.total}</td>

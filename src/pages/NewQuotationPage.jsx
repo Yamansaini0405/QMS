@@ -64,7 +64,7 @@ function NewQuotationPageContent() {
                 className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
                 <Send className="w-4 h-4" />
-                <span>{isGeneratingPDF ? "Updating..." : "Update & Send"}</span>
+                <span>{isGeneratingPDF ? "Updating..." : `Update & ${formData.send_immediately? "& Send" : ""}`}</span>
               </button> :
               <button
                 onClick={createQuotation}
@@ -72,7 +72,7 @@ function NewQuotationPageContent() {
                 className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
                 <Send className="w-4 h-4" />
-                <span>{isGeneratingPDF ? "Duplicating..." : "Duplicate & Send"}</span>
+                <span>{isGeneratingPDF ? "Duplicating..." : `Duplicate ${formData.send_immediately? "& Send" : ""}`}</span>
               </button>
 
               : <button
@@ -81,7 +81,7 @@ function NewQuotationPageContent() {
                 className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
                 <Send className="w-4 h-4" />
-                <span>{isGeneratingPDF ? "Creating..." : "Create & Send"}</span>
+                <span>{isGeneratingPDF ? "Creating..." : `Create ${formData.send_immediately? "& Send" : ""}`}</span>
               </button>}
 
 

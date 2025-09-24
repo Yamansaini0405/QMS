@@ -332,7 +332,28 @@ export const QuotationProvider = ({ children }) => {
                     primary_address: formData.address,
                 },
                 auto_assign: true,
-                status: "PENDING",
+                status: formData.status,
+                discount: formData.discount ? Number.parseFloat(formData.discount) : 0,
+                tax_rate: formData.taxRate,
+                discount_type: formData.discountType,
+                follow_up_date: formatDateToBackend(formData.validUntil),
+                terms: selectedTerms,
+                items,
+                quotation_id: id ? Number(id) : "",
+                send_immediately: formData.send_immediately === true ? true : false,
+                createdBy: localStorage.getItem("user"),
+                digitalSignature:formData.digitalSignature,
+                additionalNotes: formData.additionalNotes
+            };
+            const updatePayload = {
+                customer: {
+                    name: formData.customerName,
+                    email: formData.email,
+                    phone: formData.phone,
+                    company_name: formData.companyName,
+                    primary_address: formData.address,
+                },
+                auto_assign: true,
                 discount: formData.discount ? Number.parseFloat(formData.discount) : 0,
                 tax_rate: formData.taxRate,
                 discount_type: formData.discountType,
@@ -356,7 +377,7 @@ export const QuotationProvider = ({ children }) => {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify(payload),
+                    body: id ? JSON.stringify(updatePayload) :JSON.stringify(payload) ,
                 }
             );
 
@@ -459,7 +480,7 @@ export const QuotationProvider = ({ children }) => {
 
             const newProduct = { id: "", name: query.trim(), quantity: 1, selling_price: 0, percentage_discount: 0 }
 
-            data?.data.push(newProduct);
+            // data?.data.push(newProduct);
 
             const filtered = (data.data || []).filter((product) =>
                 product.name.toLowerCase().includes(query.toLowerCase()) ||
