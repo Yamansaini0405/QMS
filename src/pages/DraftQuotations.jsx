@@ -195,7 +195,7 @@ export default function DraftQuotations() {
 
                     </div>
                     <p className="text-sm text-gray-500 mt-4">
-                        Showing {filteredQuotations.length} of {quotations.length} quotations
+                        Showing {filteredQuotations.length} of {filteredQuotations.length} quotations
                     </p>
                 </div>
 
