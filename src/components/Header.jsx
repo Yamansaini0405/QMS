@@ -1,10 +1,10 @@
 
-import { Settings, LogOut, User, Users } from "lucide-react"
+import { Settings, LogOut, User, Users, Menu } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
 
 
-const Header = () => {
+const Header = ({ onMenuClick }) => {
   const navigate = useNavigate()
   
 
@@ -74,11 +74,18 @@ const Header = () => {
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
+        {/* Mobile menu icon */}
+        <button
+          className="block md:hidden mr-4 focus:outline-none"
+          onClick={onMenuClick}
+          aria-label="Open sidebar"
+        >
+          <Menu className="w-7 h-7 text-gray-700" />
+        </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Quotation Management System</h1>
-          <p className="text-sm text-gray-500">Comprehensive business management platform</p>
+          <h1 className="text-2xl hidden md:block font-bold text-gray-900">Quotation Management System</h1>
+          <p className="text-sm hidden md:block text-gray-500">Comprehensive business management platform</p>
         </div>
-
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-green-600 rounded-lg  flex items-center justify-center">
@@ -89,7 +96,6 @@ const Header = () => {
               <p className="text-xs text-gray-500">{role}</p>
             </div>
           </div>
-
           <div className="flex items-center space-x-2">
             <Link to="/profile">
             <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200">

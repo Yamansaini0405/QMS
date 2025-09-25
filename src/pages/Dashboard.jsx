@@ -254,7 +254,7 @@ const Dashboard = () => {
                 <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
                   <FileText className="w-6 h-6 text-purple-500" />
                 </div>
-                <h2 className="text-2xl font-semibold text-gray-900">Recent Quotations</h2>
+                <h2 className="text-lg md:text-2xl font-semibold text-gray-900">Recent Quotations</h2>
               </div>
               <div className="flex items-center space-x-3">
                 <Link to="/quotations/new">
@@ -315,7 +315,7 @@ const Dashboard = () => {
                 <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
                   <Target className="w-6 h-6 text-orange-600" />
                 </div>
-                <h2 className="text-2xl font-semibold text-gray-900">Recent Leads</h2>
+                <h2 className="text-lg md:text-2xl font-semibold text-gray-900">Recent Leads</h2>
               </div>
               <div className="flex items-center space-x-3">
                 <Link to="/leads/create">

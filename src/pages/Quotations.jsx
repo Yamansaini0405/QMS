@@ -435,13 +435,13 @@ const Quotations = () => {
               <FileText className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">All Quotations</h1>
-              <p className="text-gray-600">Manage and track all quotations</p>
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900">All Quotations</h1>
+              <p className="text-sm md:text-md text-gray-600">Manage and track all quotations</p>
             </div>
           </div>
         </div>
         <Link to="/quotations/new">
-          <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
+          <button className="flex items-center md:space-x-2 px-2 py-1 md:px-4 md:py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
             <Plus className="w-4 h-4" />
             <span>New Quotation</span>
           </button>

@@ -36,15 +36,15 @@ function NewQuotationPageContent() {
             </div>
             <div>
 
-              <h1 className="text-2xl font-semibold text-gray-900">{id ? "Edit" : "New"} Quotation</h1>
-              <p className="text-gray-600">Create a new quotation for your customer</p>
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900">{id ? "Edit" : "New"} Quotation</h1>
+              <p className="text-sm md:text-md text-gray-600">Create a new quotation for your customer</p>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setShowPreview(!showPreview)}
-              className="flex items-center space-x-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              className="flex items-center md:space-x-2 px-2 py-1 md:px-4 md:py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
             >
               {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               <span>{showPreview ? "Hide Preview" : "Live Preview"}</span>
@@ -57,7 +57,8 @@ function NewQuotationPageContent() {
             <FileText className="w-4 h-4" />
             <span>Download PDF</span>
           </button> */}
-            {id ? location.pathname.startsWith("/quotations/edit") ?
+            <div className="hidden md:block">
+              {id ? location.pathname.startsWith("/quotations/edit") ?
               <button
                 onClick={createQuotation}
                 disabled={isGeneratingPDF}
@@ -83,6 +84,7 @@ function NewQuotationPageContent() {
                 <Send className="w-4 h-4" />
                 <span>{isGeneratingPDF ? "Creating..." : `Create ${formData.send_immediately? "& Send" : ""}`}</span>
               </button>}
+            </div>
 
 
 

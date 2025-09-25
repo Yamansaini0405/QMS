@@ -219,8 +219,8 @@ export default function DraftQuotations() {
                             <FileText className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-semibold text-gray-900">Draft Quotations</h1>
-                            <p className="text-gray-600">Manage and track all your draft quotations</p>
+                            <h1 className="text-xl md:text-2xl font-semibold text-gray-900">Draft Quotations</h1>
+                            <p className="text-sm md:text-md text-gray-600">Manage and track all your draft quotations</p>
                         </div>
                     </div>
                 </div>

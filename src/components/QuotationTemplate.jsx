@@ -89,7 +89,7 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
       </div>
 
       {/* Products/Services Table */}
-      <div className="mb-8">
+      <div className="mb-8 overflow-scroll">
         {formData.products && formData.products.length > 0 && (
           <>
             {(() => {

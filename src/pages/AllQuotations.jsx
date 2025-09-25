@@ -196,8 +196,8 @@ export default function AllQuotations() {
               <FileText className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Quotations</h1>
-              <p className="text-gray-600">Manage and track all your quotations</p>
+              <h1 className= "text-xl md:text-2xl font-semibold text-gray-900">Quotations</h1>
+              <p className="text-sm md:text-md text-gray-600">Manage and track all your quotations</p>
             </div>
           </div>
         </div>

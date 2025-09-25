@@ -167,8 +167,8 @@ export default function AddProduct() {
                 <Package className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">New Product</h1>
-                <p className="text-gray-600">Add a new product to your catalog</p>
+                <h1 className="text-xl md:text-2xl font-semibold text-gray-900">New Product</h1>
+                <p className="text-sm md:text-md text-gray-600">Add a new product to your catalog</p>
               </div>
             </div>
           </div>

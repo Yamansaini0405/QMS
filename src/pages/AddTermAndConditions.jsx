@@ -124,12 +124,12 @@ const handleSaveTerms = async () => {
           <div className="flex items-center gap-4">
            
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">New Terms & Conditions</h1>
-                <p className="text-gray-600">Create terms and conditions for your business</p>
+                <h1 className="text-xl md:text-2xl font-semibold text-gray-900">New Terms & Conditions</h1>
+                <p className="text-sm md:text-md text-gray-600">Create terms and conditions for your business</p>
               </div>
             </div>
           </div>
@@ -208,7 +208,7 @@ const handleSaveTerms = async () => {
               </div>
               <button
                 onClick={addNewPoint}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 text-sm cursor-pointer"
+                className="bg-green-600 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center md:gap-2 text-sm cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Add More

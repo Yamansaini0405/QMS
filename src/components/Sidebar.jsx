@@ -20,12 +20,11 @@ import {
 } from "lucide-react"
 
 
-const Sidebar = () => {
+const Sidebar = ({ open, onClose }) => {
   const location = useLocation()
   const [expandedMenus, setExpandedMenus] = useState({})
 
   const role = localStorage.getItem("role") 
-
 
   const toggleMenu = (menuKey) => {
     setExpandedMenus((prev) => ({
@@ -114,22 +113,47 @@ const Sidebar = () => {
     },
   ]
 
+  // Responsive: show as overlay on mobile, always visible on desktop
+  // Hide on mobile unless open
   return (
-    <div className="w-72 bg-white shadow-lg border-r border-gray-200 flex flex-col">
-      {/* Logo */}
-      <div className="px-6 py-4.5 border-b border-gray-200">
+    <>
+      {/* Overlay for mobile */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm md:hidden"
+          onClick={onClose}
+        />
+      )}
+      <div
+        className={`
+          fixed z-50 top-0 left-0 h-full w-72 bg-white shadow-lg border-r border-gray-200 flex flex-col
+          transform transition-transform duration-200
+          ${open ? 'translate-x-0' : '-translate-x-full'}
+          md:static md:translate-x-0 md:flex
+        `}
+        style={{ minWidth: 0 }}
+      >
+  {/* Logo & close button for mobile */}
+  <div className="px-6 py-4.5 border-b border-gray-200 flex items-center justify-between">
         <Link to="/dashboard">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-            <FileText className="w-6 h-6 text-white" />
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+              <FileText className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">QMS</h1>
+              <p className="text-sm text-gray-500">{role === "ADMIN" ? "Admin Panel" : "Salesperson Panel"}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">QMS</h1>
-            <p className="text-sm text-gray-500">{role === "ADMIN" ? "Admin Panel" : "Salesperson Panel"}</p>
-          </div>
-        </div>
-        
         </Link>
+        {/* Close button for mobile */}
+        <button
+          className="block md:hidden ml-2 text-gray-500 hover:text-gray-700 focus:outline-none"
+          onClick={onClose}
+          aria-label="Close sidebar"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -159,6 +183,7 @@ const Sidebar = () => {
                     <div className="ml-6 mt-2 space-y-1">
                       {item.subItems.map((subItem) => (
                         <Link
+                        onClick={onClose}
                           key={subItem.path}
                           to={subItem.path}
                           className={`flex items-center space-x-3 px-3 py-2 text-sm rounded-lg transition-colors duration-200 ${
@@ -196,7 +221,10 @@ const Sidebar = () => {
         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">© 2025 QMS. All Rights Reserved.</h3>
       
       </div>
-    </div>
+      </div>
+    
+    
+    </>
   )
 }
 

@@ -169,14 +169,14 @@ export default function ProfilePage() {
                 <User className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">User Profile</h1>
-                <p className="text-gray-600">View and manage user information</p>
+                <h1 className="text-xl md:text-2xl font-semibold text-gray-900">User Profile</h1>
+                <p className="text-sm md:text-md text-gray-600">Manage your profile</p>
               </div>
             </div>
           </div>
           <button
             onClick={openPasswordDialog}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="flex items-center gap-2 px-2 py-2 md:px-4 md:py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
           >
             <Lock className="w-4 h-4" />
             Change Password

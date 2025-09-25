@@ -340,8 +340,8 @@ export default function AddLeads() {
                 <Target className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">New Lead</h1>
-                <p className="text-gray-600">Add a new sales lead to your pipeline</p>
+                <h1 className="text-xl md:text-2xl font-semibold text-gray-900">New Lead</h1>
+                <p className="text-sm md:text-md text-gray-600">Add a new sales lead to your pipeline</p>
               </div>
             </div>
           </div>
