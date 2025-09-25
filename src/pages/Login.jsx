@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff, FileText, ChevronDown } from "lucide-react"
 
@@ -14,6 +14,12 @@ const Login = () => {
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/dashboard"); // redirect logged-in user
+    }
+  }, [localStorage.getItem("token")]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
