@@ -505,7 +505,7 @@ const Quotations = () => {
 
         <p className="text-sm text-gray-500 mt-4">
           Showing {filteredCustomers.length} customers with {filteredCustomers.reduce((total, customer) => {
-            return total + (customer.quotations ? customer.quotations.length : 0)
+            return total + (customer.quotations ? customer.quotations.filter((prev) => prev.status !== "DRAFT").length : 0)
           }, 0)} total quotations
           
         </p>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
 import {
   Package,
@@ -308,10 +309,16 @@ if (!result.isConfirmed) return
             </div>
           </div>
         </div>
+       
+        <Link to="/products/create">
         <button className="flex items-center md:space-x-2 px-2 py-1 md:px-4 md:py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200">
           <span className="text-lg">+</span>
           <span>New Product</span>
         </button>
+        </Link>
+
+       
+        
       </div>
 
       {/* Stats Grid */}

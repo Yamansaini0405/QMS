@@ -340,32 +340,12 @@ export const QuotationProvider = ({ children }) => {
                 terms: selectedTerms,
                 items,
                 quotation_id: id ? Number(id) : "",
-                send_immediately: formData.send_immediately === true ? true : false,
+                send_immediately: true,
                 createdBy: localStorage.getItem("user"),
                 digitalSignature:formData.digitalSignature,
                 additionalNotes: formData.additionalNotes
             };
-            const updatePayload = {
-                customer: {
-                    name: formData.customerName,
-                    email: formData.email,
-                    phone: formData.phone,
-                    company_name: formData.companyName,
-                    primary_address: formData.address,
-                },
-                auto_assign: true,
-                discount: formData.discount ? Number.parseFloat(formData.discount) : 0,
-                tax_rate: formData.taxRate,
-                discount_type: formData.discountType,
-                follow_up_date: formatDateToBackend(formData.validUntil),
-                terms: selectedTerms,
-                items,
-                quotation_id: id ? Number(id) : "",
-                send_immediately: formData.send_immediately === true ? true : false,
-                createdBy: localStorage.getItem("user"),
-                digitalSignature:formData.digitalSignature,
-                additionalNotes: formData.additionalNotes
-            };
+          
 
             console.log("Creating quotation with payload:", payload);
 
@@ -377,7 +357,168 @@ export const QuotationProvider = ({ children }) => {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: id ? JSON.stringify(updatePayload) :JSON.stringify(payload) ,
+                    body: JSON.stringify(payload) ,
+                }
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(
+                    `Failed to create quotation: ${response.status} - ${errorText}`
+                );
+            }
+
+            const result = await response.json();
+            console.log("Quotation created successfully:", result);
+
+            Swal.fire(id ?  location.pathname.startsWith('/quotations/edit') ?  "Updated" : "Duplicated" : "Created!", `The Quotation has been ${id ? location.pathname.startsWith('/quotations/edit') ?  "updated" : "duplicated"  : "created"}.`, "success")
+
+
+            // ✅ Reset formData after success
+            setFormData({
+                quotationDate: formatDate(new Date()),
+                validUntil: formatDate(new Date()),
+                validityNumber: 0,
+                validityType: "days",
+                followUpDate: "",
+                customerName: "",
+                companyName: "",
+                email: "",
+                phone: "",
+                address: "",
+                products: [
+                    { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 },
+                ],
+                subtotal: "0.00",
+                discount: "",
+                tax: "0.00",
+                taxRate: "18",
+                discountType: "amount",
+                totalAmount: "0.00",
+                additionalNotes: "",
+                createdBy: localStorage.getItem("role"),
+                digitalSignature: "",
+                send_immediately:false,
+            });
+
+            setSelectedTerms([]); // also reset terms if needed
+
+        } catch (error) {
+
+            Swal.fire("Error!", "Failed creating quotation. Please try again.", "error")
+
+            console.error("❌ Error creating quotation:", error);
+        } finally {
+            setIsGeneratingPDF(false)
+        }
+    };
+     const createDraft = async () => {
+        console.log("sending draft")
+        setIsGeneratingPDF(true)
+
+        try {
+
+            if (!validateForm()) {
+                Swal.fire("Validation Error", "Please fix errors before saving.", "error");
+                return;
+            }
+
+            if (formData.totalAmount < 0) {
+                Swal.fire("Warning!", "Total Amount must be greater than 0", "warning")
+                return;
+            }
+
+            id ?
+
+                location.pathname.startsWith('/quotations/edit') ?
+                    Swal.fire({
+                        title: "Updating...",
+                        text: "Please wait while we update your Quotation.",
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading()
+                        },
+                    })
+
+                    :
+                    Swal.fire({
+                        title: "Duplicating...",
+                        text: "Please wait while we Duplicate your Quotation.",
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading()
+                        },
+                    })
+                : Swal.fire({
+                    title: "Creating...",
+                    text: "Please wait while we create your Quotation.",
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading()
+                    },
+                })
+
+            const token = localStorage.getItem("token");
+
+            // Build items array asynchronously
+            const items = await Promise.all(
+                formData.products.map(async (p) => {
+                    if (!p.id) {
+                        const id = await handleSaveProduct(p.name, p.selling_price);
+                        return {
+                            product: id,
+                            name: p.name,
+                            quantity: p.quantity,
+                            unit_price: p.selling_price ? Number(p.selling_price) : "",
+                            discount: p.percentage_discount ? Number(p.percentage_discount) : 0,
+                        };
+                    } else {
+                        return {
+                            product: p.id,
+                            name: p.name,
+                            quantity: p.quantity,
+                            unit_price: p.selling_price ? Number(p.selling_price) : 0,
+                            discount: p.percentage_discount ? Number(p.percentage_discount) : 0,
+                        };
+                    }
+                })
+            );
+
+            const payload = {
+                customer: {
+                    name: formData.customerName,
+                    email: formData.email,
+                    phone: formData.phone,
+                    company_name: formData.companyName,
+                    primary_address: formData.address,
+                },
+                auto_assign: true,
+                status: formData.status,
+                discount: formData.discount ? Number.parseFloat(formData.discount) : 0,
+                tax_rate: formData.taxRate,
+                discount_type: formData.discountType,
+                follow_up_date: formatDateToBackend(formData.validUntil),
+                terms: selectedTerms,
+                items,
+                quotation_id: id ? Number(id) : "",
+                send_immediately: false,
+                createdBy: localStorage.getItem("user"),
+                digitalSignature:formData.digitalSignature,
+                additionalNotes: formData.additionalNotes
+            };
+          
+
+            console.log("Creating quotation with payload:", payload);
+
+            const response = await fetch(
+                "https://api.nkprosales.com/quotations/api/quotations/create/",
+                {
+                    method:  location.pathname.startsWith('/quotations/edit')  ? "PUT" : "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(payload) ,
                 }
             );
 
@@ -830,6 +971,7 @@ export const QuotationProvider = ({ children }) => {
                 handleTermSelection,
                 filteredTerms,
                 createQuotation,
+                createDraft,
                 downloadPDF,
                 formErrors,
                 id,

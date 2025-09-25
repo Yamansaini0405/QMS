@@ -119,7 +119,7 @@ export default function AdditionalSettings() {
           onChange={(e) => updateFormData("additionalNotes", e.target.value)}
         />
       </div>
-        <div className="mt-6 flex items-center">
+        {/* <div className="mt-6 flex items-center">
           <label className="block text-sm font-medium text-gray-700 mr-4">
             Send Immediately
           </label>
@@ -137,7 +137,7 @@ export default function AdditionalSettings() {
               }`}
             />
           </button>
-        </div>
+        </div> */}
     </div>
   )
 }

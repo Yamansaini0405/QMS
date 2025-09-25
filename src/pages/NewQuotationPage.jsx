@@ -8,12 +8,12 @@ import CreatorInfo from "../components/NewQuotationPageComponents/CreatorInfo";
 import QuickActionsSidebar from "../components/NewQuotationPageComponents/QuickActionsSidebar";
 import BottomActions from "../components/NewQuotationPageComponents/BottomActions";
 import QuotationTemplate from "../components/QuotationTemplate";
-import { FileText, Eye, Send, EyeOff } from "lucide-react";
+import { FileText, Eye, Send, EyeOff, SaveAll } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
 
 function NewQuotationPageContent() {
-  const { id, showPreview, formData, setShowPreview, downloadPDF, isGeneratingPDF, createQuotation, availableTerms, pageLoading } = useQuotation();
+  const { id, showPreview, formData, setShowPreview, downloadPDF, isGeneratingPDF, createQuotation, createDraft, availableTerms, pageLoading } = useQuotation();
   const location = useLocation();
   if (pageLoading) {
     return (
@@ -41,49 +41,49 @@ function NewQuotationPageContent() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowPreview(!showPreview)}
-              className="flex items-center md:space-x-2 px-2 py-1 md:px-4 md:py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
             >
               {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               <span>{showPreview ? "Hide Preview" : "Live Preview"}</span>
             </button>
-            {/* <button
-            onClick={downloadPDF}
-            disabled={isGeneratingPDF}
-            className="flex items-center space-x-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 transition-colors"
-          >
-            <FileText className="w-4 h-4" />
-            <span>Download PDF</span>
-          </button> */}
+            <button
+              onClick={createDraft}
+              disabled={isGeneratingPDF}
+              className="hidden md:flex items-center space-x-2 px-4 py-2 text-sm bg-black/90 text-white rounded-md hover:bg-black disabled:opacity-50 transition-colors"
+            >
+              <SaveAll className="w-4 h-4" />
+              <span>{isGeneratingPDF ? "Saving..." : `Save Draft`}</span>
+            </button>
             <div className="hidden md:block">
               {id ? location.pathname.startsWith("/quotations/edit") ?
-              <button
-                onClick={createQuotation}
-                disabled={isGeneratingPDF}
-                className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
-              >
-                <Send className="w-4 h-4" />
-                <span>{isGeneratingPDF ? "Updating..." : `Update & ${formData.send_immediately? "& Send" : ""}`}</span>
-              </button> :
-              <button
-                onClick={createQuotation}
-                disabled={isGeneratingPDF}
-                className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
-              >
-                <Send className="w-4 h-4" />
-                <span>{isGeneratingPDF ? "Duplicating..." : `Duplicate ${formData.send_immediately? "& Send" : ""}`}</span>
-              </button>
+                <button
+                  onClick={createQuotation}
+                  disabled={isGeneratingPDF}
+                  className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>{isGeneratingPDF ? "Updating..." : `Update & ${formData.send_immediately ? "& Send" : ""}`}</span>
+                </button> :
+                <button
+                  onClick={createQuotation}
+                  disabled={isGeneratingPDF}
+                  className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>{isGeneratingPDF ? "Duplicating..." : `Duplicate ${formData.send_immediately ? "& Send" : ""}`}</span>
+                </button>
 
-              : <button
-                onClick={createQuotation}
-                disabled={isGeneratingPDF}
-                className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
-              >
-                <Send className="w-4 h-4" />
-                <span>{isGeneratingPDF ? "Creating..." : `Create ${formData.send_immediately? "& Send" : ""}`}</span>
-              </button>}
+                : <button
+                  onClick={createQuotation}
+                  disabled={isGeneratingPDF}
+                  className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>{isGeneratingPDF ? "Creating..." : `Create ${formData.send_immediately ? "& Send" : ""}`}</span>
+                </button>}
             </div>
 
 
