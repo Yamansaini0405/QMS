@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { isTokenValid } from "../utils/auth"
 import { Eye, EyeOff, FileText, ChevronDown } from "lucide-react"
 
 const Login = () => {
@@ -16,35 +17,11 @@ const Login = () => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-  const validateToken = async () => {
-    const token = localStorage.getItem("token")
-    if (!token) return
-
-    try {
-      const response = await fetch("https://api.nkprosales.com/accounts/api/token/verify/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      })
-
-      if (response.ok) {
-        navigate("/dashboard")
-      } else {
-        // expired or invalid
-        localStorage.removeItem("token")
-        localStorage.removeItem("refreshToken")
-        localStorage.removeItem("role")
-        navigate("/login")
-      }
-    } catch (error) {
-      console.error("Token validation failed:", error)
-      navigate("/login")
+    const token = localStorage.getItem("token");
+    if (isTokenValid(token)) {
+      navigate("/dashboard");
     }
-  }
-
-  validateToken()
-}, [navigate])
-
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
