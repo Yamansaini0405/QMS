@@ -16,10 +16,35 @@ const Login = () => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
-      navigate("/dashboard"); // redirect logged-in user
+  const validateToken = async () => {
+    const token = localStorage.getItem("token")
+    if (!token) return
+
+    try {
+      const response = await fetch("https://api.nkprosales.com/accounts/api/token/verify/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      })
+
+      if (response.ok) {
+        navigate("/dashboard")
+      } else {
+        // expired or invalid
+        localStorage.removeItem("token")
+        localStorage.removeItem("refreshToken")
+        localStorage.removeItem("role")
+        navigate("/login")
+      }
+    } catch (error) {
+      console.error("Token validation failed:", error)
+      navigate("/login")
     }
-  }, [localStorage.getItem("token")]);
+  }
+
+  validateToken()
+}, [navigate])
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
