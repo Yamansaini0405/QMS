@@ -39,7 +39,6 @@ export default function ViewMembers() {
       setMembers(data.data)
     } catch (error) {
       console.error("Error fetching members:", error)
-      alert("Error loading members.")
     } finally {
       setIsLoading(false)
     }
@@ -91,7 +90,6 @@ export default function ViewMembers() {
 
         Swal.fire("Deleted!", "Member deleted successfully.", "success")
       } catch (error) {
-        console.error("[v0] Error deleting member:", error)
         Swal.fire("Error!", "Failed to delete member. Please try again.", "error")
       }
     }
@@ -168,7 +166,6 @@ export default function ViewMembers() {
 
         Swal.fire("Updated!", `Role changed succesfully`, "success")
       } catch (error) {
-        console.error("[v0] Error toggling role:", error)
         Swal.fire("Error!", "Failed to toggle role. Please try again.", "error")
       }
     }

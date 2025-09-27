@@ -365,14 +365,6 @@ const Quotations = () => {
     }
 
     try {
-      //   Swal.fire({
-      //   title: "Exporting...",
-      //   text: "Please wait while we export your all quotation.",
-      //   allowOutsideClick: false,
-      //   didOpen: () => {
-      //     Swal.showLoading()
-      //   },
-      // })
 
 
       const response = await fetch("https://api.nkprosales.com/quotations/api/merge/", {

@@ -277,6 +277,12 @@ export default function Leads() {
 
       // 🔹 update UI
       setLeads((prev) => prev.filter((lead) => lead.id !== id))
+      setCustomers((prev) =>
+        prev.map((c) => ({
+          ...c,
+          leads: c.leads ? c.leads.filter((l) => l.id !== id) : [],
+        }))
+      )
       console.log("[v0] Lead deleted from backend:", id)
       Swal.fire("Deleted!", "The lead has been deleted.", "success")
 

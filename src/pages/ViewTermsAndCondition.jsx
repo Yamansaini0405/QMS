@@ -21,8 +21,6 @@ export default function ViewTermsAndCondition() {
   useEffect(() => {
     const fetchTerms = async () => {
       try {
-
-        console.log("[v0] Fetching terms and conditions...")
         const response = await fetch(`https://api.nkprosales.com/quotations/api/terms/`)
         if (!response.ok) throw new Error("Failed to fetch terms")
         const data = await response.json()
@@ -83,13 +81,11 @@ export default function ViewTermsAndCondition() {
   })
 
   const handleViewTerm = (term) => {
-    console.log("[v0] Opening view modal for term:", term.title)
     setSelectedTerm(term)
     setViewModalOpen(true)
   }
 
   const handleEditTerm = (term) => {
-    console.log("[v0] Opening edit modal for term:", term.title)
     setSelectedTerm(term)
     setEditModalOpen(true)
   }
@@ -117,7 +113,7 @@ export default function ViewTermsAndCondition() {
       },
     })
 
-        console.log("[v0] Deleting term:", termId)
+
 
         const token = localStorage.getItem("token")
         const res = await fetch(
@@ -147,7 +143,6 @@ export default function ViewTermsAndCondition() {
   }
 
   const handleSaveTerm = (updatedTerm) => {
-    console.log("[v0] Saving term:", updatedTerm.title)
     setTerms((prev) => prev.map((term) => (term.id === updatedTerm.id ? updatedTerm : term)))
     setEditModalOpen(false)
   }

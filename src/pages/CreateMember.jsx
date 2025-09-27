@@ -114,17 +114,22 @@ export default function CreateMember() {
   }
 
   const handleSaveMember = async () => {
-    if (!validateForm()) return
+    if (!validateForm()) {
+      const firstError = Object.values(errors).find(Boolean)
+      Swal.fire("Validation Error", firstError, "warning")
+      return
+    }
+
 
     const payload = {
-      address:formData.address,
-      confirmPassword:formData.confirmPassword.trim(),
-      email:formData.email.trim(),
-      first_name:formData.first_name.trim(),
-      last_name:formData.last_name.trim(),
-      password:formData.password.trim(),
-      role:formData.role.trim(),
-      username:formData.username.trim(),
+      address: formData.address,
+      confirmPassword: formData.confirmPassword.trim(),
+      email: formData.email.trim(),
+      first_name: formData.first_name.trim(),
+      last_name: formData.last_name.trim(),
+      password: formData.password.trim(),
+      role: formData.role.trim(),
+      username: formData.username.trim(),
       phone: formData.phone,
     }
     console.log(payload)
@@ -132,13 +137,13 @@ export default function CreateMember() {
     try {
 
       Swal.fire({
-      title: "Saving...",
-      text: "Please wait while we save your Member.",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading()
-      },
-    })
+        title: "Saving...",
+        text: "Please wait while we save your Member.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
 
       const response = await fetch("https://api.nkprosales.com/accounts/api/admin/create/", {
         method: "POST",
@@ -177,8 +182,7 @@ export default function CreateMember() {
   }
 
   const inputClass = (field) =>
-    `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-      touched[field] && errors[field] ? "border-red-500" : "border-gray-300"
+    `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${touched[field] && errors[field] ? "border-red-500" : "border-gray-300"
     }`
 
   return (
@@ -397,9 +401,8 @@ export default function CreateMember() {
         <button
           onClick={handleSaveMember}
           disabled={isLoading}
-          className={`w-full py-3 rounded-lg flex items-center justify-center text-lg gap-2 transition-colors cursor-pointer ${
-            isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-gray-900 text-white hover:bg-gray-800"
-          }`}
+          className={`w-full py-3 rounded-lg flex items-center justify-center text-lg gap-2 transition-colors cursor-pointer ${isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-gray-900 text-white hover:bg-gray-800"
+            }`}
         >
           {isLoading ? (
             <>
