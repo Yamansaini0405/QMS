@@ -301,7 +301,8 @@ export default function ViewMembers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredMembers.map((member, index) => (
+              {console.log(filteredMembers)}
+              {filteredMembers.filter((member) => member.phone_number !== null).map((member, index) => (
                 <tr key={member.id} className="hover:bg-gray-50">
                   <td className="py-4 px-6 text-gray-900">{index + 1}</td>
                   <td className="py-4 px-6">
