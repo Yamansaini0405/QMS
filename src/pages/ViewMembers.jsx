@@ -249,7 +249,7 @@ export default function ViewMembers() {
 
         <div className="flex items-center justify-between mt-4">
           <p className="text-sm text-gray-600">
-            Showing {filteredMembers.length} of {members.length} members
+            Showing {filteredMembers.filter((member) => member.phone_number !== null).length} of {members.filter((member) => member.phone_number !== null).length} members
           </p>
         </div>
       </div>
