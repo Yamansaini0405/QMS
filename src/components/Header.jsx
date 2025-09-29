@@ -28,6 +28,7 @@ const Header = ({ onMenuClick }) => {
       localStorage.removeItem("token")
       localStorage.removeItem("role")
       localStorage.removeItem("refreshToken")
+      localStorage.removeItem("user")
     //   setUser(null)
       navigate("/login")
     }
