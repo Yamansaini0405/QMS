@@ -1,13 +1,21 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { User, Mail, Phone, MapPin, Calendar, Shield, Edit3, PhoneCall, Lock, Eye, EyeOff, X } from "lucide-react"
+import { User, Mail, Phone, MapPin, Calendar, Shield, Edit3, PhoneCall, Lock, Eye, EyeOff, X, Save } from "lucide-react"
 import Swal from "sweetalert2"
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone_number: "",
+    address: "",
+  })
+  const [isSaving, setIsSaving] = useState(false)
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [passwordData, setPasswordData] = useState({
     old_password: "",
@@ -21,9 +29,7 @@ export default function ProfilePage() {
   })
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [passwordMessage, setPasswordMessage] = useState({ type: "", text: "" })
-
-  useEffect(() => {
-    const fetchUserData = async () => {
+ const fetchUserData = async () => {
       try {
         const response = await fetch("https://api.nkprosales.com/accounts/api/user/current/", {
           headers: {
@@ -37,6 +43,13 @@ export default function ProfilePage() {
         const data = await response.json()
         console.log("current profile", data.data.user)
         setUserData(data.data.user)
+        setEditFormData({
+          first_name: data.data.user.first_name,
+          last_name: data.data.user.last_name,
+          email: data.data.user.email,
+          phone_number: data.data.user.phone_number,
+          address: data.data.user.address || "",
+        })
       } catch (error) {
         console.error("Error fetching user data:", error)
       } finally {
@@ -44,6 +57,8 @@ export default function ProfilePage() {
       }
     }
 
+  useEffect(() => {
+   
     fetchUserData()
   }, [])
 
@@ -117,6 +132,67 @@ export default function ProfilePage() {
     }
   }
 
+  const handleEditToggle = () => {
+    if (isEditing) {
+      setEditFormData({
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        email: userData.email,
+        phone_number: userData.phone_number,
+        address: userData.address || "",
+      })
+    }
+    setIsEditing(!isEditing)
+  }
+
+  const handleInputChange = (field, value) => {
+    setEditFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleSaveProfile = async () => {
+    setIsSaving(true)
+    try {
+      const response = await fetch(`https://api.nkprosales.com/accounts/api/users/${userData.id}/edit/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(editFormData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to update profile")
+      }
+
+  await response.json()
+  await fetchUserData();
+  setIsEditing(false)
+
+      await Swal.fire({
+        title: "Success!",
+        text: "Profile updated successfully!",
+        icon: "success",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#7c3aed",
+      })
+    } catch (error) {
+      await Swal.fire({
+        title: "Error!",
+        text: error.message || "Failed to update profile",
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#7c3aed",
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const openPasswordDialog = () => {
     setShowPasswordDialog(true)
     setPasswordMessage({ type: "", text: "" })
@@ -174,13 +250,51 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          <button
-            onClick={openPasswordDialog}
-            className="flex items-center gap-2 px-2 py-2 md:px-4 md:py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            <Lock className="w-4 h-4" />
-            Change Password
-          </button>
+          <div className="flex items-center gap-2">
+            {isEditing ? (
+              <>
+                <button
+                  onClick={handleEditToggle}
+                  className="flex items-center gap-2 px-2 py-2 md:px-4 md:py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                  <span className="hidden md:inline">Cancel</span>
+                </button>
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-2 py-2 md:px-4 md:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span className="hidden md:inline">Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span className="hidden md:inline">Save</span>
+                    </>
+                  )}
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleEditToggle}
+                className="flex items-center gap-2 px-2 py-2 md:px-4 md:py-2 bg-black text-white rounded-lg hover:bg-black/90 transition-colors"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span className="hidden md:inline">Edit Profile</span>
+              </button>
+            )}
+            <button
+              onClick={openPasswordDialog}
+              className="flex items-center gap-2 px-2 py-2 md:px-4 md:py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <Lock className="w-4 h-4" />
+              <span className="hidden md:inline">Change Password</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -197,17 +311,37 @@ export default function ProfilePage() {
               {/* First Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900">
-                  {userData.first_name}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editFormData.first_name}
+                    onChange={(e) => handleInputChange("first_name", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Enter first name"
+                  />
+                ) : (
+                  <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900">
+                    {userData.first_name}
+                  </div>
+                )}
               </div>
 
               {/* Last Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900">
-                  {userData.last_name}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editFormData.last_name}
+                    onChange={(e) => handleInputChange("last_name", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Enter last name"
+                  />
+                ) : (
+                  <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900">
+                    {userData.last_name}
+                  </div>
+                )}
               </div>
 
               {/* Username */}
@@ -239,19 +373,45 @@ export default function ProfilePage() {
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-gray-500" />
-                  {userData.email}
-                </div>
+                {isEditing ? (
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                    <input
+                      type="email"
+                      value={editFormData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      placeholder="Enter email"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-gray-500" />
+                    {userData.email}
+                  </div>
+                )}
               </div>
 
               {/* Phone */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Phone no: </label>
-                <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 flex items-center gap-2">
-                  <PhoneCall className="w-4 h-4 text-gray-500" />
-                  {userData.phone_number}
-                </div>
+                {isEditing ? (
+                  <div className="relative">
+                    <PhoneCall className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                    <input
+                      type="tel"
+                      value={editFormData.phone_number}
+                      onChange={(e) => handleInputChange("phone_number", e.target.value)}
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 flex items-center gap-2">
+                    <PhoneCall className="w-4 h-4 text-gray-500" />
+                    {userData.phone_number}
+                  </div>
+                )}
               </div>
 
               {/* Date Joined */}
@@ -284,22 +444,30 @@ export default function ProfilePage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-              <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 flex items-start gap-2 min-h-[80px]">
-                <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                <span>{userData.address || "No address provided"}</span>
-              </div>
+              {isEditing ? (
+                <div className="relative">
+                  <MapPin className="w-4 h-4 text-gray-500 absolute left-3 top-3 flex-shrink-0" />
+                  <textarea
+                    value={editFormData.address}
+                    onChange={(e) => handleInputChange("address", e.target.value)}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent min-h-[80px] resize-none"
+                    placeholder="Enter address"
+                  />
+                </div>
+              ) : (
+                <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-900 flex items-start gap-2 min-h-[80px]">
+                  <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                  <span>{userData.address || "No address provided"}</span>
+                </div>
+              )}
             </div>
           </div>
-
-          
         </div>
       </div>
 
-
-
       {/* Password Change Dialog */}
       {showPasswordDialog && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm  flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div className="flex items-center gap-2">
@@ -381,10 +549,11 @@ export default function ProfilePage() {
               {/* Message Display */}
               {passwordMessage.text && (
                 <div
-                  className={`p-3 rounded-lg ${passwordMessage.type === "success"
+                  className={`p-3 rounded-lg ${
+                    passwordMessage.type === "success"
                       ? "bg-green-50 text-green-800 border border-green-200"
                       : "bg-red-50 text-red-800 border border-red-200"
-                    }`}
+                  }`}
                 >
                   {passwordMessage.text}
                 </div>
