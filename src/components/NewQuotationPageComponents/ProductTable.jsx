@@ -16,6 +16,8 @@ export default function ProductTable() {
     addProductRow,
     removeProductRow,
     setProductSearchStates,
+    calculateTotals
+    
   } = useQuotation()
 
 const [showPercentageDiscount, setShowPercentageDiscount] = useState(false);
@@ -30,16 +32,20 @@ useEffect(() => {
 
 
   const calculateFinalAmount = (product) => {
-    const baseAmount = (product.quantity || 0) * (product.selling_price || 0)
+    const baseAmount = (product?.quantity || 0) * (product?.selling_price || 0)
     let finalAmount = baseAmount
 
-    if (showPercentageDiscount && product.percentage_discount) {
-      finalAmount = finalAmount - finalAmount * (product.percentage_discount / 100)
+    if (showPercentageDiscount && product?.percentage_discount) {
+      finalAmount = finalAmount - finalAmount * (product?.percentage_discount / 100)
     }
 
     return Math.max(0, finalAmount)
   }
 
+  useEffect(() => {
+    !showPercentageDiscount ?formData.products.forEach(p => p.percentage_discount = 0) : null
+    calculateTotals(formData.products)
+  },[showPercentageDiscount, setShowPercentageDiscount])
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-x-scroll no-scrollbar">
       <div className="flex items-center space-x-2 mb-6">

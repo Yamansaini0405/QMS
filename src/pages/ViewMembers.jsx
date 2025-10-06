@@ -48,7 +48,26 @@ export default function ViewMembers() {
     fetchMembers()
   }, [])
 
+  // helper to count number of admins currently in state
+  const countAdmins = () => members.filter((m) => m.role === "ADMIN").length
+
   const handleDeleteMember = async (memberId) => {
+    const memberToDelete = members.find((m) => m.id === memberId)
+    if (!memberToDelete) {
+      Swal.fire("Error", "Member not found.", "error")
+      return
+    }
+
+    // PREVENT deleting the last admin
+    if (memberToDelete.role === "ADMIN" && countAdmins() <= 2) {
+      Swal.fire({
+        icon: "warning",
+        title: "Action blocked",
+        text: "You cannot delete the last ADMIN. At least one ADMIN must remain.",
+      })
+      return
+    }
+
     const result = await Swal.fire({
       title: "Are you sure?",
       text: "This member will be permanently deleted!",
@@ -114,8 +133,8 @@ export default function ViewMembers() {
 
   const filteredMembers = sortedMembers.filter((member) => {
     const matchesSearch =
-      member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.username.toLowerCase().includes(searchTerm.toLowerCase())
+      (member.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (member.username || "").toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "All Status" || member.status === statusFilter
     const matchesRole = roleFilter === "All Roles" || member.role === roleFilter
     const matchesDepartment = departmentFilter === "All Departments" || member.department === departmentFilter
@@ -124,6 +143,23 @@ export default function ViewMembers() {
   })
 
   const handleToggleRole = async (memberId, role) => {
+    const member = members.find((m) => m.id === memberId)
+    if (!member) {
+      Swal.fire("Error", "Member not found.", "error")
+      return
+    }
+
+    // PREVENT toggling the last ADMIN to SALESPERSON
+    // role param is the current role; if it's ADMIN and there is only one admin, block
+    if (role === "ADMIN" && countAdmins() <= 2) {
+      Swal.fire({
+        icon: "warning",
+        title: "Action blocked",
+        text: "You cannot change the role of the last ADMIN. At least one ADMIN must remain.",
+      })
+      return
+    }
+
     const result = await Swal.fire({
       title: "Change Role?",
       text: "Do you want to toggle this member's role?",
@@ -160,11 +196,14 @@ export default function ViewMembers() {
 
         const updated = await res.json()
 
+        // Update the role locally. If your backend returns the updated user object use that instead.
         setMembers((prev) =>
-          prev.map((m) => (m.id === memberId ? { ...m, role: role === "ADMIN" ? "SALESPERSON" : "ADMIN" } : m)),
+          prev.map((m) =>
+            m.id === memberId ? { ...m, role: m.role === "ADMIN" ? "SALESPERSON" : "ADMIN" } : m,
+          ),
         )
 
-        Swal.fire("Updated!", `Role changed succesfully`, "success")
+        Swal.fire("Updated!", `Role changed successfully`, "success")
       } catch (error) {
         Swal.fire("Error!", "Failed to toggle role. Please try again.", "error")
       }
@@ -331,7 +370,7 @@ export default function ViewMembers() {
                       {member.is_active ? "Active" : "Inactive"}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-gray-900">{member.date_joined.split("T")[0]}</td>
+                  <td className="py-4 px-6 text-gray-900">{(member.date_joined || "").split("T")[0]}</td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <button

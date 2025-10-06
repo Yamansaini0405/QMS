@@ -498,7 +498,7 @@ export const QuotationProvider = ({ children }) => {
                 tax_rate: formData.taxRate,
                 discount_type: formData.discountType,
                 follow_up_date: formatDateToBackend(formData.validUntil),
-                terms: selectedTerms,
+                terms: selectedTerms|| [],
                 items,
                 quotation_id: id ? Number(id) : "",
                 send_immediately: false,
@@ -508,7 +508,7 @@ export const QuotationProvider = ({ children }) => {
             };
           
 
-            console.log("Creating quotation with payload:", payload);
+            console.log(`${location.pathname.startsWith('/quotations/edit')  ? "Updating" : "Creating"} quotation with payload:`, payload);
 
             const response = await fetch(
                 "https://api.nkprosales.com/quotations/api/quotations/create/",
@@ -791,6 +791,7 @@ export const QuotationProvider = ({ children }) => {
     };
 
     const calculateTotals = (products = formData.products) => {
+        console.log("called")
         const subtotal = products.reduce((sum, product) => {
             const baseAmount = (product.quantity || 0) * (product.selling_price || 0)
             const discount = product.percentage_discount ? (baseAmount * product.percentage_discount) / 100 : 0

@@ -154,7 +154,11 @@ export default function CreateMember() {
         body: JSON.stringify(payload),
       })
 
-      if (!response.ok) throw new Error("Failed to save member")
+      if (!response.ok) {
+        // Swal.fire("Failed!", {response.error}, "error")
+        throw new Error("Failed to save member")
+        
+      }
 
       const data = await response.json()
       console.log("API Response:", data)
