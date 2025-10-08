@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { isTokenValid } from "../utils/auth"
-import { Eye, EyeOff, FileText, ChevronDown } from "lucide-react"
+import { Eye, EyeOff, FileText } from "lucide-react"
 
 const Login = () => {
   const navigate = useNavigate()
@@ -11,17 +11,16 @@ const Login = () => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
-    role: "admin", // Added role field with default value
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token")
     if (isTokenValid(token)) {
-      navigate("/dashboard");
+      navigate("/dashboard")
     }
-  }, []);
+  }, [navigate])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -47,9 +46,6 @@ const Login = () => {
     } else if (formData.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters"
     }
-    if (!formData.role) {
-      newErrors.role = "Role is required"
-    }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -62,13 +58,9 @@ const Login = () => {
     }
 
     setLoading(true)
-    console.log("username:", formData.username)
-      console.log("password:", formData.password)
+
     try {
-      const apiEndpoint =
-        formData.role === "admin"
-          ? "https://api.nkprosales.com/accounts/api/admin/login/"
-          : "https://api.nkprosales.com/accounts/api/salesperson/login/"
+      const apiEndpoint = "https://api.nkprosales.com/accounts/api/staff/login/"
 
       const response = await fetch(apiEndpoint, {
         method: "POST",
@@ -80,18 +72,19 @@ const Login = () => {
           password: formData.password,
         }),
       })
-      
+
       if (!response.ok) {
-        throw new Error("Invalid username or password")
+        const errorData = await response.json().catch(() => null);
+        const errorMessage = errorData?.detail || "Invalid username or password";
+        throw new Error(errorMessage);
       }
 
       const data = await response.json()
 
       localStorage.setItem("token", data.tokens.access)
-      localStorage.setItem("role", data.data.user.role)
+      localStorage.setItem("role", data.data.user.role) 
       localStorage.setItem("refreshToken", data.tokens.refresh)
 
-      // formData.role === "admin" ? navigate("/dashboard") : navigate("/salesperson")
       navigate("/dashboard")
     } catch (error) {
       setErrors({
@@ -114,8 +107,6 @@ const Login = () => {
           <p className="text-gray-600">Sign in to your account</p>
         </div>
 
-       
-
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -126,28 +117,7 @@ const Login = () => {
               </div>
             )}
 
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-                Role
-              </label>
-              <div className="relative">
-                <select
-                  id="role"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 appearance-none bg-white ${
-                    errors.role ? "border-red-300 bg-red-50" : "border-gray-300"
-                  }`}
-                >
-                  <option value="admin">Admin</option>
-                  <option value="salesperson">Salesperson</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-              </div>
-              {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role}</p>}
-            </div>
-
+            
             {/* Username Field */}
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
