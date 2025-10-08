@@ -120,7 +120,7 @@ const Login = () => {
             
             {/* Username Field */}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="username" className="block text-md font-medium text-gray-700 mb-2">
                 Username
               </label>
               <input
@@ -139,7 +139,7 @@ const Login = () => {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-md font-medium text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -201,7 +201,8 @@ const Login = () => {
 
         {/* Footer */}
         <div className="text-center mt-6">
-          <p className="text-sm text-gray-500">© 2025 Quotation Management System. All rights reserved.</p>
+          <p className="text-sm text-gray-500 mb-2">© 2025 Quotation Management System. All rights reserved.</p>
+          <a href="https://yaytech.in" className="text-sm text-black font-semibold ">Developed by YAYTech.</a>
         </div>
       </div>
     </div>
