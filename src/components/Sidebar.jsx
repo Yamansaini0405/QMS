@@ -157,7 +157,7 @@ const Sidebar = ({ open, onClose }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto no-scrollbar">
+      <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto">
         {menuItems
           .filter((item) => item.roles.includes(role)) // ✅ role check here
           .map((item) => (

@@ -12,6 +12,7 @@ export default function AddLeads() {
     email: "",
     phone: "",
     address: "",
+    gstNo: "",
     lead_status: "NEW",
     lead_source: "WEBSITE",
     priority: "MEDIUM",
@@ -97,6 +98,7 @@ export default function AddLeads() {
       email: customer.email,
       phone: customer.phone,
       address: customer.primary_address,
+      gstNo: customer.gst_number || "",
     }));
 
     setCustomerSearchQuery(customer.name);
@@ -233,6 +235,7 @@ export default function AddLeads() {
         customer_phone: formData.phone,
         customer_company: formData.companyName,
         customer_primary_address: formData.address,
+        customer_gst_number: formData.gstNo,
         status: formData.lead_status,
         lead_source: formData.lead_source,
         follow_up_date: followUpDate,
@@ -273,6 +276,7 @@ export default function AddLeads() {
         email: "",
         phone: "",
         address: "",
+        gstNo: "",
         lead_status: "NEW",
         lead_source: "WEBSITE",
         priority: "MEDIUM",
@@ -457,8 +461,7 @@ export default function AddLeads() {
                   {formErrors.phone && <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>}
                 </div>
 
-              </div>
-              <div>
+                <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
                 <input
                   placeholder="Enter address"
@@ -467,6 +470,18 @@ export default function AddLeads() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Gst No. (optional)</label>
+                <input
+                  placeholder="Enter gst no."
+                  value={formData.gstNo}
+                  onChange={(e) => updateFormData("gstNo", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              </div>
+              
             </div>
           </div>
 

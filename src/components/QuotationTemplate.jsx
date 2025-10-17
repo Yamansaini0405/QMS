@@ -81,6 +81,11 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
                   <span className="font-semibold text-md">Address:</span> {formData.address}
                 </p>
               )}
+              {formData.gstNo && (
+                <p>
+                  <span className="font-semibold text-md">GST No:</span> {formData.gstNo}
+                </p>
+              )}
             </>
           ) : (
             <p className="text-gray-400 italic">No customer selected</p>

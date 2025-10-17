@@ -11,7 +11,7 @@ export default function AddCustomer() {
     phoneNumber: "",
     companyName: "",
     website: "",
-    taxId: "",
+    gstNo: "",
     primaryAddress: "",
     billingAddress: "",
     shippingAddress: "",
@@ -104,7 +104,7 @@ export default function AddCustomer() {
       phone: formData.phoneNumber.trim(),
       title: formData.title.trim(),
       website: formData.website.trim(),
-      gst_number: formData.taxId.trim(),
+      gst_number: formData.gstNo.trim(),
       primary_address: formData.primaryAddress.trim(),
       billing_address: formData.billingAddress.trim(),
       shipping_address: formData.shippingAddress.trim(),
@@ -145,7 +145,7 @@ export default function AddCustomer() {
         phoneNumber: "",
         companyName: "",
         website: "",
-        taxId: "",
+        gstNo: "",
         primaryAddress: "",
         billingAddress: "",
         shippingAddress: "",
@@ -298,14 +298,14 @@ export default function AddCustomer() {
 
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tax ID / VAT Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">GST No.</label>
                 <input
                   type="text"
                   name="taxId"
-                  value={formData.taxId}
+                  value={formData.gstNo}
                   onChange={handleInputChange}
-                  placeholder="Enter tax ID"
-                  className={inputClass("taxId")}
+                  placeholder="Enter gst no."
+                  className={inputClass("gstNo")}
                 />
               </div>
             </div>

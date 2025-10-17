@@ -82,6 +82,7 @@ export const QuotationProvider = ({ children }) => {
         email: "",
         phone: "",
         address: "",
+        gstNo: "",
         products: [{ id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 }],
         subtotal: "0.00",
         discount: "",
@@ -119,6 +120,7 @@ export const QuotationProvider = ({ children }) => {
                 email: "",
                 phone: "",
                 address: "",
+                gstNo: "",
                 products: [{ id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 }],
                 subtotal: "0.00",
                 discount: "",
@@ -163,6 +165,7 @@ export const QuotationProvider = ({ children }) => {
                 email: data.data.customer?.email || "",
                 phone: data.data.customer?.phone || "",
                 address: data.data.customer?.primary_address || "",
+                gstNo: data.data.customer?.gst_no || "",
                 products: data.data.items?.map((item) => ({
                     id: item.product.id,
                     name: item.product.name,
@@ -330,6 +333,7 @@ export const QuotationProvider = ({ children }) => {
                     phone: formData.phone,
                     company_name: formData.companyName,
                     primary_address: formData.address,
+                    gstNo: formData.gstNo,
                 },
                 auto_assign: true,
                 status: formData.status,
@@ -386,6 +390,7 @@ export const QuotationProvider = ({ children }) => {
                 email: "",
                 phone: "",
                 address: "",
+                gstNo: "",
                 products: [
                     { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 },
                 ],
@@ -491,6 +496,7 @@ export const QuotationProvider = ({ children }) => {
                     phone: formData.phone,
                     company_name: formData.companyName,
                     primary_address: formData.address,
+                    gstNo: formData.gstNo || "",
                 },
                 auto_assign: true,
                 status: formData.status,
@@ -547,6 +553,7 @@ export const QuotationProvider = ({ children }) => {
                 email: "",
                 phone: "",
                 address: "",
+                gstNo: "",
                 products: [
                     { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 },
                 ],
@@ -858,6 +865,7 @@ export const QuotationProvider = ({ children }) => {
             email: customer.email,
             phone: customer.phone,
             address: customer.primary_address,
+            gstNo: customer.gst_no || "",
         }));
         setCustomerSearchQuery("");
         setShowCustomerSearch(false);
