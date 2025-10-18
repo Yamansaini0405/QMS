@@ -212,23 +212,6 @@ export default function Leads() {
     })
   }
 
-
-  // const filteredLeads = sortedLeads.filter((lead) => {
-  //   const matchesSearch =
-  //     lead.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     lead.customer?.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
-
-  //   const matchesStatus = statusFilter === "All Status" || lead.status === statusFilter.toUpperCase()
-
-  //   const matchesSource = sourceFilter === "All Sources" || lead.source?.toLowerCase() === sourceFilter.toLowerCase()
-
-  //   const matchesAssignee =
-  //     assigneeFilter === "All Assignees" || lead.assigned_to?.name?.toLowerCase() === assigneeFilter.toLowerCase()
-
-  //   return matchesSearch && matchesStatus && matchesSource && matchesAssignee
-  // })
-
   const handleViewLead = (lead) => {
     console.log("[v0] Opening view modal for lead:", lead.customer_name)
     setSelectedLead(lead)
@@ -534,37 +517,7 @@ export default function Leads() {
               }, 0)}</span>
             </button>
           </div> : ""}
-
-          {/* <div className="flex items-center space-x-4">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-            >
-              <option>All Status</option>
-              <option value="PENDING">New</option>
-              <option>Qualified</option>
-              <option>Proposal</option>
-              <option>Converted</option>
-            </select>
-
-            <select
-              value={sourceFilter}
-              onChange={(e) => setSourceFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-            >
-              <option>All Sources</option>
-              <option>website</option>
-              <option>referral</option>
-              <option>quotation</option>
-              <option>social media</option>
-            </select>
-          </div> */}
         </div>
-
-        {/* <p className="text-sm text-gray-500 mt-4">
-          Showing {filteredLeads.length} of {totalLeads} leads
-        </p> */}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -746,13 +699,6 @@ export default function Leads() {
 
                                     {/* Actions */}
                                     <td className="px-4 py-2 flex space-x-2">
-                                      {/* <button
-                                      onClick={() => handleViewLead(customer, lead)}
-                                      className="p-1 text-gray-400 hover:text-orange-600"
-                                      title="View Lead"
-                                    >
-                                      <Eye className="w-4 h-4" />
-                                    </button> */}
                                       <button
                                         onClick={() => handleDeleteLead(lead.id, customer)}
                                         className="p-1 text-gray-400 hover:text-red-600"
