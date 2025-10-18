@@ -86,7 +86,11 @@ export default function AllQuotations() {
     const matchesSearch =
       quotation.quotation_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       quotation.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      quotation.customer?.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      quotation.customer?.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      quotation.customer?.phone?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(quotation.total).toLowerCase().includes(searchTerm.toLowerCase())||
+      quotation.status?.toLowerCase().includes(searchTerm.toLowerCase())||
+      quotation.assigned_to?.name?.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === "All" || quotation.status === statusFilter
 

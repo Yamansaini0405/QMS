@@ -59,28 +59,49 @@ const Quotations = () => {
     setOpenDropdown(null)
   }
   useEffect(() => {
-    const fetchCustomers = async () => {
-      setLoading(true)
-      try {
-        const token = localStorage.getItem("token")
-  const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        })
-        const data = await response.json()
-        setCustomers(data.data || [])
-        console.log("✅ Customers with quotations loaded:", data.data)
-      } catch (error) {
-        console.error("❌ Error fetching customers:", error)
+  const fetchCustomers = async () => {
+    setLoading(true)
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+      const result = await response.json()
+
+      if (result.data && Array.isArray(result.data)) {
+        // Apply the same filtering logic here
+        const filteredCustomers = result.data
+          .map(customer => {
+            // For each customer, filter out their draft quotations
+            const nonDraftQuotations = (customer.quotations || []).filter(
+              q => q.status !== "DRAFT"
+            )
+            // Return a new customer object with the filtered quotations
+            return {
+              ...customer,
+              quotations: nonDraftQuotations,
+            }
+          })
+          // Then, filter out any customer who no longer has any quotations
+          .filter(customer => customer.quotations.length > 0)
+
+        setCustomers(filteredCustomers)
+        console.log("✅ Filtered customers loaded:", filteredCustomers)
+      } else {
         setCustomers([])
-      } finally {
-        setLoading(false)
       }
+    } catch (error) {
+      console.error("❌ Error fetching customers:", error)
+      setCustomers([])
+    } finally {
+      setLoading(false)
     }
-    fetchCustomers()
-  }, [])
+  }
+  fetchCustomers()
+}, [])
 
   const allQuotations = customers.flatMap((customer) => (customer.quotations || []).filter((q) => q.status !== "DRAFT"))
 
@@ -278,7 +299,8 @@ const Quotations = () => {
     const matchesSearch =
       customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.company_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      customer.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.phone?.toString().toLowerCase().includes(searchTerm.toLowerCase())
 
     if (statusFilter === "All Status") {
       return matchesSearch

@@ -1,7 +1,21 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Users, Building2, Phone, Star, Search, Download, Eye, Edit, Trash2, ArrowUp, ArrowDown, Clock, User2 } from "lucide-react"
+import {
+  Users,
+  Building2,
+  Phone,
+  Star,
+  Search,
+  Download,
+  Eye,
+  Edit,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  Clock,
+  MoreVertical,
+} from "lucide-react"
 import CustomerViewModal from "@/components/CustomerViewModal"
 import CustomerEditModal from "@/components/CustomerEditModal"
 import CustomerActivityModal from "@/components/CustomerActivityModal"
@@ -10,17 +24,17 @@ import Swal from "sweetalert2"
 import * as XLSX from "xlsx"
 
 export default function CustomersPage() {
-  const baseUrl = import.meta.env.VITE_BASE_URL;
+  const baseUrl = import.meta.env.VITE_BASE_URL
   const [searchTerm, setSearchTerm] = useState("")
-  
+
   const [customers, setCustomers] = useState([])
   const [loading, setLoading] = useState(true)
   const [viewModalOpen, setViewModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
-   const [activityModalOpen, setActivityModalOpen] = useState(false)
+  const [activityModalOpen, setActivityModalOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
- 
+  const [openDropdown, setOpenDropdown] = useState(null)
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -118,25 +132,30 @@ export default function CustomersPage() {
     (customer) =>
       customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.company?.toLowerCase().includes(searchTerm.toLowerCase()),
+      customer.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(customer.phone).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.primary_address?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleViewCustomer = (customer) => {
     console.log(" Opening view modal for customer:", customer.name)
     setSelectedCustomer(customer)
     setViewModalOpen(true)
+    setOpenDropdown(null)
   }
 
   const handleEditCustomer = (customer) => {
     console.log(" Opening edit modal for customer:", customer.name)
     setSelectedCustomer(customer)
     setEditModalOpen(true)
+    setOpenDropdown(null)
   }
 
-   const handleViewActivity = (customer) => {
+  const handleViewActivity = (customer) => {
     console.log(" Opening activity modal for customer:", customer.name, customer.id)
     setSelectedCustomer(customer)
     setActivityModalOpen(true)
+    setOpenDropdown(null)
   }
 
   const handleSaveCustomer = (updatedCustomer) => {
@@ -159,7 +178,6 @@ export default function CustomersPage() {
     if (!result.isConfirmed) return
 
     try {
-
       Swal.fire({
         title: "Deleting...",
         text: "Please wait while we delete your Constumer.",
@@ -184,39 +202,91 @@ export default function CustomersPage() {
       setCustomers((prev) => prev.filter((customer) => customer.id !== id))
 
       Swal.fire("Deleted!", "The customer has been deleted.", "success")
-
     } catch (error) {
       console.error("❌ Error deleting customer:", error)
       Swal.fire("Error!", "Failed to delete customer. Please try again.", "error")
-
     }
   }
 
- const handleExportExcel = () => {
-  if (!customers.length) {
-    Swal.fire("No Customers to export", "Please add customers to export", "warning")
-    return
+  const handleExportExcel = () => {
+    if (!customers.length) {
+      Swal.fire("No Customers to export", "Please add customers to export", "warning")
+      return
+    }
+
+    // Map only required fields for export
+    const exportData = filteredCustomers.map((c, index) => ({
+      "S.No.": index + 1,
+      Name: c.name,
+      Company: c.company_name || "",
+      Email: c.email || "",
+      Phone: c.phone || "",
+      Address: c.primary_address || "",
+      "Created At": c.created_at ? c.created_at.split("T")[0] : "",
+    }))
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Customers")
+
+    XLSX.writeFile(workbook, "customers.xlsx")
   }
 
-  // Map only required fields for export
-  const exportData = filteredCustomers.map((c, index) => ({
-    "S.No.": index + 1,
-    Name: c.name,
-    Company: c.company_name || "",
-    Email: c.email || "",
-    Phone: c.phone || "",
-    Address: c.primary_address || "",
-    "Created At": c.created_at ? c.created_at.split("T")[0] : "",
-  }))
+  const ActionDropdown = ({ customer, isOpen }) => {
+    const isAdmin = localStorage.getItem("role") === "ADMIN"
 
-  const worksheet = XLSX.utils.json_to_sheet(exportData)
-  const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Customers")
+    return (
+      <div className="relative">
+        <button
+          onClick={() => setOpenDropdown(isOpen ? null : customer.id)}
+          className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+          title="More actions"
+        >
+          <MoreVertical className="w-4 h-4" />
+        </button>
 
-  XLSX.writeFile(workbook, "customers.xlsx")
-}
+        {isOpen && (
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+            <button
+              onClick={() => handleViewCustomer(customer)}
+              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 border-b border-gray-100"
+            >
+              <Eye className="w-4 h-4" />
+              <span>View Customer</span>
+            </button>
 
+            {isAdmin && (
+              <>
+                <button
+                  onClick={() => handleViewActivity(customer)}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 border-b border-gray-100"
+                >
+                  <Clock className="w-4 h-4" />
+                  <span>View Activity</span>
+                </button>
 
+                <button
+                  onClick={() => handleEditCustomer(customer)}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 border-b border-gray-100"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>Edit Customer</span>
+                </button>
+
+                <button
+                  onClick={() => handleDeleteCustomer(customer.id)}
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete Customer</span>
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   if (loading) {
     return (
@@ -291,15 +361,19 @@ export default function CustomersPage() {
               />
             </div>
           </div>
-          {localStorage.getItem("role") === "ADMIN" ? <div>
-            <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-              onClick={() => handleExportExcel()}>
-              <Download className="w-4 h-4" />
-              <span>Export All {filteredCustomers.length}</span>
-            </button>
-          </div> : ""}
-
-
+          {localStorage.getItem("role") === "ADMIN" ? (
+            <div>
+              <button
+                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                onClick={() => handleExportExcel()}
+              >
+                <Download className="w-4 h-4" />
+                <span>Export All {filteredCustomers.length}</span>
+              </button>
+            </div>
+          ) : (
+            ""
+          )}
         </div>
       </div>
 
@@ -352,7 +426,7 @@ export default function CustomersPage() {
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900">{cust.name}</p>
-                        <p className="text-sm text-gray-500">{cust.email}</p>
+                        {/* <p className="text-sm text-gray-500">{cust.email}</p> */}
                       </div>
                     </div>
                   </td>
@@ -375,40 +449,7 @@ export default function CustomersPage() {
                     <span className="text-sm text-gray-600">{new Date(cust.created_at).toLocaleString()}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleViewCustomer(cust)}
-                        className="p-1 text-gray-400 hover:text-green-600 transition-colors duration-200"
-                        title="View Customer"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      {localStorage.getItem("role") === "ADMIN"? <button
-                        onClick={() => handleViewActivity(cust)}
-                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-200"
-                        title="View Activity"
-                      >
-                        <Clock className="w-4 h-4" />
-                      </button>:""}
-                      {localStorage.getItem("role") == "ADMIN" ? <button
-                        onClick={() => handleEditCustomer(cust)}
-                        className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                        title="Edit Customer"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button> :""}
-                      {localStorage.getItem("role") == "ADMIN" ? (
-                        <button
-                          onClick={() => handleDeleteCustomer(cust.id)}
-                          className="p-1 text-red-600 transition-colors duration-200"
-                          title="Delete Customer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      ) : (
-                        ""
-                      )}
-                    </div>
+                    <ActionDropdown customer={cust} isOpen={openDropdown === cust.id} />
                   </td>
                 </tr>
               ))}

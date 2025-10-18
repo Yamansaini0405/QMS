@@ -183,7 +183,8 @@ export default function Leads() {
     (customer) =>
       customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.company?.toLowerCase().includes(searchTerm.toLowerCase()),
+      customer.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(customer.phone).toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const sortedLeads = (leads) => {

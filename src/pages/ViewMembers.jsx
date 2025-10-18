@@ -30,7 +30,7 @@ export default function ViewMembers() {
   const fetchMembers = async () => {
     try {
       setIsLoading(true)
-  const res = await fetch(`${baseUrl}/accounts/api/users/`, {
+      const res = await fetch(`${baseUrl}/accounts/api/users/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -93,7 +93,7 @@ export default function ViewMembers() {
         console.log("[v0] Deleting member:", memberId)
 
         const token = localStorage.getItem("token") // if your API requires auth
-  const res = await fetch(`${baseUrl}/accounts/api/users/${memberId}/delete/`, {
+        const res = await fetch(`${baseUrl}/accounts/api/users/${memberId}/delete/`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -134,8 +134,10 @@ export default function ViewMembers() {
 
   const filteredMembers = sortedMembers.filter((member) => {
     const matchesSearch =
-      (member.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (member.username || "").toLowerCase().includes(searchTerm.toLowerCase())
+      (member?.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (member?.username || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (member?.role || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(member?.phone_number || "").includes(searchTerm);
     const matchesStatus = statusFilter === "All Status" || member.status === statusFilter
     const matchesRole = roleFilter === "All Roles" || member.role === roleFilter
     const matchesDepartment = departmentFilter === "All Departments" || member.department === departmentFilter
@@ -184,7 +186,7 @@ export default function ViewMembers() {
         })
 
         const token = localStorage.getItem("token")
-  const res = await fetch(`${baseUrl}/accounts/api/${memberId}/toggleUser/`, {
+        const res = await fetch(`${baseUrl}/accounts/api/${memberId}/toggleUser/`, {
           method: "POST",
           headers: {
             ...(token && { Authorization: `Bearer ${token}` }),
@@ -302,7 +304,7 @@ export default function ViewMembers() {
               <tr>
                 <th
                   className="text-left py-3 px-6 font-medium text-gray-900 cursor-pointer"
-                  // onClick={() => handleSort("id")}
+                // onClick={() => handleSort("id")}
                 >
                   SNo. <SortIcon column="id" />
                 </th>
@@ -354,9 +356,8 @@ export default function ViewMembers() {
                   </td>
                   <td className="py-4 px-6">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        member.role === "SALESPERSON" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${member.role === "SALESPERSON" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"
+                        }`}
                     >
                       {member.role}
                     </span>
@@ -364,9 +365,8 @@ export default function ViewMembers() {
                   <td className="py-4 px-6 text-gray-900">{member.phone_number}</td>
                   <td className="py-4 px-6">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        member.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                      }`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${member.is_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                        }`}
                     >
                       {member.is_active ? "Active" : "Inactive"}
                     </span>

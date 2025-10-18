@@ -183,7 +183,9 @@ export default function Products() {
     const matchesSearch =
       product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category?.toLowerCase().includes(searchTerm.toLowerCase())
+      product.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(product.selling_price).toLowerCase().includes(searchTerm.toLowerCase())
+      product.unit?.toLowerCase().includes(searchTerm.toLowerCase())
 
     // Category filter
     const matchesCategory = categoryFilter === "All Categories" || product.category === categoryFilter
