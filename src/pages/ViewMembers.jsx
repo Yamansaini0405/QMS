@@ -8,6 +8,7 @@ import PerformanceModal from "@/components/PerformanceModal"
 
 
 export default function ViewMembers() {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("All Status")
   const [roleFilter, setRoleFilter] = useState("All Roles")
@@ -29,7 +30,7 @@ export default function ViewMembers() {
   const fetchMembers = async () => {
     try {
       setIsLoading(true)
-      const res = await fetch("https://api.nkprosales.com/accounts/api/users/", {
+  const res = await fetch(`${baseUrl}/accounts/api/users/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -92,7 +93,7 @@ export default function ViewMembers() {
         console.log("[v0] Deleting member:", memberId)
 
         const token = localStorage.getItem("token") // if your API requires auth
-        const res = await fetch(`https://api.nkprosales.com/accounts/api/users/${memberId}/delete/`, {
+  const res = await fetch(`${baseUrl}/accounts/api/users/${memberId}/delete/`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -183,7 +184,7 @@ export default function ViewMembers() {
         })
 
         const token = localStorage.getItem("token")
-        const res = await fetch(`https://api.nkprosales.com/accounts/api/${memberId}/toggleUser/`, {
+  const res = await fetch(`${baseUrl}/accounts/api/${memberId}/toggleUser/`, {
           method: "POST",
           headers: {
             ...(token && { Authorization: `Bearer ${token}` }),

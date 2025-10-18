@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 
 export default function AllQuotations() {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [quotations, setQuotations] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -30,7 +31,7 @@ export default function AllQuotations() {
       setLoading(true)
       try {
         // Replace with your actual API endpoint
-        const response = await fetch("https://api.nkprosales.com/quotations/api/quotations/", {
+  const response = await fetch(`${baseUrl}/quotations/api/quotations/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",

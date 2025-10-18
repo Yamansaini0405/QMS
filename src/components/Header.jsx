@@ -5,6 +5,7 @@ import { useNavigate, Link } from "react-router-dom"
 
 
 const Header = ({ onMenuClick }) => {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const navigate = useNavigate()
   
 
@@ -13,7 +14,7 @@ const Header = ({ onMenuClick }) => {
       const token = localStorage.getItem("refreshToken")
 
       if (token) {
-        await fetch("https://api.nkprosales.com/accounts/api/logout/", {
+        await fetch(`${baseUrl}/accounts/api/logout/`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -44,7 +45,7 @@ const Header = ({ onMenuClick }) => {
         if (!token) return;
 
         const response = await fetch(
-          "https://api.nkprosales.com/accounts/api/user/current/",
+          `${baseUrl}/accounts/api/user/current/`,
           {
             method: "GET",
             headers: {

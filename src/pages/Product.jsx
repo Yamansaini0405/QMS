@@ -25,6 +25,7 @@ import * as XLSX from "xlsx"
 
 
 export default function Products() {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [searchTerm, setSearchTerm] = useState("")
   const [categories, setCategories] = useState([])   // store category list
   const [categoryFilter, setCategoryFilter] = useState("All Categories")  // store selected value
@@ -42,7 +43,7 @@ export default function Products() {
     const fetchProducts = async () => {
       try {
         const token = localStorage.getItem("token") // 👈 ensure token exists
-        const res = await fetch("https://api.nkprosales.com/quotations/api/products/", {
+  const res = await fetch(`${baseUrl}/quotations/api/products/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -71,7 +72,7 @@ export default function Products() {
     const fetchCategories = async () => {
       try {
         const token = localStorage.getItem("token")
-        const res = await fetch("https://api.nkprosales.com/quotations/api/categories/", {
+  const res = await fetch(`${baseUrl}/quotations/api/categories/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -232,7 +233,7 @@ if (!result.isConfirmed) return
     })
       const token = localStorage.getItem("token")
 
-      const res = await fetch(`https://api.nkprosales.com/quotations/api/products/create/?id=${id}`, {
+      const res = await fetch(`${baseUrl}/quotations/api/products/create/?id=${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

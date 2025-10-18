@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2"
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 
 const QuotationContext = createContext();
@@ -94,7 +95,7 @@ export const QuotationProvider = ({ children }) => {
         status: "",
         createdBy: localStorage.getItem("role"),
         digitalSignature: "",
-        send_immediately:false,
+        send_immediately: false,
     });
 
 
@@ -145,7 +146,7 @@ export const QuotationProvider = ({ children }) => {
         try {
             const token = localStorage.getItem("token");
             const res = await fetch(
-                `https://api.nkprosales.com/quotations/api/quotations/${id}/`,
+                `${baseUrl}/quotations/api/quotations/${id}/`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
@@ -206,7 +207,7 @@ export const QuotationProvider = ({ children }) => {
     useEffect(() => {
         const fetchTerms = async () => {
             try {
-                const response = await fetch("https://api.nkprosales.com/quotations/api/terms/", {
+                const response = await fetch(`${baseUrl}/quotations/api/terms/`, {
                     headers: {
                         "Authorization": `Bearer ${localStorage.getItem("token")}`,
                     },
@@ -232,7 +233,7 @@ export const QuotationProvider = ({ children }) => {
             console.log("Sending payload:", payload)
 
             const res = await fetch(
-                "https://api.nkprosales.com/quotations/api/products/create/",
+                `${baseUrl}/quotations/api/products/create/`,
                 {
                     method: "POST",
 
@@ -346,22 +347,25 @@ export const QuotationProvider = ({ children }) => {
                 quotation_id: id ? Number(id) : "",
                 send_immediately: true,
                 createdBy: localStorage.getItem("user"),
-                digitalSignature:formData.digitalSignature,
-                additionalNotes: formData.additionalNotes
+                digitalSignature: formData.digitalSignature,
+                additionalNotes: formData.additionalNotes,
+                additional_charge_name: "yaman",
+                additional_charge_amount: 0
+
             };
-          
+
 
             console.log("Creating quotation with payload:", payload);
 
             const response = await fetch(
-                "https://api.nkprosales.com/quotations/api/quotations/create/",
+                `${baseUrl}/quotations/api/quotations/create/`,
                 {
-                    method:  location.pathname.startsWith('/quotations/edit')  ? "PUT" : "POST",
+                    method: location.pathname.startsWith('/quotations/edit') ? "PUT" : "POST",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify(payload) ,
+                    body: JSON.stringify(payload),
                 }
             );
 
@@ -375,7 +379,7 @@ export const QuotationProvider = ({ children }) => {
             const result = await response.json();
             console.log("Quotation created successfully:", result);
 
-            Swal.fire(id ?  location.pathname.startsWith('/quotations/edit') ?  "Updated" : "Duplicated" : "Created!", `The Quotation has been ${id ? location.pathname.startsWith('/quotations/edit') ?  "updated" : "duplicated"  : "created"}.`, "success")
+            Swal.fire(id ? location.pathname.startsWith('/quotations/edit') ? "Updated" : "Duplicated" : "Created!", `The Quotation has been ${id ? location.pathname.startsWith('/quotations/edit') ? "updated" : "duplicated" : "created"}.`, "success")
 
 
             // ✅ Reset formData after success
@@ -403,7 +407,7 @@ export const QuotationProvider = ({ children }) => {
                 additionalNotes: "",
                 createdBy: localStorage.getItem("role"),
                 digitalSignature: "",
-                send_immediately:false,
+                send_immediately: false,
             });
 
             setSelectedTerms([]); // also reset terms if needed
@@ -417,7 +421,7 @@ export const QuotationProvider = ({ children }) => {
             setIsGeneratingPDF(false)
         }
     };
-     const createDraft = async () => {
+    const createDraft = async () => {
         console.log("sending draft")
         setIsGeneratingPDF(true)
 
@@ -504,27 +508,27 @@ export const QuotationProvider = ({ children }) => {
                 tax_rate: formData.taxRate,
                 discount_type: formData.discountType,
                 follow_up_date: formatDateToBackend(formData.validUntil),
-                terms: selectedTerms|| [],
+                terms: selectedTerms || [],
                 items,
                 quotation_id: id ? Number(id) : "",
                 send_immediately: false,
                 createdBy: localStorage.getItem("user"),
-                digitalSignature:formData.digitalSignature,
+                digitalSignature: formData.digitalSignature,
                 additionalNotes: formData.additionalNotes
             };
-          
 
-            console.log(`${location.pathname.startsWith('/quotations/edit')  ? "Updating" : "Creating"} quotation with payload:`, payload);
+
+            console.log(`${location.pathname.startsWith('/quotations/edit') ? "Updating" : "Creating"} quotation with payload:`, payload);
 
             const response = await fetch(
-                "https://api.nkprosales.com/quotations/api/quotations/create/",
+                `${baseUrl}/quotations/api/quotations/create/`,
                 {
-                    method:  location.pathname.startsWith('/quotations/edit')  ? "PUT" : "POST",
+                    method: location.pathname.startsWith('/quotations/edit') ? "PUT" : "POST",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify(payload) ,
+                    body: JSON.stringify(payload),
                 }
             );
 
@@ -538,7 +542,7 @@ export const QuotationProvider = ({ children }) => {
             const result = await response.json();
             console.log("Quotation created successfully:", result);
 
-            Swal.fire(id ?  location.pathname.startsWith('/quotations/edit') ?  "Updated" : "Duplicated" : "Created!", `The Quotation has been ${id ? location.pathname.startsWith('/quotations/edit') ?  "updated" : "duplicated"  : "created"}.`, "success")
+            Swal.fire(id ? location.pathname.startsWith('/quotations/edit') ? "Updated" : "Duplicated" : "Created!", `The Quotation has been ${id ? location.pathname.startsWith('/quotations/edit') ? "updated" : "duplicated" : "created"}.`, "success")
 
 
             // ✅ Reset formData after success
@@ -566,7 +570,7 @@ export const QuotationProvider = ({ children }) => {
                 additionalNotes: "",
                 createdBy: localStorage.getItem("role"),
                 digitalSignature: "",
-                send_immediately:false,
+                send_immediately: false,
             });
 
             setSelectedTerms([]); // also reset terms if needed
@@ -621,7 +625,7 @@ export const QuotationProvider = ({ children }) => {
         setIsSearchingProducts((prev) => ({ ...prev, [productIndex]: true }));
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://api.nkprosales.com/quotations/api/products/", {
+            const response = await fetch(`${baseUrl}/quotations/api/products/`, {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             const data = await response.json()
@@ -665,7 +669,7 @@ export const QuotationProvider = ({ children }) => {
                 const result = await response.json()
                 console.log("[v0] Quotation sent successfully:"
 
-                    
+
                 )
                 alert("Quotation created and sent successfully!")
             } else {
@@ -805,7 +809,7 @@ export const QuotationProvider = ({ children }) => {
             return sum + (baseAmount - discount)
         }, 0)
 
-        
+
 
         let globalDiscount = 0
         if (formData.specialDiscountEnabled) {
@@ -816,7 +820,7 @@ export const QuotationProvider = ({ children }) => {
                 globalDiscount = discountValue
             }
         }
-        const newSubtotal = subtotal-globalDiscount;
+        const newSubtotal = subtotal - globalDiscount;
         const taxRate = Number.parseFloat(formData.taxRate) || 0
         const tax = (newSubtotal * taxRate) / 100
         const totalAmount = newSubtotal + tax
@@ -839,7 +843,7 @@ export const QuotationProvider = ({ children }) => {
         setIsSearchingCustomers(true);
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("https://api.nkprosales.com/quotations/api/customers/all/", {
+            const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             const data = await response.json();

@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect } from "react"
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [user, setUser] = useState(null)
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem("refreshToken")
 
       if (token) {
-        await fetch("https://api.nkprosales.com/accounts/api/logout/", {
+        await fetch(`${baseUrl}/accounts/api/logout/`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,

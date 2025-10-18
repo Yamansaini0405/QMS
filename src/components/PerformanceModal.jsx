@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { X, User, BarChart3, TrendingUp, Calendar, Clock, Target, Award } from "lucide-react"
 
 export default function PerformanceModal({ isOpen, onClose, member }) {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [performanceData, setPerformanceData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -17,7 +18,7 @@ export default function PerformanceModal({ isOpen, onClose, member }) {
     try {
       setIsLoading(true)
       const token = localStorage.getItem("token")
-      const response = await fetch(`https://api.nkprosales.com/quotations/api/${member.id}/stats/`, {
+      const response = await fetch(`${baseUrl}/quotations/api/${member.id}/stats/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

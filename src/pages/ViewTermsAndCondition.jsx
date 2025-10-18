@@ -9,6 +9,7 @@ import Swal from "sweetalert2"
 
 
 export default function ViewTermsAndCondition() {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("All Status")
   const [terms, setTerms] = useState([])
@@ -21,7 +22,7 @@ export default function ViewTermsAndCondition() {
   useEffect(() => {
     const fetchTerms = async () => {
       try {
-        const response = await fetch(`https://api.nkprosales.com/quotations/api/terms/`)
+  const response = await fetch(`${baseUrl}/quotations/api/terms/`)
         if (!response.ok) throw new Error("Failed to fetch terms")
         const data = await response.json()
         console.log("[v0] Fetched terms:", data)
@@ -117,7 +118,7 @@ export default function ViewTermsAndCondition() {
 
         const token = localStorage.getItem("token")
         const res = await fetch(
-          `https://api.nkprosales.com/quotations/api/terms/${termId}/delete/`,
+          `${baseUrl}/quotations/api/terms/${termId}/delete/`,
           {
             method: "DELETE",
             headers: {

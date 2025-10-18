@@ -24,6 +24,7 @@ import Swal from "sweetalert2";
 
 
 export default function DraftQuotations() {
+    const baseUrl = import.meta.env.VITE_BASE_URL;
     const [quotations, setQuotations] = useState([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
@@ -37,7 +38,7 @@ export default function DraftQuotations() {
             setLoading(true)
             try {
                 // Replace with your actual API endpoint
-                const response = await fetch("https://api.nkprosales.com/quotations/api/quotations/", {
+                const response = await fetch(`${baseUrl}/quotations/api/quotations/`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
                         "Content-Type": "application/json",
@@ -82,7 +83,7 @@ export default function DraftQuotations() {
           })
     
           const token = localStorage.getItem("token")
-          const response = await fetch(`https://api.nkprosales.com/quotations/api/quotations/${id}/`, {
+          const response = await fetch(`${baseUrl}/quotations/api/quotations/${id}/`, {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,

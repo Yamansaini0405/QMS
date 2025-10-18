@@ -5,6 +5,8 @@ import Swal from "sweetalert2"
 
 export default function QuotationEditModal({ quotation, isOpen, onClose, onSave }) {
 
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+
 
   const formatDate = (value) => {
     if (!value) return ""
@@ -57,7 +59,7 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
 
   const fetchTerms = async () => {
     try {
-      const response = await fetch("https://api.nkprosales.com/quotations/api/terms/", {
+      const response = await fetch(`${baseUrl}/quotations/api/terms/`, {
         // headers: {
         //   Authorization: `Bearer ${localStorage.getItem("token")}`,
         // },
@@ -76,9 +78,7 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(
-        "https://api.nkprosales.com/quotations/api/products/",
-        {
+      const response = await fetch(`${baseUrl}/quotations/api/products/`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       )
@@ -129,7 +129,7 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
     setIsSearchingProducts((prev) => ({ ...prev, [productIndex]: true }));
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("https://api.nkprosales.com/quotations/api/products/", {
+      const response = await fetch(`${baseUrl}/quotations/api/products/`, {
         headers: { "Authorization": `Bearer ${token}` },
       });
       const data = await response.json();
@@ -445,7 +445,7 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
       console.log("Final payload to backend:", payload)
 
       const response = await fetch(
-        `https://api.nkprosales.com/quotations/api/quotations/create/`,
+        `${baseUrl}/quotations/api/quotations/create/`,
         {
           method: "PUT",
           headers: {
@@ -486,7 +486,7 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
     setIsSearchingCustomers(true)
     try {
       const token = localStorage.getItem("token")
-      const response = await fetch("https://api.nkprosales.com/quotations/api/customers/all/", {
+      const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await response.json()

@@ -5,6 +5,7 @@ import { User, Mail, Phone, MapPin, Calendar, Shield, Edit3, PhoneCall, Lock, Ey
 import Swal from "sweetalert2"
 
 export default function ProfilePage() {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [userData, setUserData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
@@ -31,7 +32,7 @@ export default function ProfilePage() {
   const [passwordMessage, setPasswordMessage] = useState({ type: "", text: "" })
  const fetchUserData = async () => {
       try {
-        const response = await fetch("https://api.nkprosales.com/accounts/api/user/current/", {
+        const response = await fetch(`${baseUrl}/accounts/api/user/current/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -98,7 +99,7 @@ export default function ProfilePage() {
     setPasswordMessage({ type: "", text: "" })
 
     try {
-      const response = await fetch("https://api.nkprosales.com/accounts/api/user/change-password/", {
+      const response = await fetch(`${baseUrl}/accounts/api/user/change-password/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -155,7 +156,7 @@ export default function ProfilePage() {
   const handleSaveProfile = async () => {
     setIsSaving(true)
     try {
-      const response = await fetch(`https://api.nkprosales.com/accounts/api/users/${userData.id}/edit/`, {
+      const response = await fetch(`${baseUrl}/accounts/api/users/${userData.id}/edit/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

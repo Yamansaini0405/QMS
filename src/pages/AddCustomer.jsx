@@ -4,6 +4,7 @@ import Swal from "sweetalert2"
 
 
 export default function AddCustomer() {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -122,7 +123,7 @@ export default function AddCustomer() {
       },
     })
 
-      const res = await fetch("https://api.nkprosales.com/quotations/api/customers/create/", {
+      const res = await fetch(`${baseUrl}/quotations/api/customers/create/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

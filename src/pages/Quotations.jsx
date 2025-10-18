@@ -31,6 +31,7 @@ import { useQuotation } from "@/contexts/QuotationContext"
 
 
 const Quotations = () => {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
 
   const { setFormData, updateFormData } = useQuotation()
 
@@ -62,7 +63,7 @@ const Quotations = () => {
       setLoading(true)
       try {
         const token = localStorage.getItem("token")
-        const response = await fetch("https://api.nkprosales.com/quotations/api/customers/all/", {
+  const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -161,7 +162,7 @@ const Quotations = () => {
       })
 
       const token = localStorage.getItem("token")
-      const response = await fetch(`https://api.nkprosales.com/quotations/api/quotations/${id}/`, {
+  const response = await fetch(`${baseUrl}/quotations/api/quotations/${id}/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -321,7 +322,7 @@ const Quotations = () => {
         },
       })
 
-      const res = await fetch(`https://api.nkprosales.com/accounts/api/quotations/${id}/status/`, {
+  const res = await fetch(`${baseUrl}/accounts/api/quotations/${id}/status/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -367,7 +368,7 @@ const Quotations = () => {
     try {
 
 
-      const response = await fetch("https://api.nkprosales.com/quotations/api/merge/", {
+  const response = await fetch(`${baseUrl}/quotations/api/merge/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

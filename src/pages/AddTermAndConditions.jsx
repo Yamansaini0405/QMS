@@ -6,6 +6,7 @@ import Swal from "sweetalert2"
 
 
 export default function AddTermsConditions() {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [formData, setFormData] = useState({
     title: "",
     points: [""],
@@ -86,7 +87,7 @@ const handleSaveTerms = async () => {
 
     // Send to API
     const response = await fetch(
-      "https://api.nkprosales.com/quotations/api/terms/create/",
+      `${baseUrl}/quotations/api/terms/create/`,
       {
         method: "POST",
         headers: {

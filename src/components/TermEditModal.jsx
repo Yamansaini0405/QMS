@@ -5,6 +5,7 @@ import { X, FileText, Plus, Trash2, Save, AlertCircle } from "lucide-react"
 import Swal from "sweetalert2"
 
 export default function TermEditModal({ term, isOpen, onClose, onSave }) {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [formData, setFormData] = useState({
     title: "",
     points: [""],
@@ -97,7 +98,7 @@ export default function TermEditModal({ term, isOpen, onClose, onSave }) {
       }
 
       // Simulate API call - replace with actual API endpoint
-      const response = await fetch(`https://api.nkprosales.com/quotations/api/terms/${termId}/update/`, {
+      const response = await fetch(`${baseUrl}/quotations/api/terms/${termId}/update/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

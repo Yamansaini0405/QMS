@@ -6,6 +6,7 @@ import Swal from "sweetalert2"
 
 
 export default function CustomerEditModal({ customer, isOpen, onClose, onSave }) {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [formData, setFormData] = useState({
     id: customer?.id || null,
     name: "",
@@ -60,7 +61,7 @@ export default function CustomerEditModal({ customer, isOpen, onClose, onSave })
       })
 
       // Example API call (PUT or PATCH depending on your backend)
-      const response = await fetch(`https://api.nkprosales.com/quotations/api/customers/create/?id=${customer.id}`, {
+      const response = await fetch(`${baseUrl}/quotations/api/customers/create/?id=${customer.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

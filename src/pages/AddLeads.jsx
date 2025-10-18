@@ -6,6 +6,7 @@ import Swal from "sweetalert2"
 
 
 export default function AddLeads() {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [formData, setFormData] = useState({
     customerName: "",
     companyName: "",
@@ -68,7 +69,7 @@ export default function AddLeads() {
     // /api/customers?search=${encodeURIComponent(query)}
     try {
       const token = localStorage.getItem("token")
-      const response = await fetch("https://api.nkprosales.com/quotations/api/customers/all/", {
+  const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -131,7 +132,7 @@ export default function AddLeads() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://api.nkprosales.com/accounts/api/users/",
+  `${baseUrl}/accounts/api/users/`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -247,7 +248,7 @@ export default function AddLeads() {
       console.log("Saving lead payload:", payload)
 
       const response = await fetch(
-        "https://api.nkprosales.com/quotations/api/leads/create/",
+  `${baseUrl}/quotations/api/leads/create/`,
         {
           method: "POST",
           headers: {

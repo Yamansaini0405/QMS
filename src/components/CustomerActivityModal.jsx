@@ -3,6 +3,7 @@ import { X, Clock, User, FileText, CheckCircle, XCircle, AlertCircle, Send, Load
 import { useState, useEffect } from "react"
 
 export default function CustomerActivityModal({ customer, isOpen, onClose }) {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -17,7 +18,7 @@ export default function CustomerActivityModal({ customer, isOpen, onClose }) {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch(`https://api.nkprosales.com/quotations/api/customers/${customerId}/`,{
+      const response = await fetch(`${baseUrl}/quotations/api/customers/${customerId}/`,{
         headers: {
             Authorization : `Bearer ${localStorage.getItem("token")}`
         }

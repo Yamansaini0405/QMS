@@ -6,6 +6,7 @@ import { isTokenValid } from "../utils/auth"
 import { Eye, EyeOff, FileText } from "lucide-react"
 
 const Login = () => {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -60,7 +61,7 @@ const Login = () => {
     setLoading(true)
 
     try {
-      const apiEndpoint = "https://api.nkprosales.com/accounts/api/staff/login/"
+      const apiEndpoint = `${baseUrl}/accounts/api/staff/login/`
 
       const response = await fetch(apiEndpoint, {
         method: "POST",

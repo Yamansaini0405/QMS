@@ -10,6 +10,7 @@ import Swal from "sweetalert2"
 import * as XLSX from "xlsx"
 
 export default function CustomersPage() {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [searchTerm, setSearchTerm] = useState("")
   
   const [customers, setCustomers] = useState([])
@@ -25,7 +26,7 @@ export default function CustomersPage() {
     const fetchCustomers = async () => {
       try {
         const token = localStorage.getItem("token")
-        const response = await fetch("https://api.nkprosales.com/quotations/api/customers/all/", {
+        const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -169,7 +170,7 @@ export default function CustomersPage() {
       })
 
       const token = localStorage.getItem("token")
-      const response = await fetch(`https://api.nkprosales.com/quotations/api/customers/create/?id=${id}`, {
+      const response = await fetch(`${baseUrl}/quotations/api/customers/create/?id=${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

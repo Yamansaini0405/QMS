@@ -7,6 +7,7 @@ import DashboardSkeleton from "@/components/DashboardSkeleton"
 import Swal from "sweetalert2"
 
 const Dashboard = () => {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [quotations, setQuotations] = useState([])
   const [leads, setLeads] = useState([])
   const [topPerformers, setTopPerformers] = useState([])
@@ -20,21 +21,21 @@ const Dashboard = () => {
         const token = localStorage.getItem("token")
 
         // fetch quotations
-        const qRes = await fetch("https://api.nkprosales.com/quotations/api/quotations/", {
+        const qRes = await fetch(`${baseUrl}/quotations/api/quotations/`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         const qData = await qRes.json()
         setQuotations(qData.data || qData)
 
         // fetch leads
-        const lRes = await fetch("https://api.nkprosales.com/quotations/api/leads/", {
+        const lRes = await fetch(`${baseUrl}/quotations/api/leads/`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         const lData = await lRes.json()
         setLeads(lData.data || lData)
 
         // fetch top performers
-        const tpRes = await fetch("https://api.nkprosales.com/quotations/stats/top-performers/", {
+        const tpRes = await fetch(`${baseUrl}/quotations/stats/top-performers/`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         const tpData = await tpRes.json()

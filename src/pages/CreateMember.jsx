@@ -6,6 +6,7 @@ import Swal from "sweetalert2"
 
 
 export default function CreateMember() {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -144,8 +145,7 @@ export default function CreateMember() {
           Swal.showLoading()
         },
       })
-
-      const response = await fetch("https://api.nkprosales.com/accounts/api/admin/create/", {
+      const response = await fetch(`${baseUrl}/accounts/api/admin/create/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -157,7 +157,7 @@ export default function CreateMember() {
       if (!response.ok) {
         // Swal.fire("Failed!", {response.error}, "error")
         throw new Error("Failed to save member")
-        
+
       }
 
       const data = await response.json()
@@ -179,7 +179,7 @@ export default function CreateMember() {
       setErrors({})
       setTouched({})
     } catch (err) {
-      console.error("Error saving member:", err)
+      Swal.fire("Error", err.message || "An error occurred while saving the member.", "error")
     } finally {
       setIsLoading(false)
     }

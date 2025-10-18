@@ -5,6 +5,7 @@ import Swal from "sweetalert2"
 
 
 export default function AddProduct() {
+  const baseUrl = import.meta.env.VITE_BASE_URL;
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -32,7 +33,7 @@ export default function AddProduct() {
     const fetchCategories = async () => {
       try {
         const token = localStorage.getItem("token")
-        const res = await fetch("https://api.nkprosales.com/quotations/api/categories/", {
+  const res = await fetch(`${baseUrl}/quotations/api/categories/`, {
           headers: { "Authorization": `Bearer ${token}` }
         })
         const data = await res.json()
@@ -125,7 +126,7 @@ export default function AddProduct() {
       console.log("Sending payload:", payload)
 
       const res = await fetch(
-        "https://api.nkprosales.com/quotations/api/products/create/",
+  `${baseUrl}/quotations/api/products/create/`,
         {
           method: "POST",
           headers: {
