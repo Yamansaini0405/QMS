@@ -83,7 +83,9 @@ export const QuotationProvider = ({ children }) => {
         email: "",
         phone: "",
         address: "",
-        gstNo: "",
+        gst_number: "",
+        additional_charge_name: "",
+        additional_charge_amount: 0,
         products: [{ id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 }],
         subtotal: "0.00",
         discount: "",
@@ -106,7 +108,7 @@ export const QuotationProvider = ({ children }) => {
 
     useEffect(() => {
         calculateTotals();
-    }, [formData.products, formData.taxRate, formData.discount, formData.discountType]);
+    }, [formData.products, formData.taxRate, formData.discount, formData.discountType, formData.additional_charge_amount]);
 
     useEffect(() => {
         if (!id) {
@@ -121,7 +123,9 @@ export const QuotationProvider = ({ children }) => {
                 email: "",
                 phone: "",
                 address: "",
-                gstNo: "",
+                gst_number: "",
+                additional_charge_name: "",
+                additional_charge_amount: 0,
                 products: [{ id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 }],
                 subtotal: "0.00",
                 discount: "",
@@ -166,7 +170,9 @@ export const QuotationProvider = ({ children }) => {
                 email: data.data.customer?.email || "",
                 phone: data.data.customer?.phone || "",
                 address: data.data.customer?.primary_address || "",
-                gstNo: data.data.customer?.gst_no || "",
+                gst_number: data.data.customer?.gst_no || "",
+                additional_charge_name: data.data.additional_charge_name || "",
+                additional_charge_amount: data.data.additional_charge_amount || 0,
                 products: data.data.items?.map((item) => ({
                     id: item.product.id,
                     name: item.product.name,
@@ -257,6 +263,7 @@ export const QuotationProvider = ({ children }) => {
 
     // Create Quotation handler
     const createQuotation = async () => {
+        console.log(formData.additional_charge_name, formData.additional_charge_amount, formData.gst_number)
         setIsGeneratingPDF(true)
 
         try {
@@ -334,8 +341,10 @@ export const QuotationProvider = ({ children }) => {
                     phone: formData.phone,
                     company_name: formData.companyName,
                     primary_address: formData.address,
-                    gstNo: formData.gstNo,
+                    gst_number: formData.gst_number,
                 },
+                additional_charge_name: "",
+                additional_charge_amount: 0,
                 auto_assign: true,
                 status: formData.status,
                 discount: formData.discount ? Number.parseFloat(formData.discount) : 0,
@@ -349,8 +358,8 @@ export const QuotationProvider = ({ children }) => {
                 createdBy: localStorage.getItem("user"),
                 digitalSignature: formData.digitalSignature,
                 additionalNotes: formData.additionalNotes,
-                additional_charge_name: "yaman",
-                additional_charge_amount: 0
+                additional_charge_name: formData.additional_charge_name || "",
+                additional_charge_amount: formData.additional_charge_amount || 0
 
             };
 
@@ -394,7 +403,9 @@ export const QuotationProvider = ({ children }) => {
                 email: "",
                 phone: "",
                 address: "",
-                gstNo: "",
+                gst_number: "",
+                additional_charge_name: "",
+                additional_charge_amount: 0,
                 products: [
                     { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 },
                 ],
@@ -500,8 +511,10 @@ export const QuotationProvider = ({ children }) => {
                     phone: formData.phone,
                     company_name: formData.companyName,
                     primary_address: formData.address,
-                    gstNo: formData.gstNo || "",
+                    gst_number: formData.gst_number || "",
                 },
+                additional_charge_name: formData.additional_charge_name || "",
+                additional_charge_amount: formData.additional_charge_amount || 0,
                 auto_assign: true,
                 status: formData.status,
                 discount: formData.discount ? Number.parseFloat(formData.discount) : 0,
@@ -557,7 +570,9 @@ export const QuotationProvider = ({ children }) => {
                 email: "",
                 phone: "",
                 address: "",
-                gstNo: "",
+                gst_number: "",
+                additional_charge_name: "",
+                additional_charge_amount: 0,
                 products: [
                     { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 },
                 ],
@@ -820,7 +835,8 @@ export const QuotationProvider = ({ children }) => {
                 globalDiscount = discountValue
             }
         }
-        const newSubtotal = subtotal - globalDiscount;
+        const additionalCharge = Number.parseFloat(formData.additional_charge_amount) || 0
+        const newSubtotal = subtotal - globalDiscount + additionalCharge;
         const taxRate = Number.parseFloat(formData.taxRate) || 0
         const tax = (newSubtotal * taxRate) / 100
         const totalAmount = newSubtotal + tax
@@ -869,7 +885,7 @@ export const QuotationProvider = ({ children }) => {
             email: customer.email,
             phone: customer.phone,
             address: customer.primary_address,
-            gstNo: customer.gst_no || "",
+            gst_number: customer.gst_no || "",
         }));
         setCustomerSearchQuery("");
         setShowCustomerSearch(false);

@@ -163,8 +163,8 @@ export default function CustomerInfoForm() {
           </label>
           <input
             placeholder="Enter GST No"
-            value={formData.gstNo}
-            onChange={(e) => updateFormData("gstNo", e.target.value)}
+            value={formData.gst_number}
+            onChange={(e) => updateFormData("gst_number", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>

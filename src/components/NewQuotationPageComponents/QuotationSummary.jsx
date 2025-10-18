@@ -111,6 +111,13 @@ export default function QuotationSummary() {
                             </label>
                         </div>
                     </div>
+                    <div>
+                        <p className="text-gray-700 text-sm">Additional Charges:</p>
+                        <div className="flex items-center justify-between space-x-2 mt-1">
+                            <input type="text" value={formData.additional_charge_name} onChange={(e) => updateFormData("additional_charge_name", e.target.value)} className="border border-gray-300 rounded-md p-1" />
+                            <input type="number" value={formData.additional_charge_amount} onChange={(e) => updateFormData("additional_charge_amount", e.target.value)} className="border border-gray-300 rounded-md p-1 w-20" />
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex justify-between items-center">

@@ -81,9 +81,9 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
                   <span className="font-semibold text-md">Address:</span> {formData.address}
                 </p>
               )}
-              {formData.gstNo && (
+              {formData.gst_number && (
                 <p>
-                  <span className="font-semibold text-md">GST No:</span> {formData.gstNo}
+                  <span className="font-semibold text-md">GST No:</span> {formData.gst_number}
                 </p>
               )}
             </>
@@ -153,7 +153,7 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
 
       {/* Summary */}
       <div className="flex justify-end mb-8">
-        <div className="w-80">
+        <div className="w-100">
           <div className="bg-gray-50 p-4 rounded-lg space-y-2">
             <div className="flex justify-between">
               <span>Subtotal:</span>
@@ -167,13 +167,17 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
                     {formData.discount}% (Rs. {((formData.subtotal * formData.discount) / 100).toFixed(2)})
                   </span>
                 ) : (
-                  <span>Rs. {formData.discount}</span>
+                  <span>- Rs. {formData.discount}</span>
                 )}
               </div>
             )}
             <div className="flex justify-between">
               <span>Tax (18%):</span>
-              <span>Rs. {formData.tax || "0.00"}</span>
+              <span>+ Rs. {formData.tax || "0.00"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Additional Charges:</span>
+              <span>+ Rs. {formData.additional_charge_amount || "0.00"}</span>
             </div>
             <div className="border-t border-gray-300 pt-2 flex justify-between font-bold text-lg">
               <span>Total Amount:</span>
