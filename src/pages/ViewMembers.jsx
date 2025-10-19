@@ -5,7 +5,7 @@ import { UserCog, Plus, Search, Filter, Trash2, ArrowUp, ArrowDown, ArrowLeftRig
 import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
 import PerformanceModal from "@/components/PerformanceModal"
-import ManageMemberModal from "@/components/ManageMemberModal"  
+import ManageMemberModal from "@/components/ManageMemberModal"
 
 
 export default function ViewMembers() {
@@ -347,12 +347,9 @@ export default function ViewMembers() {
                   Status <SortIcon column="is_active" />
                 </th>
                 <th
-                  className="text-left py-3 px-6 font-medium text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("date_joined")}
-                >
+                  className="text-left py-3 px-6 font-medium text-gray-900">
                   Manage
-                
-                </th>
+               </th>
                 <th className="text-left py-3 px-6 font-medium text-gray-900">Actions</th>
               </tr>
             </thead>
@@ -386,12 +383,12 @@ export default function ViewMembers() {
                     </span>
                   </td>
                   <td className="py-4 px-6 text-gray-900"><button
-                         onClick={() => handleManageMember(member)}
-                         className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                         title="Manage Member Settings"
-                       >
-                         <UserCog className="w-4 h-4" />
-                       </button></td>
+                    onClick={() => handleManageMember(member)}
+                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    title="Manage Member Settings"
+                  >
+                    <UserCog className="w-4 h-4" />
+                  </button></td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <button
