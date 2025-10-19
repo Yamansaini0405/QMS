@@ -5,6 +5,7 @@ import { UserCog, Plus, Search, Filter, Trash2, ArrowUp, ArrowDown, ArrowLeftRig
 import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
 import PerformanceModal from "@/components/PerformanceModal"
+import ManageMemberModal from "@/components/ManageMemberModal"  
 
 
 export default function ViewMembers() {
@@ -18,6 +19,7 @@ export default function ViewMembers() {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" }) // sorting state
   const [showPerformanceModal, setShowPerformanceModal] = useState(false)
   const [selectedMember, setSelectedMember] = useState(null)
+  const [showManageModal, setShowManageModal] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -113,6 +115,18 @@ export default function ViewMembers() {
         Swal.fire("Error!", "Failed to delete member. Please try again.", "error")
       }
     }
+  }
+
+  const handleManageMember = (member) => {
+    setSelectedMember(member)
+    setShowManageModal(true)
+  }
+
+  const handleMemberUpdateSuccess = (updatedMember) => {
+    setMembers((prevMembers) =>
+      prevMembers.map((m) => (m.id === updatedMember.id ? updatedMember : m))
+    )
+    setShowManageModal(false) // Close the modal
   }
 
   const handleSort = (key) => {
@@ -336,15 +350,15 @@ export default function ViewMembers() {
                   className="text-left py-3 px-6 font-medium text-gray-900 cursor-pointer"
                   onClick={() => handleSort("date_joined")}
                 >
-                  Created at
-                  <SortIcon column="date_joined" />
+                  Manage
+                
                 </th>
                 <th className="text-left py-3 px-6 font-medium text-gray-900">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {console.log(filteredMembers)}
-              {filteredMembers.filter((member) => member.phone_number !== null).map((member, index) => (
+              {filteredMembers.map((member, index) => (
                 <tr key={member.id} className="hover:bg-gray-50">
                   <td className="py-4 px-6 text-gray-900">{index + 1}</td>
                   <td className="py-4 px-6">
@@ -371,7 +385,13 @@ export default function ViewMembers() {
                       {member.is_active ? "Active" : "Inactive"}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-gray-900">{(member.date_joined || "").split("T")[0]}</td>
+                  <td className="py-4 px-6 text-gray-900"><button
+                         onClick={() => handleManageMember(member)}
+                         className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                         title="Manage Member Settings"
+                       >
+                         <UserCog className="w-4 h-4" />
+                       </button></td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
                       <button
@@ -409,6 +429,13 @@ export default function ViewMembers() {
           </div>
         )}
       </div>
+
+      <ManageMemberModal
+        isOpen={showManageModal}
+        onClose={() => setShowManageModal(false)}
+        member={selectedMember}
+        onMemberUpdate={handleMemberUpdateSuccess}
+      />
 
       {/* PerformanceModal component */}
       <PerformanceModal
