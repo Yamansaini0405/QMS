@@ -76,7 +76,7 @@ const Login = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        const errorMessage = errorData?.detail || "Invalid username or password";
+        const errorMessage = errorData?.error || "Invalid username or password";
         throw new Error(errorMessage);
       }
 
