@@ -15,8 +15,113 @@ import {
   AlertCircle,
   ArrowLeftRight,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  X
 } from "lucide-react"
+import Swal from "sweetalert2"
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
+const AssignQuotationModal = ({ isOpen, onClose, quotation, salespersons }) => {
+  if (!isOpen) return null
+
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedSalespersonId, setSelectedSalespersonId] = useState(null)
+
+  const filteredSalespersons = salespersons.filter((sp) =>
+    sp?.username?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const handleConfirm = async () => {
+    // Ensure a salesperson is selected before proceeding.
+    if (!selectedSalespersonId) {
+      console.error("No salesperson selected.")
+      return
+    }
+
+    try {
+      Swal.fire({
+        title: "Reassigning...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      })
+      // Send the POST request to the API endpoint
+      const payload = { assigned_to_id: selectedSalespersonId }
+      const response = await fetch(`${baseUrl}/quotations/api/quotations/${quotation.id}/assign/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(payload),
+      })
+
+
+      if (!response.ok) {
+
+        const errorData = await response.json()
+        throw new Error(errorData.message || `Error: ${response.status}`)
+      }
+      Swal.fire("Success!", "Quotation has been reassigned.", "success")
+      onClose()
+      onConfirm(quotation.id, selectedSalespersonId)
+
+
+    } catch (error) {
+      console.error("Failed to assign quotation:", error)
+      // Swal.fire("Error!", "Could not reassign quotation. Please try again.", "error")
+
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Reassign Quotation</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <p className="mb-4 text-gray-600">
+          Reassigning Quotation:{" "}
+          <span className="font-medium text-gray-800">{quotation.quotation_number}</span> for{" "}
+          <span className="font-medium text-gray-800">{quotation.customer?.name}</span>
+        </p>
+        <input
+          type="text"
+          placeholder="Search salesperson..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg mb-4"
+        />
+        <div className="max-h-50 overflow-y-auto border rounded-lg">
+          {filteredSalespersons.map((sp) => (
+            <div
+              key={sp.id}
+              onClick={() => setSelectedSalespersonId(sp.id)}
+              className={`p-3 cursor-pointer hover:bg-gray-100 ${selectedSalespersonId === sp.id ? "bg-purple-100 font-semibold" : ""
+                }`}
+            >
+              {sp.username} ({sp.role})
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex justify-end space-x-3">
+          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={!selectedSalespersonId}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-purple-700"
+          >
+            Confirm Assignment
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function AllQuotations() {
   const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -26,12 +131,16 @@ export default function AllQuotations() {
   const [statusFilter, setStatusFilter] = useState("All")
   const [quotationSortConfig, setQuotationSortConfig] = useState({ key: null, direction: "asc" })
 
+  const [isAssigneeModalOpen, setIsAssigneeModalOpen] = useState(false)
+  const [quotationToReassign, setQuotationToReassign] = useState(null)
+  const [salespersons, setSalespersons] = useState([])
+
   useEffect(() => {
     const fetchQuotations = async () => {
       setLoading(true)
       try {
         // Replace with your actual API endpoint
-  const response = await fetch(`${baseUrl}/quotations/api/quotations/`, {
+        const response = await fetch(`${baseUrl}/quotations/api/quotations/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
@@ -49,7 +158,71 @@ export default function AllQuotations() {
     }
 
     fetchQuotations()
+  }, [setQuotationToReassign])
+
+  useEffect(() => {
+    const fetchSalespersons = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        const res = await fetch(`${baseUrl}/accounts/api/users/`, { // Assuming this is your endpoint
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (!res.ok) throw new Error("Failed to fetch salespeople")
+        const data = await res.json()
+        setSalespersons(data.data || [])
+      } catch (error) {
+        console.error("❌ Error fetching salespeople:", error)
+      }
+    }
+    fetchSalespersons()
   }, [])
+
+  const handleOpenAssignModal = (quotation) => {
+    setQuotationToReassign(quotation)
+    setIsAssigneeModalOpen(true)
+  }
+
+  const handleConfirmAssignment = async (quotationId, newAssigneeId) => {
+    try {
+      Swal.fire({
+        title: "Reassigning...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      })
+
+      const token = localStorage.getItem("token")
+      const res = await fetch(`${baseUrl}/quotations/api/quotations/${quotationId}/assign/`, { // Assuming this is your endpoint
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ assigned_id: newAssigneeId }),
+      })
+
+      if (!res.ok) {
+        throw new Error("Server failed to reassign quotation.")
+      }
+      const updatedQuotationData = await res.json()
+
+      // Update state locally
+      setQuotations((prevQuotations) =>
+        prevQuotations.map((q) =>
+          q.id === quotationId
+            ? { ...q, assigned_to: updatedQuotationData.assigned_to }
+            : q
+        )
+      )
+
+      setIsAssigneeModalOpen(false)
+      Swal.fire("Success!", "Quotation has been reassigned.", "success")
+    } catch (error) {
+      console.error("❌ Failed to reassign quotation:", error)
+      Swal.fire("Error!", "Could not reassign quotation. Please try again.", "error")
+    }
+  }
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -88,8 +261,8 @@ export default function AllQuotations() {
       quotation.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       quotation.customer?.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       quotation.customer?.phone?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(quotation.total).toLowerCase().includes(searchTerm.toLowerCase())||
-      quotation.status?.toLowerCase().includes(searchTerm.toLowerCase())||
+      String(quotation.total).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      quotation.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       quotation.assigned_to?.name?.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === "All" || quotation.status === statusFilter
@@ -155,9 +328,9 @@ export default function AllQuotations() {
       } else if (quotationSortConfig.key === "total") {
         valueA = parseFloat(a.total) || 0
         valueB = parseFloat(b.total) || 0
-      } else if (quotationSortConfig.key === "customer"){
-         valueA = a.customer?.name?.toLowerCase() || ""
-         valueB = b.customer?.name?.toLowerCase() || ""
+      } else if (quotationSortConfig.key === "customer") {
+        valueA = a.customer?.name?.toLowerCase() || ""
+        valueB = b.customer?.name?.toLowerCase() || ""
       } else {
         valueA = valueA ?? ""
         valueB = valueB ?? ""
@@ -201,7 +374,7 @@ export default function AllQuotations() {
               <FileText className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className= "text-xl md:text-2xl font-semibold text-gray-900">Quotations</h1>
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900">Quotations</h1>
               <p className="text-sm md:text-md text-gray-600">Manage and track all your quotations</p>
             </div>
           </div>
@@ -264,42 +437,42 @@ export default function AllQuotations() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  
+
                   <th
                     className="px-4 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer"
                     onClick={() => handleQuotationSort("quotation_number")}
                   >
                     Quotation <QuotationSortIcon column="quotation_number" />
                   </th>
-                   <th
+                  <th
                     className="px-4 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer"
                     onClick={() => handleQuotationSort("customer")}
                   >
                     Customer <QuotationSortIcon column="customer" />
                   </th>
-                  
+
                   <th
                     className="px-4 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer"
                     onClick={() => handleQuotationSort("total")}
                   >
                     Amount <QuotationSortIcon column="total" />
                   </th>
-                  
+
                   <th
                     className="px-4 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer"
                     onClick={() => handleQuotationSort("status")}
                   >
                     Status <QuotationSortIcon column="status" />
                   </th>
-                  
-                  
+
+
                   <th
                     className="px-4 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer"
                     onClick={() => handleQuotationSort("created_at")}
                   >
                     Created <QuotationSortIcon column="created_at" />
                   </th>
-                  
+
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Assigned To</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
                 </tr>
@@ -374,6 +547,13 @@ export default function AllQuotations() {
                           <User className="w-3 h-3 text-gray-600" />
                         </div>
                         <span className="text-sm text-gray-900">{quotation.assigned_to?.name || "Unassigned"}</span>
+                        <button
+                          onClick={() => handleOpenAssignModal(quotation)}
+                          title="Reassign Quotation"
+                          className="p-1 text-gray-400 hover:text-purple-600 rounded-full hover:bg-purple-100"
+                        >
+                          <ArrowLeftRight className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -404,6 +584,12 @@ export default function AllQuotations() {
           )}
         </div>
       </div>
+      <AssignQuotationModal
+        isOpen={isAssigneeModalOpen}
+        onClose={() => setIsAssigneeModalOpen(false)}
+        quotation={quotationToReassign}
+        salespersons={salespersons}
+      />
     </div>
   )
 }
