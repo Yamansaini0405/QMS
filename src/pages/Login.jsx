@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom"
 import { isTokenValid } from "../utils/auth"
 import { Eye, EyeOff, FileText } from "lucide-react"
 
+
+
 const Login = () => {
   const baseUrl = import.meta.env.VITE_BASE_URL;
   const navigate = useNavigate()
@@ -85,6 +87,8 @@ const Login = () => {
       localStorage.setItem("token", data.tokens.access)
       localStorage.setItem("role", data.data.user.role) 
       localStorage.setItem("refreshToken", data.tokens.refresh)
+
+      
 
       navigate("/dashboard")
     } catch (error) {
@@ -211,3 +215,6 @@ const Login = () => {
 }
 
 export default Login
+
+
+

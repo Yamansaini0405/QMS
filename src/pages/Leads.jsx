@@ -8,6 +8,7 @@ import QuotationEditModal from "@/components/QuotationEditModel"
 import Swal from "sweetalert2"
 import CustomerViewModal from "@/components/CustomerViewModal"
 import * as XLSX from "xlsx"
+import { fetchUserPermissions, getUserPermissions } from "@/utils/permissions"
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const AssignLeadModal = ({ isOpen, onClose, lead, salespersons }) => {
@@ -133,6 +134,8 @@ export default function Leads() {
   const [leadToReassign, setLeadToReassign] = useState(null)
   const [salespersons, setSalespersons] = useState([])
 
+  const permissions = getUserPermissions();
+
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
@@ -149,6 +152,7 @@ export default function Leads() {
         const data = await res.json()
         console.log("✅ Customers loaded:", data.data)
         setCustomers(data.data || data)
+        await fetchUserPermissions();
       } catch (err) {
         console.error("❌ Error fetching customers:", err)
       } finally {
@@ -804,7 +808,9 @@ const handleOpenAssignModal = (lead) => {
                                     Quotation <LeadSortIcon column="quotation" />
                                   </th>
 
-                                  <th className="px-4 py-3 text-left">Actions</th>
+                                  {permissions?.lead?.includes("delete") && (
+                                    <th className="px-4 py-3 text-left">Actions</th>
+                                  )}
                                 </tr>
 
                               </thead>
@@ -880,7 +886,8 @@ const handleOpenAssignModal = (lead) => {
                                     </td>
 
                                     {/* Actions */}
-                                    <td className="px-4 py-2 flex space-x-2">
+                                    {permissions?.lead?.includes("delete") && (
+                                      <td className="px-4 py-2 flex space-x-2">
                                       <button
                                         onClick={() => handleDeleteLead(lead.id, customer)}
                                         className="p-1 text-gray-400 hover:text-red-600"
@@ -889,6 +896,7 @@ const handleOpenAssignModal = (lead) => {
                                         <Trash className="w-4 h-4" />
                                       </button>
                                     </td>
+                                  )}
                                   </tr>
                                 ))}
                               </tbody>

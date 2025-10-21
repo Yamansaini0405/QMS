@@ -6,6 +6,7 @@ import { Link } from "react-router-dom"
 import DashboardSkeleton from "@/components/DashboardSkeleton"
 import Swal from "sweetalert2"
 
+
 const Dashboard = () => {
   const baseUrl = import.meta.env.VITE_BASE_URL;
   const [quotations, setQuotations] = useState([])
@@ -40,6 +41,7 @@ const Dashboard = () => {
         })
         const tpData = await tpRes.json()
         setTopPerformers(tpData.data || [])
+       
       } catch (err) {
         setError("Failed to load dashboard data")
         console.error(err)

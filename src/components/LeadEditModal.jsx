@@ -3,16 +3,17 @@
 import { useState, useEffect } from "react"
 import { X, Target, Save, AlertCircle } from "lucide-react"
 
-export default function LeadEditModal({ lead, isOpen, onClose, onSave }) {
+export default function LeadEditModal({ customer, lead, isOpen, onClose, onSave }) {
+  console.log(lead)
   const [formData, setFormData] = useState({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
   useEffect(() => {
-    if (lead) {
-      setFormData({ ...lead })
+    if (customer) {
+      setFormData({ ...customer })
     }
-  }, [lead])
+  }, [customer])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -93,12 +94,12 @@ export default function LeadEditModal({ lead, isOpen, onClose, onSave }) {
                 <input
                   type="text"
                   name="customer_name"
-                  value={formData.customer_name || ""}
+                  value={formData.name || ""}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Contact Person *</label>
                 <input
                   type="text"
@@ -107,7 +108,7 @@ export default function LeadEditModal({ lead, isOpen, onClose, onSave }) {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-              </div>
+              </div> */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
                 <input
@@ -143,7 +144,7 @@ export default function LeadEditModal({ lead, isOpen, onClose, onSave }) {
                 <input
                   type="text"
                   name="address"
-                  value={formData.address || ""}
+                  value={formData.primary_address || ""}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -159,7 +160,7 @@ export default function LeadEditModal({ lead, isOpen, onClose, onSave }) {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Lead Status</label>
                 <select
                   name="lead_status"
-                  value={formData.lead_status || ""}
+                  value={lead.status || ""}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -167,6 +168,7 @@ export default function LeadEditModal({ lead, isOpen, onClose, onSave }) {
                   <option value="Qualified">Qualified</option>
                   <option value="Proposal">Proposal</option>
                   <option value="Converted">Converted</option>
+                  <option value="Revised">Revised</option>
                 </select>
               </div>
               <div>
@@ -209,18 +211,7 @@ export default function LeadEditModal({ lead, isOpen, onClose, onSave }) {
                   <option value="u2">User 2</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Lead Score (0-100)</label>
-                <input
-                  type="number"
-                  name="lead_score"
-                  value={formData.lead_score || ""}
-                  onChange={handleInputChange}
-                  min="0"
-                  max="100"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              
             </div>
           </div>
 

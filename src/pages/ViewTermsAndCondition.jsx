@@ -1,14 +1,21 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { FileText, Calendar, User, Eye, Edit, Trash2, Search, Download, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import TermViewModal from "../components/TermViewModal"
 import TermEditModal from "../components/TermEditModal"
 import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
+import { fetchUserPermissions, getUserPermissions } from "@/utils/permissions"
+
 
 
 export default function ViewTermsAndCondition() {
+  const permission = getUserPermissions();
+
+
+
+
   const baseUrl = import.meta.env.VITE_BASE_URL;
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("All Status")
@@ -22,11 +29,12 @@ export default function ViewTermsAndCondition() {
   useEffect(() => {
     const fetchTerms = async () => {
       try {
-  const response = await fetch(`${baseUrl}/quotations/api/terms/`)
+        const response = await fetch(`${baseUrl}/quotations/api/terms/`)
         if (!response.ok) throw new Error("Failed to fetch terms")
         const data = await response.json()
         console.log("[v0] Fetched terms:", data)
         setTerms(data)
+        await fetchUserPermissions();
       } catch (error) {
         console.error("❌ Error fetching terms:", error)
         alert("Error fetching terms. Please try again.")
@@ -34,6 +42,7 @@ export default function ViewTermsAndCondition() {
         setLoading(false)
       }
     }
+
     fetchTerms()
   }, [])
 
@@ -52,14 +61,14 @@ export default function ViewTermsAndCondition() {
     })
   }
 
- const SortIcon = ({ column }) => {
+  const SortIcon = ({ column }) => {
     if (sortConfig.key !== column) return null
     return sortConfig.direction === "asc" ? (
       <ArrowUp className="inline w-4 h-4 ml-1" />
     ) : (
       <ArrowDown className="inline w-4 h-4 ml-1" />
     )
-  }  
+  }
 
   const sortedTerms = [...filteredTerms].sort((a, b) => {
     if (!sortConfig.key) return 0
@@ -106,13 +115,13 @@ export default function ViewTermsAndCondition() {
       try {
 
         Swal.fire({
-      title: "Deleting...",
-      text: "Please wait while we delete your Terms & Conditions.",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading()
-      },
-    })
+          title: "Deleting...",
+          text: "Please wait while we delete your Terms & Conditions.",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading()
+          },
+        })
 
 
 
@@ -277,20 +286,25 @@ export default function ViewTermsAndCondition() {
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => handleEditTerm(term)}
-                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-200"
-                        title="Edit Terms"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                     {localStorage.getItem("role") === "ADMIN" ?  <button
-                        onClick={() => handleDeleteTerm(term.id)}
-                        className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
-                        title="Delete Terms"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>:""}
+                      {permission?.terms?.includes('edit') && (
+                        <button
+                          onClick={() => handleEditTerm(term)}
+                          className="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-200"
+                          title="Edit Terms"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      {permission?.terms?.includes('delete') && (
+                        <button
+                          onClick={() => handleDeleteTerm(term.id)}
+                          className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
+                          title="Delete Terms"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -299,11 +313,11 @@ export default function ViewTermsAndCondition() {
           </table>
         </div>
         {sortedTerms.length === 0 && (
-                                <div className="text-center py-12">
-                                    <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                                    <p className="text-gray-500">No Terms & Conditions found</p>
-                                </div>
-                            )}
+          <div className="text-center py-12">
+            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No Terms & Conditions found</p>
+          </div>
+        )}
       </div>
 
       <TermViewModal term={selectedTerm} isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} />

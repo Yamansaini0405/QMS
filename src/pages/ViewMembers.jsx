@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { UserCog, Plus, Search, Filter, Trash2, ArrowUp, ArrowDown, ArrowLeftRight, BarChart3 } from "lucide-react"
+import { UserCog, Plus, Search, Filter, Trash2, ArrowUp, ArrowDown, ArrowLeftRight, BarChart3, ShieldCheck, MoreHorizontal } from "lucide-react"
 import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
 import PerformanceModal from "@/components/PerformanceModal"
 import ManageMemberModal from "@/components/ManageMemberModal"
+import GrantPermissionModal from "@/components/GrantPermissionModal"
 
 
 export default function ViewMembers() {
@@ -20,6 +21,8 @@ export default function ViewMembers() {
   const [showPerformanceModal, setShowPerformanceModal] = useState(false)
   const [selectedMember, setSelectedMember] = useState(null)
   const [showManageModal, setShowManageModal] = useState(false)
+  const [showPermissionModal, setShowPermissionModal] = useState(false)
+  const [openActionMenuId, setOpenActionMenuId] = useState(null)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -120,6 +123,10 @@ export default function ViewMembers() {
   const handleManageMember = (member) => {
     setSelectedMember(member)
     setShowManageModal(true)
+  }
+  const handleGrantPermission = (member) => {
+    setSelectedMember(member)
+    setShowPermissionModal(true)
   }
 
   const handleMemberUpdateSuccess = (updatedMember) => {
@@ -346,11 +353,8 @@ export default function ViewMembers() {
                 >
                   Status <SortIcon column="is_active" />
                 </th>
-                <th
-                  className="text-left py-3 px-6 font-medium text-gray-900">
-                  Manage
-               </th>
-                <th className="text-left py-3 px-6 font-medium text-gray-900">Actions</th>
+
+                <th className="text-center py-3 px-6 font-medium text-gray-900">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -382,36 +386,64 @@ export default function ViewMembers() {
                       {member.is_active ? "Active" : "Inactive"}
                     </span>
                   </td>
-                  <td className="py-4 px-6 text-gray-900"><button
-                    onClick={() => handleManageMember(member)}
-                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                    title="Manage Member Settings"
-                  >
-                    <UserCog className="w-4 h-4" />
-                  </button></td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center gap-2">
+                  <td className="py-4 px-6 text-center flex justify-center ">
+                    <div className="relative inline-block text-left">
                       <button
-                        onClick={() => handleViewPerformance(member)}
-                        className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                        title="View Performance"
+                        onClick={() => setOpenActionMenuId(openActionMenuId === member.id ? null : member.id)}
+                        className="p-2 rounded-full hover:bg-gray-200 transition-colors focus:outline-none"
+                        title="Actions"
                       >
-                        <BarChart3 className="w-4 h-4" />
+                        <MoreHorizontal className="w-5 h-5" />
                       </button>
-                      <button
-                        onClick={() => handleToggleRole(member.id, member.role)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Toggle Role"
-                      >
-                        <ArrowLeftRight className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteMember(member.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete Member"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+
+                      {/* Dropdown Menu (This part is unchanged and will now work correctly) */}
+                      {openActionMenuId === member.id && (
+                        <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                          <div className="py-1" role="menu" aria-orientation="vertical">
+                            <DropdownItem
+                              icon={<UserCog className="w-4 h-4" />}
+                              label="Manage Member"
+                              onClick={() => {
+                                handleManageMember(member)
+                                setOpenActionMenuId(null)
+                              }}
+                            />
+                            {member.role !== "ADMIN" ? (<DropdownItem
+                              icon={<ShieldCheck className="w-4 h-4 text-green-600" />}
+                              label="Grant Permissions"
+                              onClick={() => {
+                                handleGrantPermission(member)
+                                setOpenActionMenuId(null)
+                              }}
+                            />):null}
+                            <DropdownItem
+                              icon={<BarChart3 className="w-4 h-4 text-purple-600" />}
+                              label="View Performance"
+                              onClick={() => {
+                                handleViewPerformance(member)
+                                setOpenActionMenuId(null)
+                              }}
+                            />
+                             <DropdownItem
+                              icon={<ArrowLeftRight className="w-4 h-4 text-blue-600" />}
+                              label="Toggle Role"
+                              onClick={() => {
+                                handleToggleRole(member.id, member.role)
+                                setOpenActionMenuId(null)
+                              }}
+                            />
+                            <div className="border-t my-1"></div>
+                            <DropdownItem
+                              icon={<Trash2 className="w-4 h-4 text-red-600" />}
+                              label="Delete Member"
+                              onClick={() => {
+                                handleDeleteMember(member.id)
+                                setOpenActionMenuId(null)
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -434,6 +466,12 @@ export default function ViewMembers() {
         onMemberUpdate={handleMemberUpdateSuccess}
       />
 
+      <GrantPermissionModal
+        isOpen={showPermissionModal}
+        onClose={() => setShowPermissionModal(false)}
+        member={selectedMember}
+      />
+
       {/* PerformanceModal component */}
       <PerformanceModal
         isOpen={showPerformanceModal}
@@ -443,3 +481,15 @@ export default function ViewMembers() {
     </div>
   )
 }
+
+
+const DropdownItem = ({ icon, label, onClick }) => (
+  <button
+    onClick={onClick}
+    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
+    role="menuitem"
+  >
+    <span className="mr-3">{icon}</span>
+    {label}
+  </button>
+)

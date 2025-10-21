@@ -21,6 +21,7 @@ import {
 import ProductViewModal from "../components/ProductViewModel"
 import ProductEditModal from "../components/ProductEditModel"
 import * as XLSX from "xlsx"
+import { fetchUserPermissions, getUserPermissions } from "@/utils/permissions"
 
 
 
@@ -39,6 +40,8 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
 
+  const permission = getUserPermissions();
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -56,7 +59,8 @@ export default function Products() {
         const data = await res.json()
         console.log("Fetched products:", data.data)
 
-        setProducts(data.data) // 👈 backend should return a list of products
+        setProducts(data.data) 
+        await fetchUserPermissions();
       } catch (err) {
         console.error(err)
         setError("Could not load products")
@@ -499,20 +503,20 @@ if (!result.isConfirmed) return
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      {localStorage.getItem("role") == "ADMIN" ? <button
+                      {permission?.product?.includes("edit") && <button
                         onClick={() => handleEditProduct(product)}
                         className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
                         title="Edit product"
                       >
                         <Edit className="w-4 h-4" />
-                      </button>:""}
-                      {localStorage.getItem("role") == "ADMIN" ?<button
+                      </button>}
+                      {permission?.product?.includes("delete") && <button
                         onClick={() => handleDeleteProduct(product.id)}
                         className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
                         title="Delete product"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>:""}
+                      </button>}
                     </div>
                   </td>
                 </tr>

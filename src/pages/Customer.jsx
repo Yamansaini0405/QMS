@@ -22,6 +22,7 @@ import CustomerActivityModal from "@/components/CustomerActivityModal"
 import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
 import * as XLSX from "xlsx"
+import { fetchUserPermissions, getUserPermissions } from "@/utils/permissions"
 
 export default function CustomersPage() {
   const baseUrl = import.meta.env.VITE_BASE_URL
@@ -35,6 +36,8 @@ export default function CustomersPage() {
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
   const [openDropdown, setOpenDropdown] = useState(null)
+
+  const permissions = getUserPermissions();
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -55,6 +58,7 @@ export default function CustomersPage() {
 
         // backend sends { data: [...] }
         setCustomers(result.data || [])
+        await fetchUserPermissions();
       } catch (error) {
         console.error("❌ Error fetching customers:", error)
       } finally {
@@ -254,6 +258,21 @@ export default function CustomersPage() {
               <Eye className="w-4 h-4" />
               <span>View Customer</span>
             </button>
+            {permissions?.customer?.includes("edit") && <button
+                  onClick={() => handleEditCustomer(customer)}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 border-b border-gray-100"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>Edit Customer</span>
+                </button>}
+
+                {permissions?.customer?.includes("delete") && <button
+                  onClick={() => handleDeleteCustomer(customer.id)}
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete Customer</span>
+                </button>}
 
             {isAdmin && (
               <>
@@ -265,21 +284,7 @@ export default function CustomersPage() {
                   <span>View Activity</span>
                 </button>
 
-                <button
-                  onClick={() => handleEditCustomer(customer)}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 border-b border-gray-100"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span>Edit Customer</span>
-                </button>
-
-                <button
-                  onClick={() => handleDeleteCustomer(customer.id)}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Delete Customer</span>
-                </button>
+                
               </>
             )}
           </div>
