@@ -38,15 +38,15 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
         <div className="flex justify-center items-center mt-6">
           <div>
             <h2 className="text-2xl text-center  font-bold text-gray-900 mb-2">QUOTATION</h2>
-            
+
           </div>
         </div>
         <div className="text-sm text-gray-600 space-y-1 text-end">
-              <p>
-                <strong>Date:</strong> {formData.quotationDate || "23/08/2025"}
-              </p>
+          <p>
+            <strong>Date:</strong> {formData.quotationDate || "23/08/2025"}
+          </p>
 
-            </div>
+        </div>
       </div>
 
       {/* Customer Information */}
@@ -55,7 +55,7 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
         <div className="bg-gray-50 p-4 rounded-lg">
           {formData.customerName ? (
             <>
-            <p className="font-semibold">
+              <p className="font-semibold">
                 <span className="font-semibold text-md">Company Name:</span> {formData.companyName}
               </p>
               <p className="font-semibold">
@@ -171,13 +171,28 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
                 )}
               </div>
             )}
-            <div className="flex justify-between">
-              <span>Tax (18%):</span>
-              <span>+ Rs. {formData.tax || "0.00"}</span>
-            </div>
+
             <div className="flex justify-between">
               <span>Additional Charges:</span>
               <span>+ Rs. {formData.additional_charge_amount || "0.00"}</span>
+            </div>
+            <div className="flex items-center justify-between space-x-2 mt-1">
+              <p className="text-gray-900 font-semibold text-sm">Grand Total</p>
+              <span className="text-md font-bold text-gray-900">
+                Rs. {(() => {
+                  const subtotal = parseFloat(formData.subtotal) || 0;
+                  const discountVal = parseFloat(formData.discount) || 0;
+                  const additional = parseFloat(formData.additional_charge_amount) || 0;
+                  const discountAmount = formData.discountType === "percentage"
+                    ? (subtotal * discountVal) / 100
+                    : discountVal;
+                  return (subtotal - discountAmount + additional).toFixed(2);
+                })()}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Tax (18%):</span>
+              <span>+ Rs. {formData.tax || "0.00"}</span>
             </div>
             <div className="border-t border-gray-300 pt-2 flex justify-between font-bold text-lg">
               <span>Total Amount:</span>

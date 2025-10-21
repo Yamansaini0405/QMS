@@ -832,7 +832,7 @@ const handleOpenAssignModal = (lead) => {
                                       <select
                                         value={lead.status}
                                         onChange={(e) => handleStatusChange(lead, lead.id, e.target.value)}
-                                        className="border rounded px-2 py-1 text-sm"
+                                        className="px-3 py-1.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800"
                                       >
                                         <option value="NEW">New</option>
                                         <option value="PENDING">Pending</option>
@@ -871,7 +871,7 @@ const handleOpenAssignModal = (lead) => {
                                           href={lead.file_url}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="text-white hover:underline bg-orange-700 px-2 py-1 rounded-lg"
+                                          className="hover:underline bg-green-700 text-white px-2 py-1 rounded-md "
                                         >
                                           Download
                                         </a>

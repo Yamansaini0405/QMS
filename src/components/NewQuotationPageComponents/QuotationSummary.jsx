@@ -118,6 +118,20 @@ export default function QuotationSummary() {
                             <input type="number" value={formData.additional_charge_amount} onChange={(e) => updateFormData("additional_charge_amount", e.target.value)} className="border border-gray-300 rounded-md p-1 w-20" />
                         </div>
                     </div>
+                    <div className="flex items-center justify-between space-x-2 mt-1">
+                        <p className="text-gray-900 font-semibold text-sm">Grand Total</p>
+                        <span className="text-md font-bold text-gray-900">
+                            Rs. {(() => {
+                                const subtotal = parseFloat(formData.subtotal) || 0;
+                                const discountVal = parseFloat(formData.discount) || 0;
+                                const additional = parseFloat(formData.additional_charge_amount) || 0;
+                                const discountAmount = formData.discountType === "percentage"
+                                    ? (subtotal * discountVal) / 100
+                                    : discountVal;
+                                return (subtotal - discountAmount + additional).toFixed(2);
+                            })()}
+                        </span>
+                    </div>
                 </div>
 
                 <div className="flex justify-between items-center">

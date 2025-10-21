@@ -26,6 +26,7 @@ import {
 import Swal from "sweetalert2"
 import ViewLogsModal from "@/components/ViewLogsModal";
 import { useNavigate } from "react-router-dom";
+import { fetchUserPermissions, getUserPermissions } from "@/utils/permissions";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const AssignQuotationModal = ({ isOpen, onClose, quotation, salespersons }) => {
@@ -144,6 +145,7 @@ export default function AllQuotations() {
     const [isLogsModalOpen, setIsLogsModalOpen] = useState(false)
   const [selectedQuotationLogs, setSelectedQuotationLogs] = useState(null)
   const [openDropdown, setOpenDropdown] = useState(null)
+  const permissions = getUserPermissions();
   const navigate = useNavigate()
 
 
@@ -168,7 +170,7 @@ export default function AllQuotations() {
         })
         const data = await response.json()
         setQuotations(data.data || [])
-        console.log(data.data)
+        await fetchUserPermissions();
       } catch (error) {
         console.error("Error fetching quotations:", error)
         setQuotations([])
@@ -711,7 +713,8 @@ export default function AllQuotations() {
                           {openDropdown === quotation.id && (
                             <div className="z-10 absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px]">
                               <div className="py-1">
-                                <button
+                                {permissions?.quotation?.includes("edit") && (
+                                  <button
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     navigate(`/quotations/edit/${quotation.id}`)
@@ -721,7 +724,7 @@ export default function AllQuotations() {
                                 >
                                   <Edit className="w-4 h-4" />
                                   <span>Edit</span>
-                                </button>
+                                </button>)}
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -741,7 +744,8 @@ export default function AllQuotations() {
                                   <Copy className="w-4 h-4" />
                                   <span>Duplicate</span>
                                 </button>
-                                <button
+                                {permissions?.quotation?.includes("delete") && (
+                                  <button
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     closeDropdown()
@@ -751,7 +755,7 @@ export default function AllQuotations() {
                                 >
                                   <Trash2 className="w-4 h-4" />
                                   <span>Delete</span>
-                                </button>
+                                </button>)}
                               </div>
                             </div>
                           )}

@@ -950,7 +950,7 @@ export const QuotationProvider = ({ children }) => {
 
         errors.customerName = validateField("customerName", formData.customerName);
         errors.companyName = validateField("companyName", formData.companyName);
-        errors.email = validateField("email", formData.email);
+        // errors.email = validateField("email", formData.email);
         errors.phone = validateField("phone", formData.phone);
 
 
