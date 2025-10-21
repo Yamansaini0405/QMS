@@ -19,10 +19,8 @@ import {
   ChevronRight,
   ChevronDown,
   Building2,
-  History,
-  Copy,
-  MoreHorizontal,
-} from "lucide-react"
+  XCircle,
+  AlertCircle} from "lucide-react"
 import QuotationEditModel from "../components/QuotationEditModel"
 import Swal from "sweetalert2"
 import ViewLogsModal from "@/components/ViewLogsModal"
@@ -59,49 +57,49 @@ const Quotations = () => {
     setOpenDropdown(null)
   }
   useEffect(() => {
-  const fetchCustomers = async () => {
-    setLoading(true)
-    try {
-      const token = localStorage.getItem("token")
-      const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-      const result = await response.json()
+    const fetchCustomers = async () => {
+      setLoading(true)
+      try {
+        const token = localStorage.getItem("token")
+        const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        })
+        const result = await response.json()
 
-      if (result.data && Array.isArray(result.data)) {
-        // Apply the same filtering logic here
-        const filteredCustomers = result.data
-          .map(customer => {
-            // For each customer, filter out their draft quotations
-            const nonDraftQuotations = (customer.quotations || []).filter(
-              q => q.status !== "DRAFT"
-            )
-            // Return a new customer object with the filtered quotations
-            return {
-              ...customer,
-              quotations: nonDraftQuotations,
-            }
-          })
-          // Then, filter out any customer who no longer has any quotations
-          .filter(customer => customer.quotations.length > 0)
+        if (result.data && Array.isArray(result.data)) {
+          // Apply the same filtering logic here
+          const filteredCustomers = result.data
+            .map(customer => {
+              // For each customer, filter out their draft quotations
+              const nonDraftQuotations = (customer.quotations || []).filter(
+                q => q.status !== "DRAFT"
+              )
+              // Return a new customer object with the filtered quotations
+              return {
+                ...customer,
+                quotations: nonDraftQuotations,
+              }
+            })
+            // Then, filter out any customer who no longer has any quotations
+            .filter(customer => customer.quotations.length > 0)
 
-        setCustomers(filteredCustomers)
-        console.log("✅ Filtered customers loaded:", filteredCustomers)
-      } else {
+          setCustomers(filteredCustomers)
+          console.log("✅ Filtered customers loaded:", filteredCustomers)
+        } else {
+          setCustomers([])
+        }
+      } catch (error) {
+        console.error("❌ Error fetching customers:", error)
         setCustomers([])
+      } finally {
+        setLoading(false)
       }
-    } catch (error) {
-      console.error("❌ Error fetching customers:", error)
-      setCustomers([])
-    } finally {
-      setLoading(false)
     }
-  }
-  fetchCustomers()
-}, [])
+    fetchCustomers()
+  }, [])
 
   const allQuotations = customers.flatMap((customer) => (customer.quotations || []).filter((q) => q.status !== "DRAFT"))
 
@@ -183,7 +181,7 @@ const Quotations = () => {
       })
 
       const token = localStorage.getItem("token")
-  const response = await fetch(`${baseUrl}/quotations/api/quotations/${id}/`, {
+      const response = await fetch(`${baseUrl}/quotations/api/quotations/${id}/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -326,49 +324,36 @@ const Quotations = () => {
     )
   }
 
-  const handleStatusChange = async (quotation, id, newStatus) => {
-    const payload = {
-      status: newStatus,
+
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case "SENT":
+        return <Clock className="w-4 h-4 text-blue-500" />
+      case "ACCEPTED":
+        return <CheckCircle className="w-4 h-4 text-green-500" />
+      case "REJECTED":
+        return <XCircle className="w-4 h-4 text-red-500" />
+      case "REVISED":
+        return <ArrowLeftRight className="w-4 h-4 text-black" />
+      default:
+        return <AlertCircle className="w-4 h-4 text-gray-500" />
     }
+  }
 
-    console.log("Sending quotation status update:", payload)
-
-    try {
-
-      Swal.fire({
-        title: "Updating...",
-        text: "Please wait while we update your Quotation status.",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading()
-        },
-      })
-
-  const res = await fetch(`${baseUrl}/accounts/api/quotations/${id}/status/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      })
-
-      if (!res.ok) {
-        throw new Error("Failed to update quotation status")
-      }
-
-      setCustomers((prev) =>
-        prev.map((customer) => ({
-          ...customer,
-          quotations: customer.quotations.map((q) => (q.id === id ? { ...q, status: newStatus } : q)),
-        })),
-      )
-
-      Swal.fire("Updated!", "Status updated.", "success")
-      console.log("[v0] Quotation status updated:", id, newStatus)
-    } catch (err) {
-      console.error("❌ Error updating quotation status:", err)
-      Swal.fire("Error!", "Error updating status. Please try again.", "error")
+  const getStatusBadge = (status) => {
+    const baseClasses = "px-3 py-1 rounded-full text-xs font-medium"
+    switch (status) {
+      case "SENT":
+        return `${baseClasses} bg-blue-100 text-blue-800`
+      case "ACCEPTED":
+        return `${baseClasses} bg-green-100 text-green-800`
+      case "REJECTED":
+        return `${baseClasses} bg-red-100 text-red-800`
+      case "REVISED":
+        return `${baseClasses} bg-black text-white`
+      default:
+        return `${baseClasses} bg-gray-100 text-gray-800`
     }
   }
 
@@ -390,7 +375,7 @@ const Quotations = () => {
     try {
 
 
-  const response = await fetch(`${baseUrl}/quotations/api/merge/`, {
+      const response = await fetch(`${baseUrl}/quotations/api/merge/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -512,8 +497,8 @@ const Quotations = () => {
             >
               <Download className="w-4 h-4" />
               <span>Export All  ({filteredCustomers.reduce((total, customer) => {
-            return total + (customer.quotations ? customer.quotations.length : 0)
-          }, 0)})</span>
+                return total + (customer.quotations ? customer.quotations.length : 0)
+              }, 0)})</span>
             </button> : ""}
           </div>
         </div>
@@ -522,7 +507,7 @@ const Quotations = () => {
           Showing {filteredCustomers.length} customers with {filteredCustomers.reduce((total, customer) => {
             return total + (customer.quotations ? customer.quotations.filter((prev) => prev.status !== "DRAFT").length : 0)
           }, 0)} total quotations
-          
+
         </p>
       </div>
 
@@ -643,23 +628,18 @@ const Quotations = () => {
                                   <tr key={quotation.id} className="border-t hover:bg-white">
                                     <td className="px-4 py-2 font-medium text-gray-900">{quotation.quotation_number}</td>
                                     <td className="px-4 py-2 font-semibold text-gray-900">₹{quotation.total}</td>
-                                    <td className="px-4 py-2">
-                                      <select
-                                        value={quotation.status}
-                                        onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
-                                        className="text-sm text-white px-3 py-1 bg-blue-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                      >
-                                        <option value="PENDING">Pending</option>
-                                        <option value="ACCEPTED">Accepted</option>
-                                        <option value="REJECTED">Rejected</option>
-                                        <option value="REVISED">Revised</option>
-                                      </select>
+
+                                    <td className="px-6 py-4">
+                                      <div className="flex items-center space-x-2">
+                                        {getStatusIcon(quotation.status)}
+                                        <span className={getStatusBadge(quotation.status)}>{quotation.status}</span>
+                                      </div>
                                     </td>
                                     <td className="px-4 py-2">{new Date(quotation.created_at).toLocaleDateString()}</td>
                                     <td className="px-4 py-2">{quotation.follow_up_date || "-"}</td>
                                     <td className="px-4 py-2">{quotation.assigned_to?.name || "N/A"}</td>
                                     <td className="px-4 py-2 flex space-x-2">
-                                      <div className="flex items-center space-x-2">
+                                      <div className="flex items-center text-center space-x-2">
                                         {/* Primary Actions - Always Visible */}
                                         <button
                                           onClick={() => handleViewQuotation(quotation)}
@@ -668,65 +648,9 @@ const Quotations = () => {
                                         >
                                           <Eye className="w-4 h-4" />
                                         </button>
-                                        <button
-                                          onClick={() => navigate(`/quotations/edit/${quotation.id}`)}
-                                          className="p-1 text-gray-400 hover:text-green-600"
-                                          title="Edit Quotation"
-                                        >
-                                          <Edit className="w-4 h-4" />
-                                        </button>
 
-                                        {/* More Actions Dropdown */}
-                                        <div className="relative">
-                                          <button
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              toggleDropdown(quotation.id)
-                                            }}
-                                            className="p-1 text-gray-400 hover:text-gray-600"
-                                            title="More Actions"
-                                          >
-                                            <MoreHorizontal className="w-4 h-4" />
-                                          </button>
 
-                                          {/* Dropdown Menu */}
-                                          {openDropdown === quotation.id && (
-                                            <div className="z-10 absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px]">
-                                              <div className="py-1">
-                                                <button
-                                                  onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    handleViewLogs(quotation)
-                                                  }}
-                                                  className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                                >
-                                                  <History className="w-4 h-4" />
-                                                  <span>View Logs</span>
-                                                </button>
-                                                <button
-                                                  onClick={(e) => {
-                                                    navigate(`/quotations/duplicate/${quotation.id}`)
-                                                  }}
-                                                  className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                                >
-                                                  <Copy className="w-4 h-4" />
-                                                  <span>Duplicate</span>
-                                                </button>
-                                                <button
-                                                  onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    closeDropdown()
-                                                    handleDeleteQuotation(quotation.id)
-                                                  }}
-                                                  className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                                                >
-                                                  <Trash2 className="w-4 h-4" />
-                                                  <span>Delete</span>
-                                                </button>
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
+
                                       </div>
                                     </td>
                                   </tr>
@@ -745,11 +669,11 @@ const Quotations = () => {
           </table>
         </div>
         {filteredCustomers.length === 0 && (
-            <div className="text-center py-12">
-              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No quotations found</p>
-            </div>
-          )}
+          <div className="text-center py-12">
+            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No quotations found</p>
+          </div>
+        )}
       </div>
 
       <QuotationEditModel

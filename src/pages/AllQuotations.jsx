@@ -16,9 +16,16 @@ import {
   ArrowLeftRight,
   ArrowUp,
   ArrowDown,
-  X
+  X,
+  MoreHorizontal,
+  Copy,
+  Trash2,
+  Edit,
+  History
 } from "lucide-react"
 import Swal from "sweetalert2"
+import ViewLogsModal from "@/components/ViewLogsModal";
+import { useNavigate } from "react-router-dom";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const AssignQuotationModal = ({ isOpen, onClose, quotation, salespersons }) => {
@@ -134,6 +141,19 @@ export default function AllQuotations() {
   const [isAssigneeModalOpen, setIsAssigneeModalOpen] = useState(false)
   const [quotationToReassign, setQuotationToReassign] = useState(null)
   const [salespersons, setSalespersons] = useState([])
+    const [isLogsModalOpen, setIsLogsModalOpen] = useState(false)
+  const [selectedQuotationLogs, setSelectedQuotationLogs] = useState(null)
+  const [openDropdown, setOpenDropdown] = useState(null)
+  const navigate = useNavigate()
+
+
+  const toggleDropdown = (quotationId) => {
+    setOpenDropdown(openDropdown === quotationId ? null : quotationId)
+  }
+  const closeDropdown = () => {
+    setOpenDropdown(null)
+  }
+
 
   useEffect(() => {
     const fetchQuotations = async () => {
@@ -223,6 +243,60 @@ export default function AllQuotations() {
       Swal.fire("Error!", "Could not reassign quotation. Please try again.", "error")
     }
   }
+  const handleDeleteQuotation = async (id) => {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "This quotation will be permanently deleted!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!",
+      })
+  
+      if (!result.isConfirmed) return
+  
+      try {
+  
+        Swal.fire({
+          title: "Deleting...",
+          text: "Please wait while we delete your Quotation.",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading()
+          },
+        })
+  
+        const token = localStorage.getItem("token")
+        const response = await fetch(`${baseUrl}/quotations/api/quotations/${id}/`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+  
+        if (!response.ok) {
+          const errorText = await response.text()
+          Swal.fire("Error!", `Failed to delete: ${errorText}`, "error")
+          throw new Error(`Delete failed: ${response.status} - ${errorText}`)
+        }
+  
+        setQuotations((prevQuotations) => prevQuotations.filter((q) => q.id !== id))  
+        Swal.fire("Deleted!", "The quotation has been deleted.", "success")
+      } catch (error) {
+        console.error("Failed to delete quotation:", error)
+        Swal.fire("Error!", "Something went wrong while deleting.", "error")
+      }
+    }
+
+    const handleViewLogs = async (activityLogs, quotationNumber) => {
+    setSelectedQuotationLogs({
+      logs: activityLogs || [],
+      quotationNumber: quotationNumber || "",
+    })
+    setIsLogsModalOpen(true)
+    closeDropdown()
+  }
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -240,7 +314,7 @@ export default function AllQuotations() {
   }
 
   const getStatusBadge = (status) => {
-    const baseClasses = "px-3 py-1 rounded-full text-xs font-medium"
+    const baseClasses = "px-3 py-1 rounded-full text-sm font-medium"
     switch (status) {
       case "SENT":
         return `${baseClasses} bg-blue-100 text-blue-800`
@@ -350,6 +424,52 @@ export default function AllQuotations() {
       <ArrowDown className="inline w-4 h-4 ml-1" />
     )
   }
+
+   const handleStatusChange = async (quotation, id, newStatus) => {
+      const payload = {
+        status: newStatus,
+      }
+  
+      console.log("Sending quotation status update:", payload)
+  
+      try {
+  
+        Swal.fire({
+          title: "Updating...",
+          text: "Please wait while we update your Quotation status.",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading()
+          },
+        })
+  
+        const res = await fetch(`${baseUrl}/accounts/api/quotations/${id}/status/`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(payload),
+        })
+  
+        if (!res.ok) {
+          throw new Error("Failed to update quotation status")
+        }
+  
+        setQuotations((prevQuotations) =>
+          prevQuotations.map((q) =>
+            q.id === id ? { ...q, status: newStatus } : q
+          )
+        )
+  
+        Swal.fire("Updated!", "Status updated.", "success")
+        console.log("[v0] Quotation status updated:", id, newStatus)
+      } catch (err) {
+        console.error("❌ Error updating quotation status:", err)
+        Swal.fire("Error!", "Error updating status. Please try again.", "error")
+      }
+    }
+  
 
   // --- end ---
 
@@ -522,12 +642,20 @@ export default function AllQuotations() {
                         <p className="text-sm text-gray-500">Subtotal: ₹{quotation.subtotal}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
-                        {getStatusIcon(quotation.status)}
-                        <span className={getStatusBadge(quotation.status)}>{quotation.status}</span>
-                      </div>
-                    </td>
+                    
+                    <td className="px-4 py-2">
+                                      <select
+                                        value={quotation.status}
+                                        onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
+                                        className={`${getStatusBadge(quotation.status)} text-md px-3 py-2  rounded-md focus:ring-2 `}
+                                      >
+                                        <option value="SENT">{getStatusIcon("SENT")}Sent</option>
+                                        <option value="PENDING">{getStatusIcon("PENDING")}Pending</option>
+                                        <option value="ACCEPTED">{getStatusIcon("ACCEPTED")}Accepted</option>
+                                        <option value="REJECTED">{getStatusIcon("REJECTED")}Rejected</option>
+                                        <option value="REVISED">{getStatusIcon("REVISED")}Revised</option>
+                                      </select>
+                                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
 
@@ -557,16 +685,77 @@ export default function AllQuotations() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center justify-center">
                         {quotation.url && (
                           <button
                             onClick={() => window.open(quotation.url, "_blank")}
-                            className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                            className=" text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                             title="View PDF"
                           >
                             <Eye className="w-4.5 h-4.5" />
                           </button>
                         )}
+                        <div className="relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleDropdown(quotation.id)
+                            }}
+                            className="p-1 text-gray-400 hover:text-gray-600"
+                            title="More Actions"
+                          >
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
+
+                          {/* Dropdown Menu */}
+                          {openDropdown === quotation.id && (
+                            <div className="z-10 absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px]">
+                              <div className="py-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    navigate(`/quotations/edit/${quotation.id}`)
+                                    
+                                  }}
+                                  className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  <span>Edit</span>
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleViewLogs(quotation.activity_logs, quotation.quotation_number)
+                                  }}
+                                  className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                >
+                                  <History className="w-4 h-4" />
+                                  <span>View Logs</span>
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    navigate(`/quotations/duplicate/${quotation.id}`)
+                                  }}
+                                  className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                >
+                                  <Copy className="w-4 h-4" />
+                                  <span>Duplicate</span>
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    closeDropdown()
+                                    handleDeleteQuotation(quotation.id)
+                                  }}
+                                  className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  <span>Delete</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
 
                       </div>
                     </td>
@@ -590,6 +779,11 @@ export default function AllQuotations() {
         quotation={quotationToReassign}
         salespersons={salespersons}
       />
+      <ViewLogsModal
+              quotationLogs={selectedQuotationLogs}
+              isOpen={isLogsModalOpen}
+              onClose={() => setIsLogsModalOpen(false)}
+            />
     </div>
   )
 }

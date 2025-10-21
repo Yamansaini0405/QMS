@@ -4,7 +4,7 @@ import { X, History, User, Calendar, MessageSquare } from "lucide-react"
 const ViewLogsModal = ({ quotationLogs, isOpen, onClose }) => {
   if (!isOpen || !quotationLogs) return null
 
-  const { quotation, logs } = quotationLogs
+  const { logs, quotationNumber } = quotationLogs
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString("en-US", {
@@ -19,13 +19,17 @@ const ViewLogsModal = ({ quotationLogs, isOpen, onClose }) => {
 
   const getActionColor = (action) => {
     switch (action) {
-      case "QUOTATION_CREATED":
+      case "QUOTATION_CREATED ":
         return "bg-green-100 text-green-800"
+      case "LEAD_ASSIGNED":
+        return "bg-purple-100 text-purple-800"
       case "QUOTATION_UPDATED":
         return "bg-blue-100 text-blue-800"
+      case "LEAD_UPDATED":
+        return "bg-indigo-100 text-indigo-800"
       case "STATUS_CHANGED":
         return "bg-yellow-100 text-yellow-800"
-      case "QUOTATION_DELETED":
+      case "QUOTATION_SENT":
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -34,9 +38,9 @@ const ViewLogsModal = ({ quotationLogs, isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50"
-    onClick={onClose}>
+      onClick={onClose}>
       <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full mx-4 max-h-[80vh] overflow-hidden"
-      onClick={(e) => e.stopPropagation()}>
+        onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
@@ -45,7 +49,7 @@ const ViewLogsModal = ({ quotationLogs, isOpen, onClose }) => {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Activity Logs</h2>
-              <p className="text-sm text-gray-600">Quotation #{quotation.quotation_number}</p>
+              <p className="text-sm text-gray-600">Quotation #{quotationNumber}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
