@@ -27,7 +27,6 @@ export default function CustomerActivityModal({ customer, isOpen, onClose }) {
         throw new Error("Failed to fetch customer activity")
       }
       const data = await response.json()
-      console.log(data)
       setLogs(data.data.logs || [])
     } catch (err) {
       setError(err.message)

@@ -98,7 +98,6 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
   }, [isOpen])
 
   useEffect(() => {
-    console.log("Product search results:", productSearchResults)
   }, [productSearchResults])
 
 
@@ -226,7 +225,6 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
 
 
   useEffect(() => {
-    console.log("Quotation to edit:", quotation)
     if (quotation) {
       setFormData({
         customerName: quotation.customer?.name || "",
@@ -262,9 +260,6 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
     setFormData((prev) => ({ ...prev, products: newProducts }))
   }
 
-  useEffect(() => {
-    console.log(":", formData)
-  }, [formData])
 
   const removeProductRow = (index) => {
     if (formData.products.length > 1) {
@@ -298,7 +293,6 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
   const calculateTotals = (products = formData.products) => {
     const subtotal = products.reduce((sum, product) => {
       const baseAmount = (product.quantity || 0) * (product.selling_price || 0)
-      console.log("product discount",product.percentage_discount)
       const discount = showPercentageDiscount && product.percentage_discount ? (baseAmount * product.percentage_discount) / 100 : 0;
       return sum + (baseAmount - discount)
     }, 0)
@@ -319,7 +313,6 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
     const taxRate = Number.parseFloat(formData.taxRate) || 0
     const tax = (newSubtotal * taxRate) / 100
     const totalAmount = newSubtotal + tax
-    console.log(subtotal)
     setFormData((prev) => ({
       ...prev,
       subtotal: subtotal.toFixed(2),
@@ -350,8 +343,6 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
   useEffect(() => {
     calculateFinalAmount(formData.products)
     calculateTotals(formData.products)
-    console.log("final Amount calculated")
-    console.log(showPercentageDiscount)
   },[showPercentageDiscount])
 
   const calculateFinalAmount = (product) => {
@@ -398,7 +389,6 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("Submitting form data:", formData.products)
 
     // construct payload exactly as backend expects
     const payload = {
@@ -442,7 +432,6 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
       })
       const token = localStorage.getItem("token")
 
-      console.log("Final payload to backend:", payload)
 
       const response = await fetch(
         `${baseUrl}/quotations/api/quotations/create/`,
@@ -455,7 +444,6 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
           body: JSON.stringify(payload),
         }
       )
-      console.log("sending data", payload)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -463,8 +451,6 @@ export default function QuotationEditModal({ quotation, isOpen, onClose, onSave 
       }
 
       const result = await response.json()
-      console.log("Quotation updated successfully:", result)
-
       Swal.fire("Created!!", "quotation is created succesfully", "success")
       onSave?.(result)
       onClose()

@@ -38,7 +38,7 @@ export default function AddProduct() {
         })
         const data = await res.json()
         setCategories(data || [])
-        console.log("category", data);
+       
       } catch (err) {
         console.error("Error fetching categories:", err)
       }
@@ -46,7 +46,9 @@ export default function AddProduct() {
     fetchCategories()
   }, [])
 
-  console.log(categories)
+
+
+
 
   const handleCategoryChange = (e) => {
     const value = e.target.value
@@ -63,8 +65,6 @@ export default function AddProduct() {
     }
     setShowDropdown(true)
   }
-
-  console.log("filtered category", filteredCategories)
 
   // when selecting category from dropdown
   const handleSelectCategory = (categoryName) => {
@@ -123,8 +123,6 @@ export default function AddProduct() {
         warranty_months: warrantyMonths,
       }
 
-      console.log("Sending payload:", payload)
-
       const res = await fetch(
   `${baseUrl}/quotations/api/products/create/`,
         {
@@ -141,8 +139,6 @@ export default function AddProduct() {
 
       const data = await res.json()
       Swal.fire("Saved!", "The product has been saved.", "success")
-
-      console.log("Product saved:", data)
 
       setFormData({
            name: "",description: "",category: "",brand: "",is_available: true,active: true,cost_price: "",

@@ -3,7 +3,6 @@
 import { X, Target, User, FileText, DollarSign } from "lucide-react"
 
 export default function LeadViewModal({ customer, lead, isOpen, onClose }) {
-  console.log(customer)
   if (!isOpen || !lead) return null
 
   return (

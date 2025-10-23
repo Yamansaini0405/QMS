@@ -135,7 +135,6 @@ export default function AddCustomer() {
       if (!res.ok) throw new Error("Failed to save customer")
 
       const data = await res.json()
-      console.log("Customer created:", data)
       Swal.fire("Saved!", "The customer has been saved.", "success")
 
 

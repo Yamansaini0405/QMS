@@ -57,7 +57,7 @@ export default function Products() {
         if (!res.ok) throw new Error("Failed to fetch products")
 
         const data = await res.json()
-        console.log("Fetched products:", data.data)
+        
 
         setProducts(data.data) 
         await fetchUserPermissions();
@@ -87,8 +87,6 @@ export default function Products() {
         if (!res.ok) throw new Error("Failed to fetch categories")
 
         const data = await res.json()
-        console.log("Fetched categories:", data)
-
         setCategories(data)   // ✅ update categories list
       } catch (err) {
         console.error("Error fetching categories:", err)
@@ -226,7 +224,7 @@ export default function Products() {
 })
 
 if (!result.isConfirmed) return
-    console.log("Deleting product with id:", id)
+    
 
     try {
       Swal.fire({
@@ -247,7 +245,7 @@ if (!result.isConfirmed) return
         },
       })
 
-      console.log(res)
+
       if (!res.ok) throw new Error("Failed to delete product")
 
       // ✅ Remove from local state

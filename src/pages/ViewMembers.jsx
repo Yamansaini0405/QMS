@@ -95,7 +95,6 @@ export default function ViewMembers() {
           },
         })
 
-        console.log("[v0] Deleting member:", memberId)
 
         const token = localStorage.getItem("token") // if your API requires auth
         const res = await fetch(`${baseUrl}/accounts/api/users/${memberId}/delete/`, {
@@ -358,8 +357,7 @@ export default function ViewMembers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {console.log(filteredMembers)}
-              {filteredMembers.map((member, index) => (
+              {filteredMembers.filter(member => member.phone_number !== null).map((member, index) => (
                 <tr key={member.id} className="hover:bg-gray-50">
                   <td className="py-4 px-6 text-gray-900">{index + 1}</td>
                   <td className="py-4 px-6">

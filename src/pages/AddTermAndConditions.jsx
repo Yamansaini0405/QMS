@@ -83,7 +83,6 @@ const handleSaveTerms = async () => {
       content_html: contentHtml,
     };
 
-    console.log("[v0] Sending terms and conditions:", formattedData);
 
     // Send to API
     const response = await fetch(
@@ -103,7 +102,7 @@ const handleSaveTerms = async () => {
     }
 
     const result = await response.json();
-    console.log("✅ Saved successfully:", result);
+
     Swal.fire("Saved!", "Terms and Conditions saved succesfully.", "success")
 
     setFormData({ title: "", points: [""] });

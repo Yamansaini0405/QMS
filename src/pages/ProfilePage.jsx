@@ -42,7 +42,6 @@ export default function ProfilePage() {
           throw new Error("Error to fetch details")
         }
         const data = await response.json()
-        console.log("current profile", data.data.user)
         setUserData(data.data.user)
         setEditFormData({
           first_name: data.data.user.first_name,

@@ -60,11 +60,9 @@ const Header = ({ onMenuClick }) => {
         }
 
         const data = await response.json();
-        console.log("Current user:", data.data.user);
         localStorage.setItem("user",data.data.user.username)
         setUser(data.data.user.username);
         setRole(data.data.user.role)
-        console.log(data.data.user.role)
       } catch (error) {
         console.error("Error fetching user:", error);
       }

@@ -432,7 +432,6 @@ export default function AllQuotations() {
         status: newStatus,
       }
   
-      console.log("Sending quotation status update:", payload)
   
       try {
   
@@ -465,7 +464,6 @@ export default function AllQuotations() {
         )
   
         Swal.fire("Updated!", "Status updated.", "success")
-        console.log("[v0] Quotation status updated:", id, newStatus)
       } catch (err) {
         console.error("❌ Error updating quotation status:", err)
         Swal.fire("Error!", "Error updating status. Please try again.", "error")

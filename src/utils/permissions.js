@@ -22,9 +22,7 @@ export const fetchUserPermissions = async () => {
 
     const result = await response.json();
     const data = result?.data?.user_permissions || {};
-    console.log(data)
 
-    // store globally + locally
     cachedPermissions = data;
 
     return data;

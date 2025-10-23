@@ -27,7 +27,6 @@ export default function PerformanceModal({ isOpen, onClose, member }) {
       if (!response.ok) throw new Error("Failed to fetch performance data")
 
       const result = await response.json()
-      console.log(result.data)
       setPerformanceData(result.data)
     } catch (error) {
       console.error("Error fetching performance data:", error)

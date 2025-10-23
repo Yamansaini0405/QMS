@@ -102,7 +102,6 @@ export const QuotationProvider = ({ children }) => {
 
 
     useEffect(() => {
-        console.log("formData changed: ", formData.discount, formData.specialDiscountEnabled)
     }, [formData])
 
 
@@ -157,7 +156,7 @@ export const QuotationProvider = ({ children }) => {
             );
             if (!res.ok) throw new Error("Failed to fetch quotation");
             const data = await res.json();
-            console.log("edit quotationData ", data);
+            
 
             const qutations = {
                 quotationDate: formatDate(new Date(data.data.created_at)),
@@ -236,7 +235,7 @@ export const QuotationProvider = ({ children }) => {
                 selling_price: Number(selling_price),
             }
 
-            console.log("Sending payload:", payload)
+            
 
             const res = await fetch(
                 `${baseUrl}/quotations/api/products/create/`,
@@ -263,7 +262,6 @@ export const QuotationProvider = ({ children }) => {
 
     // Create Quotation handler
     const createQuotation = async () => {
-        console.log(formData.additional_charge_name, formData.additional_charge_amount, formData.gst_number)
         setIsGeneratingPDF(true)
 
         try {
@@ -364,7 +362,6 @@ export const QuotationProvider = ({ children }) => {
             };
 
 
-            console.log("Creating quotation with payload:", payload);
 
             const response = await fetch(
                 `${baseUrl}/quotations/api/quotations/create/`,
@@ -386,7 +383,7 @@ export const QuotationProvider = ({ children }) => {
             }
 
             const result = await response.json();
-            console.log("Quotation created successfully:", result);
+            
 
             Swal.fire(id ? location.pathname.startsWith('/quotations/edit') ? "Updated" : "Duplicated" : "Created!", `The Quotation has been ${id ? location.pathname.startsWith('/quotations/edit') ? "updated" : "duplicated" : "created"}.`, "success")
 
@@ -433,7 +430,6 @@ export const QuotationProvider = ({ children }) => {
         }
     };
     const createDraft = async () => {
-        console.log("sending draft")
         setIsGeneratingPDF(true)
 
         try {
@@ -531,8 +527,6 @@ export const QuotationProvider = ({ children }) => {
             };
 
 
-            console.log(`${location.pathname.startsWith('/quotations/edit') ? "Updating" : "Creating"} quotation with payload:`, payload);
-
             const response = await fetch(
                 `${baseUrl}/quotations/api/quotations/create/`,
                 {
@@ -553,8 +547,6 @@ export const QuotationProvider = ({ children }) => {
             }
 
             const result = await response.json();
-            console.log("Quotation created successfully:", result);
-
             Swal.fire(id ? location.pathname.startsWith('/quotations/edit') ? "Updated" : "Duplicated" : "Created!", `The Quotation has been ${id ? location.pathname.startsWith('/quotations/edit') ? "updated" : "duplicated" : "created"}.`, "success")
 
 
@@ -620,7 +612,6 @@ export const QuotationProvider = ({ children }) => {
     }
 
     const updateProduct = (product, productIndex) => {
-        console.log(product)
         const updatedProducts = [...formData.products];
         const index = updatedProducts.findIndex((p) => p.id === product.id);
         if (index !== -1) {
@@ -665,7 +656,6 @@ export const QuotationProvider = ({ children }) => {
         setIsGeneratingPDF(true)
 
         try {
-            console.log("[v0] Starting PDF generation...")
 
             // For now, just send the form data to backend without PDF generation
             // You can add PDF generation library later
@@ -682,10 +672,7 @@ export const QuotationProvider = ({ children }) => {
 
             if (response.ok) {
                 const result = await response.json()
-                console.log("[v0] Quotation sent successfully:"
-
-
-                )
+                
                 alert("Quotation created and sent successfully!")
             } else {
                 throw new Error("Failed to send quotation to backend")
@@ -817,7 +804,7 @@ export const QuotationProvider = ({ children }) => {
     };
 
     const calculateTotals = (products = formData.products) => {
-        console.log("called")
+       
         const subtotal = products.reduce((sum, product) => {
             const baseAmount = (product.quantity || 0) * (product.selling_price || 0)
             const discount = product.percentage_discount ? (baseAmount * product.percentage_discount) / 100 : 0

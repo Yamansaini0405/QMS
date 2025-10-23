@@ -150,7 +150,6 @@ export default function Leads() {
         if (!res.ok) throw new Error("Failed to fetch customers")
 
         const data = await res.json()
-        console.log("✅ Customers loaded:", data.data)
         setCustomers(data.data || data)
         await fetchUserPermissions();
       } catch (err) {
@@ -189,7 +188,6 @@ export default function Leads() {
   useEffect(() => {
     const fetchLeads = async () => {
       try {
-        console.log("[v0] Fetching leads from backend...")
         const token = localStorage.getItem("token") // 🔑 get token
 
   const res = await fetch(`${baseUrl}/quotations/api/leads/`, {
@@ -204,7 +202,7 @@ export default function Leads() {
         }
 
         const data = await res.json()
-        console.log("[v0] Leads loaded:", data)
+       
 
         // backend may return {data: [...]} or [...]
         setLeads(data.data || data)
@@ -388,13 +386,11 @@ const handleOpenAssignModal = (lead) => {
   }
 
   const handleViewLead = (lead) => {
-    console.log("[v0] Opening view modal for lead:", lead.customer_name)
     setSelectedLead(lead)
     setViewModalOpen(true)
   }
 
   const handleEditLead = (lead) => {
-    console.log("[v0] Opening edit modal for lead:", lead.customer_name)
     setSelectedLead(lead)
     setEditModalOpen(true)
   }
@@ -443,7 +439,7 @@ const handleOpenAssignModal = (lead) => {
           leads: c.leads ? c.leads.filter((l) => l.id !== id) : [],
         }))
       )
-      console.log("[v0] Lead deleted from backend:", id)
+      
       Swal.fire("Deleted!", "The lead has been deleted.", "success")
 
 
@@ -461,7 +457,7 @@ const handleOpenAssignModal = (lead) => {
     try {
       const token = localStorage.getItem("token")
 
-      console.log("[v0] Fetching quotation for lead:", quotationId)
+      
 
   const res = await fetch(`${baseUrl}/quotations/api/quotations/${quotationId}/`, {
         headers: {
@@ -475,7 +471,7 @@ const handleOpenAssignModal = (lead) => {
       }
 
       const data = await res.json()
-      console.log("[v0] Quotation loaded:", data.data)
+      
 
       // 🔹 open modal with fetched quotation
       setSelectedQuotation(data.data)
@@ -495,7 +491,7 @@ const handleOpenAssignModal = (lead) => {
       status: newStatus,
       // priority: lead.priority,
     }
-    console.log("sending payload:", payload)
+    
     try {
       Swal.fire({
         title: "Updating...",
@@ -528,7 +524,6 @@ const handleOpenAssignModal = (lead) => {
         }))
       );
 
-      console.log("[v0] Status updated in backend:", id, newStatus)
       Swal.fire("Updated!", "The lead has been updated.", "success")
 
     } catch (err) {
@@ -540,7 +535,7 @@ const handleOpenAssignModal = (lead) => {
 
   const handleSaveLead = async (updatedLead) => {
     try {
-      console.log("[v0] Saving lead:", updatedLead.customer_name)
+      
 
       // Simulate API call
       const response = await fetch("/api/leads/" + updatedLead.id, {
@@ -567,7 +562,6 @@ const handleOpenAssignModal = (lead) => {
   }
 
   const handleViewCustomer = (customer) => {
-    console.log("[v0] Opening view modal for customer:", customer.name)
     setSelectedCustomer(customer)
     setViewModalOpen(true)
   }
@@ -928,7 +922,7 @@ const handleOpenAssignModal = (lead) => {
         isOpen={editQuotationOpen}
         onClose={() => setEditQuotationOpen(false)}
         onSave={(updatedQuotation) => {
-          console.log("✅ Quotation saved:", updatedQuotation)
+          
           setEditQuotationOpen(false)
         }}
       />

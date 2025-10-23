@@ -53,8 +53,7 @@ const Dashboard = () => {
     fetchData()
   }, [])
 
-  console.log(quotations)
-  console.log(leads)
+
   const totalQuotations = quotations.length
   const pendingQuotations = quotations.filter(
     (q) => q.status?.toLowerCase() === "pending" || q.status?.toLowerCase() === "sent",

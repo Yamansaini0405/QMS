@@ -69,11 +69,10 @@ export default function TermEditModal({ term, isOpen, onClose, onSave }) {
   }
 
   const handleSubmit = async (termId, e) => {
-    console.log(termId)
+
     e.preventDefault()
     setLoading(true)
     setError("")
-    console.log("terms edit starts")
     try {
 
       Swal.fire({

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { X, Target, Save, AlertCircle } from "lucide-react"
 
 export default function LeadEditModal({ customer, lead, isOpen, onClose, onSave }) {
-  console.log(lead)
+  
   const [formData, setFormData] = useState({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")

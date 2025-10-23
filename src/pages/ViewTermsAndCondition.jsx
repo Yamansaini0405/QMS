@@ -32,7 +32,6 @@ export default function ViewTermsAndCondition() {
         const response = await fetch(`${baseUrl}/quotations/api/terms/`)
         if (!response.ok) throw new Error("Failed to fetch terms")
         const data = await response.json()
-        console.log("[v0] Fetched terms:", data)
         setTerms(data)
         await fetchUserPermissions();
       } catch (error) {

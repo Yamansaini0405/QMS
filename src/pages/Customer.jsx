@@ -54,7 +54,6 @@ export default function CustomersPage() {
         }
 
         const result = await response.json()
-        console.log("Fetched customers:", result)
 
         // backend sends { data: [...] }
         setCustomers(result.data || [])
@@ -142,28 +141,24 @@ export default function CustomersPage() {
   )
 
   const handleViewCustomer = (customer) => {
-    console.log(" Opening view modal for customer:", customer.name)
     setSelectedCustomer(customer)
     setViewModalOpen(true)
     setOpenDropdown(null)
   }
 
   const handleEditCustomer = (customer) => {
-    console.log(" Opening edit modal for customer:", customer.name)
     setSelectedCustomer(customer)
     setEditModalOpen(true)
     setOpenDropdown(null)
   }
 
   const handleViewActivity = (customer) => {
-    console.log(" Opening activity modal for customer:", customer.name, customer.id)
     setSelectedCustomer(customer)
     setActivityModalOpen(true)
     setOpenDropdown(null)
   }
 
   const handleSaveCustomer = (updatedCustomer) => {
-    console.log(" Saving customer:", updatedCustomer.name)
     setCustomers((prev) => prev.map((customer) => (customer.id === updatedCustomer.id ? updatedCustomer : customer)))
     setEditModalOpen(false)
   }

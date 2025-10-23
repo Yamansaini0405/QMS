@@ -76,7 +76,6 @@ export default function CustomerEditModal({ customer, isOpen, onClose, onSave })
       }
 
       const updatedCustomer = await response.json()
-      console.log("[v1] Customer updated successfully:", formData, updatedCustomer)
       Swal.fire("Updated", "Customer updated successfully", "success")
       onSave(updatedCustomer) // send back to parent
       onClose()

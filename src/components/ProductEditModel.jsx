@@ -36,7 +36,7 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
         })
         const data = await res.json()
         setCategories(data || [])
-        console.log("category", data);
+        
       } catch (err) {
         console.error("Error fetching categories:", err)
       }
@@ -136,7 +136,6 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
         },
         body: JSON.stringify(payload),
       })
-      console.log("sending data", payload)
       if (!res.ok) throw new Error("Failed to update product")
       Swal.fire("Updated!", "Product has been updated", "success")
       const updatedProduct = await res.json()

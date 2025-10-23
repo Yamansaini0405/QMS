@@ -46,7 +46,6 @@ export default function DraftQuotations() {
                 })
                 const data = await response.json()
                 setQuotations(data.data || [])
-                console.log(data.data)
             } catch (error) {
                 console.error("Error fetching quotations:", error)
                 setQuotations([])

@@ -157,7 +157,6 @@ export default function AddLeads() {
 
 
         setSalespersonResults(filtered);
-        console.log("Filtered salespersons:", filtered);
       } else {
         setSalespersonResults([]);
       }
@@ -245,7 +244,6 @@ export default function AddLeads() {
         priority: formData.priority,
       }
 
-      console.log("Saving lead payload:", payload)
 
       const response = await fetch(
   `${baseUrl}/quotations/api/leads/create/`,
@@ -265,7 +263,6 @@ export default function AddLeads() {
       }
 
       const result = await response.json()
-      console.log("✅ Lead saved successfully:", result)
 
       Swal.fire("Saved!", "Lead saved successfully!", "success")
 

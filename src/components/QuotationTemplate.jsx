@@ -3,7 +3,6 @@ import EurekaLogo from "../assets/logo-eureka-forbes.png"
 import CarysilLogo from "../assets/Carysil-Logo-Vector.svg-.png"
 
 function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
-  console.log("Rendering QuotationTemplate with formData:", formData)
   return (
     <div
       className={`bg-white p-8 rounded-lg ${forPrint ? "" : "shadow-sm border"} max-w-4xl mx-auto`}

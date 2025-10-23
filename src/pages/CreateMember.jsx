@@ -133,7 +133,7 @@ export default function CreateMember() {
       username: formData.username.trim(),
       phone: formData.phone,
     }
-    console.log(payload)
+
     setIsLoading(true)
     try {
 
@@ -161,7 +161,6 @@ export default function CreateMember() {
       }
 
       const data = await response.json()
-      console.log("API Response:", data)
       Swal.fire("Saved!", "The member has been saved.", "success")
 
 
