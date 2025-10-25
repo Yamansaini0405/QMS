@@ -69,9 +69,10 @@ const AssignQuotationModal = ({ isOpen, onClose, quotation, salespersons }) => {
         const errorData = await response.json()
         throw new Error(errorData.message || `Error: ${response.status}`)
       }
-      Swal.fire("Success!", "Quotation has been reassigned.", "success")
+      Swal.fire("Success!", "Quotation has been reassigned.", "success")      
       onClose()
-      onConfirm(quotation.id, selectedSalespersonId)
+      window.location.reload();
+      onConfirm(quotation.id, selectedSalespersonId)      
 
 
     } catch (error) {
@@ -193,7 +194,7 @@ export default function AllQuotations() {
         })
         if (!res.ok) throw new Error("Failed to fetch salespeople")
         const data = await res.json()
-        setSalespersons(data.data || [])
+        setSalespersons(data.data.filter((sp) => sp.phone_number !== null) || [])
       } catch (error) {
         console.error("❌ Error fetching salespeople:", error)
       }
@@ -486,7 +487,7 @@ export default function AllQuotations() {
 
   return (
     <div className="min-h-screen bg-gray-50 ">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-full mx-auto space-y-6">
         {/* Header */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center space-x-3 mb-2">

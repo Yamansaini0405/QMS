@@ -20,7 +20,9 @@ import {
   ChevronDown,
   Building2,
   XCircle,
-  AlertCircle} from "lucide-react"
+  AlertCircle,
+  ArrowLeftRight
+} from "lucide-react"
 import QuotationEditModel from "../components/QuotationEditModel"
 import Swal from "sweetalert2"
 import ViewLogsModal from "@/components/ViewLogsModal"
@@ -622,7 +624,7 @@ const Quotations = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                
+
                                 {sortQuotations(customer.quotations.filter(q => q.status !== "DRAFT")).map((quotation) => (
                                   <tr key={quotation.id} className="border-t hover:bg-white">
                                     <td className="px-4 py-2 font-medium text-gray-900">{quotation.quotation_number}</td>

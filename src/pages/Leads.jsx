@@ -12,16 +12,16 @@ import { fetchUserPermissions, getUserPermissions } from "@/utils/permissions"
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const AssignLeadModal = ({ isOpen, onClose, lead, salespersons }) => {
-   if (!isOpen) return null
+  if (!isOpen) return null
 
   const [searchTerm, setSearchTerm] = useState("")
-   const [selectedSalespersonId, setSelectedSalespersonId] = useState(null)
-   const [isLoading, setIsLoading] = useState(false)
+  const [selectedSalespersonId, setSelectedSalespersonId] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
 
-   const filteredSalespersons = salespersons.filter((sp) =>
+  const filteredSalespersons = salespersons.filter((sp) =>
     sp?.username.toLowerCase().includes(searchTerm.toLowerCase())
-   )
-const handleConfirm = async () => {
+  )
+  const handleConfirm = async () => {
     if (!selectedSalespersonId) {
       console.error("No salesperson ID is selected.")
       return
@@ -31,10 +31,10 @@ const handleConfirm = async () => {
 
     try {
       Swal.fire({
-              title: "Reassigning...",
-              allowOutsideClick: false,
-              didOpen: () => Swal.showLoading(),
-            })
+        title: "Reassigning...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      })
       const response = await fetch(`${baseUrl}/quotations/api/leads/${lead.id}/assign/`, {
         method: "POST",
         headers: {
@@ -53,6 +53,7 @@ const handleConfirm = async () => {
       Swal.fire("Success!", "Lead has been reassigned.", "success")
 
       onClose()
+      window.location.reload()
     } catch (error) {
       console.error("Failed to assign lead:", error)
       // You could add another state here to display an error message to the user
@@ -61,52 +62,52 @@ const handleConfirm = async () => {
     }
   }
 
-   return ( 
-     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+  return (
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-         <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Reassign Lead</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
-             <X className="w-5 h-5" />
-          </button>
-        </div>
-        <p className="mb-4 text-gray-600">
-          Reassigning lead for: <span className="font-medium text-gray-800">{lead.customer?.name}</span>
-        </p>
-        <input
-          type="text"
-          placeholder="Search salesperson..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg mb-4"
-        />
-        <div className="max-h-60 overflow-y-auto border rounded-lg">
-          {filteredSalespersons.map((sp) => (
-            <div
-              key={sp.id}
-              onClick={() => setSelectedSalespersonId(sp.id)}
-              className={`p-3 cursor-pointer hover:bg-gray-100 ${selectedSalespersonId === sp.id ? "bg-blue-100 font-semibold" : ""
-                }`}
-            >
-              {sp.username}({sp.role})
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 flex justify-end space-x-3">
-          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
-            Cancel
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={!selectedSalespersonId}
-            className="px-4 py-2 bg-gray-900 text-white rounded-lg disabled:bg-gray-400 hover:bg-gray-800"
-          >
-            Confirm Assignment
-          </button>
-        </div>
-     </div>
-  </div>
- )
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <p className="mb-4 text-gray-600">
+          Reassigning lead for: <span className="font-medium text-gray-800">{lead.customer?.name}</span>
+        </p>
+        <input
+          type="text"
+          placeholder="Search salesperson..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg mb-4"
+        />
+        <div className="max-h-60 overflow-y-auto border rounded-lg">
+          {filteredSalespersons.map((sp) => (
+            <div
+              key={sp.id}
+              onClick={() => setSelectedSalespersonId(sp.id)}
+              className={`p-3 cursor-pointer hover:bg-gray-100 ${selectedSalespersonId === sp.id ? "bg-blue-100 font-semibold" : ""
+                }`}
+            >
+              {sp.username}({sp.role})
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex justify-end space-x-3">
+          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={!selectedSalespersonId}
+            className="px-4 py-2 bg-gray-900 text-white rounded-lg disabled:bg-gray-400 hover:bg-gray-800"
+          >
+            Confirm Assignment
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 
@@ -140,7 +141,7 @@ export default function Leads() {
     const fetchCustomers = async () => {
       try {
         const token = localStorage.getItem("token")
-  const res = await fetch(`${baseUrl}/quotations/api/customers/`, {
+        const res = await fetch(`${baseUrl}/quotations/api/customers/`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -167,30 +168,30 @@ export default function Leads() {
   }
 
   useEffect(() => {
-    const fetchSalespersons = async () => {
-      try {
-        const token = localStorage.getItem("token")
-  const res = await fetch(`${baseUrl}/accounts/api/users/`, { // Assuming this is your endpoint
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error("Failed to fetch salespeople")
-        const data = await res.json()
-        setSalespersons(data.data || data)
-      } catch (error) {
-        console.error("❌ Error fetching salespeople:", error)
-      }
-    }
-    fetchSalespersons()
-  }, [])
+    const fetchSalespersons = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        const res = await fetch(`${baseUrl}/accounts/api/users/`, { // Assuming this is your endpoint
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) throw new Error("Failed to fetch salespeople")
+        const data = await res.json()
+        setSalespersons(data.data.filter((sp) => sp.phone_number !== null) || [])
+      } catch (error) {
+        console.error("❌ Error fetching salespeople:", error)
+      }
+    }
+    fetchSalespersons()
+  }, [])
 
   useEffect(() => {
     const fetchLeads = async () => {
       try {
         const token = localStorage.getItem("token") // 🔑 get token
 
-  const res = await fetch(`${baseUrl}/quotations/api/leads/`, {
+        const res = await fetch(`${baseUrl}/quotations/api/leads/`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -202,7 +203,7 @@ export default function Leads() {
         }
 
         const data = await res.json()
-       
+
 
         // backend may return {data: [...]} or [...]
         setLeads(data.data || data)
@@ -221,57 +222,58 @@ export default function Leads() {
   const qualifiedLeads = leads.filter((l) => l.status === "QUALIFIED").length
   const convertedLeads = leads.filter((l) => l.status === "CONVERTED").length
 
-const handleOpenAssignModal = (lead) => {
-    setLeadToReassign({ ...lead, customer: customers.find(c => c.leads.some(l => l.id === lead.id)) })
-    setIsAssigneeModalOpen(true)
-  }
+  const handleOpenAssignModal = (lead) => {
+    setLeadToReassign({ ...lead, customer: customers.find(c => c.leads.some(l => l.id === lead.id)) })
+    setIsAssigneeModalOpen(true)
+  }
 
-  const handleConfirmAssignment = async (leadId, newAssigneeId) => {
-    try {
-      Swal.fire({
-        title: "Reassigning...",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      })
+  const handleConfirmAssignment = async (leadId, newAssigneeId) => {
+    try {
+      Swal.fire({
+        title: "Reassigning...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      })
 
-      const token = localStorage.getItem("token")
-  const res = await fetch(`${baseUrl}/quotations/api/leads/${leadId}/assign/`, { // Assuming this is your endpoint
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ assignee_id: newAssigneeId }),
-      })
+      const token = localStorage.getItem("token")
+      const res = await fetch(`${baseUrl}/quotations/api/leads/${leadId}/assign/`, { // Assuming this is your endpoint
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ assignee_id: newAssigneeId }),
+      })
 
-      if (!res.ok) {
-        throw new Error("Server failed to reassign lead.")
-      }
-      const updatedLeadData = await res.json();
+      if (!res.ok) {
+        throw new Error("Server failed to reassign lead.")
+      }
+      const updatedLeadData = await res.json();
 
 
-      // Update state locally
-      setCustomers((prevCustomers) =>
-        prevCustomers.map((customer) => {
-          if (customer.leads.some((l) => l.id === leadId)) {
-            return {
-              ...customer,
-              leads: customer.leads.map((lead) =>
-                lead.id === leadId ? { ...lead, assigned_to: updatedLeadData.assigned_to } : lead
-              ),
-            }
-          }
-          return customer
-        })
-      )
+      // Update state locally
+      setCustomers((prevCustomers) =>
+        prevCustomers.map((customer) => {
+          if (customer.leads.some((l) => l.id === leadId)) {
+            return {
+              ...customer,
+              leads: customer.leads.map((lead) =>
+                lead.id === leadId ? { ...lead, assigned_to: updatedLeadData.assigned_to } : lead
+              ),
+            }
+          }
+          return customer
+        })
+      )
 
-      setIsAssigneeModalOpen(false)
-      Swal.fire("Success!", "Lead has been reassigned.", "success")
-    } catch (error) {
-      console.error("❌ Failed to reassign lead:", error)
-      Swal.fire("Error!", "Could not reassign lead. Please try again.", "error")
-    }
-  }
+      setIsAssigneeModalOpen(false)
+      Swal.fire("Success!", "Lead has been reassigned.", "success")
+      window.location.reload()
+    } catch (error) {
+      console.error("❌ Failed to reassign lead:", error)
+      Swal.fire("Error!", "Could not reassign lead. Please try again.", "error")
+    }
+  }
 
 
 
@@ -419,7 +421,7 @@ const handleOpenAssignModal = (lead) => {
         },
       })
 
-  const res = await fetch(`${baseUrl}/quotations/api/leads/${id}/`, {
+      const res = await fetch(`${baseUrl}/quotations/api/leads/${id}/`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -439,7 +441,7 @@ const handleOpenAssignModal = (lead) => {
           leads: c.leads ? c.leads.filter((l) => l.id !== id) : [],
         }))
       )
-      
+
       Swal.fire("Deleted!", "The lead has been deleted.", "success")
 
 
@@ -457,9 +459,9 @@ const handleOpenAssignModal = (lead) => {
     try {
       const token = localStorage.getItem("token")
 
-      
 
-  const res = await fetch(`${baseUrl}/quotations/api/quotations/${quotationId}/`, {
+
+      const res = await fetch(`${baseUrl}/quotations/api/quotations/${quotationId}/`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -471,7 +473,7 @@ const handleOpenAssignModal = (lead) => {
       }
 
       const data = await res.json()
-      
+
 
       // 🔹 open modal with fetched quotation
       setSelectedQuotation(data.data)
@@ -491,7 +493,7 @@ const handleOpenAssignModal = (lead) => {
       status: newStatus,
       // priority: lead.priority,
     }
-    
+
     try {
       Swal.fire({
         title: "Updating...",
@@ -501,7 +503,7 @@ const handleOpenAssignModal = (lead) => {
           Swal.showLoading()
         },
       })
-  const res = await fetch(`${baseUrl}/accounts/api/leads/${id}/status/`, {
+      const res = await fetch(`${baseUrl}/accounts/api/leads/${id}/status/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -515,14 +517,20 @@ const handleOpenAssignModal = (lead) => {
       }
 
       // ✅ Update UI
-      setCustomers(prev =>
-        prev.map(customer => ({
-          ...customer,
-          leads: customer.leads
-            ? customer.leads.filter(lead => lead.id !== id)
-            : []
-        }))
-      );
+      //change the status in leads state setCustomers
+      setCustomers((prevCustomers) =>
+        prevCustomers.map((customer) => {
+          if (customer.leads.some((l) => l.id === id)) {
+            return {
+              ...customer,
+              leads: customer.leads.map((lead) =>
+                lead.id === id ? { ...lead, status: newStatus } : lead
+              ),
+            }
+          }
+          return customer
+        })
+      )
 
       Swal.fire("Updated!", "The lead has been updated.", "success")
 
@@ -535,7 +543,7 @@ const handleOpenAssignModal = (lead) => {
 
   const handleSaveLead = async (updatedLead) => {
     try {
-      
+
 
       // Simulate API call
       const response = await fetch("/api/leads/" + updatedLead.id, {
@@ -841,17 +849,17 @@ const handleOpenAssignModal = (lead) => {
 
                                     {/* Assignee */}
                                     <td className="px-4 py-2">
-                                      <div className="flex items-center space-x-2">
-                                        <span>{lead.assigned_to?.name || "Unassigned"}</span>
-                                        <button
-                                          onClick={() => handleOpenAssignModal(lead)}
-                                          title="Reassign Lead"
-                                          className="p-1 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-100"
-                                        >
-                                          <ArrowRightLeft className="w-4 h-4" />
-                                        </button>
-                                      </div>
-                                    </td>
+                                      <div className="flex items-center space-x-2">
+                                        <span>{lead.assigned_to?.name || "Unassigned"}</span>
+                                        <button
+                                          onClick={() => handleOpenAssignModal(lead)}
+                                          title="Reassign Lead"
+                                          className="p-1 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-100"
+                                        >
+                                          <ArrowRightLeft className="w-4 h-4" />
+                                        </button>
+                                      </div>
+                                    </td>
 
                                     {/* Created Date */}
                                     <td className="px-4 py-2">
@@ -882,15 +890,15 @@ const handleOpenAssignModal = (lead) => {
                                     {/* Actions */}
                                     {permissions?.lead?.includes("delete") && (
                                       <td className="px-4 py-2 flex space-x-2">
-                                      <button
-                                        onClick={() => handleDeleteLead(lead.id, customer)}
-                                        className="p-1 text-gray-400 hover:text-red-600"
-                                        title="Delete Lead"
-                                      >
-                                        <Trash className="w-4 h-4" />
-                                      </button>
-                                    </td>
-                                  )}
+                                        <button
+                                          onClick={() => handleDeleteLead(lead.id, customer)}
+                                          className="p-1 text-gray-400 hover:text-red-600"
+                                          title="Delete Lead"
+                                        >
+                                          <Trash className="w-4 h-4" />
+                                        </button>
+                                      </td>
+                                    )}
                                   </tr>
                                 ))}
                               </tbody>
@@ -922,16 +930,16 @@ const handleOpenAssignModal = (lead) => {
         isOpen={editQuotationOpen}
         onClose={() => setEditQuotationOpen(false)}
         onSave={(updatedQuotation) => {
-          
+
           setEditQuotationOpen(false)
         }}
       />
       <AssignLeadModal
-        isOpen={isAssigneeModalOpen}
-        onClose={() => setIsAssigneeModalOpen(false)}
-        lead={leadToReassign}
-        salespersons={salespersons}
-      />
+        isOpen={isAssigneeModalOpen}
+        onClose={() => setIsAssigneeModalOpen(false)}
+        lead={leadToReassign}
+        salespersons={salespersons}
+      />
     </div>
   )
 }

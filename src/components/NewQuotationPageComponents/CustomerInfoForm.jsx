@@ -102,7 +102,7 @@ export default function CustomerInfoForm() {
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address *
+              Email Address   (optional)
             </label>
             <input
               type="email"
