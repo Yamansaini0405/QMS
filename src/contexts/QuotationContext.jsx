@@ -652,6 +652,37 @@ export const QuotationProvider = ({ children }) => {
         }
     };
 
+    const resetFormData = () => {
+        setFormData({
+                quotationDate: formatDate(new Date()),
+                validUntil: formatDate(new Date()),
+                validityNumber: 0,
+                validityType: "days",
+                followUpDate: "",
+                customerName: "",
+                companyName: "",
+                email: "",
+                phone: "",
+                address: "",
+                gst_number: "",
+                additional_charge_name: "",
+                additional_charge_amount: 0,
+                products: [
+                    { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 },
+                ],
+                subtotal: "0.00",
+                discount: "",
+                tax: "0.00",
+                taxRate: "18",
+                discountType: "amount",
+                totalAmount: "0.00",
+                additionalNotes: "",
+                createdBy: localStorage.getItem("role"),
+                digitalSignature: "",
+                send_immediately: false,
+            });
+    };
+
     const generatePDFAndSend = async () => {
         setIsGeneratingPDF(true)
 
@@ -971,7 +1002,7 @@ export const QuotationProvider = ({ children }) => {
                 productSearchStates, setProductSearchStates,
                 productSearchResults, setProductSearchResults,
                 isSearchingProducts, setIsSearchingProducts,
-                formData, setFormData,
+                formData, setFormData, resetFormData,
                 updateFormData,
                 updateProduct,
                 searchProducts,

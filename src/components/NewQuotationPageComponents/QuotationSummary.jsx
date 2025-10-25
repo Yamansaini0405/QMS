@@ -120,14 +120,14 @@ export default function QuotationSummary() {
               value={formData.additional_charge_name}
               onChange={(e) => updateFormData("additional_charge_name", e.target.value)}
               placeholder="Charge name"
-              className="flex-1 border max-w-80 border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="flex-1 border max-w-80 border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
             <input
               type="number"
               value={formData.additional_charge_amount}
               onChange={(e) => updateFormData("additional_charge_amount", e.target.value)}
               placeholder="Amount"
-              className="border border-gray-300 rounded-md p-2 w-24 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="border border-gray-300 rounded-md p-2 w-24 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
         </div>

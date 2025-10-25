@@ -13,7 +13,7 @@ import { useLocation } from "react-router-dom";
 
 
 function NewQuotationPageContent() {
-  const { id, showPreview, formData, setShowPreview, downloadPDF, isGeneratingPDF, createQuotation, createDraft, availableTerms, pageLoading } = useQuotation();
+  const { id, showPreview, formData, resetFormData,  setShowPreview, downloadPDF, isGeneratingPDF, createQuotation, createDraft, availableTerms, pageLoading } = useQuotation();
   const location = useLocation();
   if (pageLoading) {
     return (
@@ -42,6 +42,10 @@ function NewQuotationPageContent() {
           </div>
 
           <div className="flex items-center space-x-2">
+            
+            <button className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
+            onClick={resetFormData}>Reset</button>
+
             <button
               onClick={() => setShowPreview(!showPreview)}
               className="flex items-center space-x-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
