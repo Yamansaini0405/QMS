@@ -151,6 +151,7 @@ export default function Leads() {
         if (!res.ok) throw new Error("Failed to fetch customers")
 
         const data = await res.json()
+        //backend returns data:[{}] inside 
         setCustomers(data.data || data)
         await fetchUserPermissions();
       } catch (err) {
@@ -217,10 +218,10 @@ export default function Leads() {
     fetchLeads()
   }, [])
 
-  const totalLeads = leads.length
-  const newLeads = leads.filter((l) => l.status === "PENDING").length
-  const qualifiedLeads = leads.filter((l) => l.status === "QUALIFIED").length
-  const convertedLeads = leads.filter((l) => l.status === "CONVERTED").length
+  const totalLeads = customers.map((c => c.leads ? c.leads.length : 0)).reduce((a, b) => a + b, 0)
+  const newLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "NEW").length : 0)).reduce((a, b) => a + b, 0)
+  const qualifiedLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "QUALIFIED").length : 0)).reduce((a, b) => a + b, 0)
+  const pendingLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "PENDING").length : 0)).reduce((a, b) => a + b, 0)
 
   const handleOpenAssignModal = (lead) => {
     setLeadToReassign({ ...lead, customer: customers.find(c => c.leads.some(l => l.id === lead.id)) })
@@ -301,8 +302,8 @@ export default function Leads() {
       bgColor: "bg-purple-50",
     },
     {
-      title: "Converted",
-      value: convertedLeads.toString(),
+      title: "Pending",
+      value: pendingLeads.toString(),
       icon: CheckCircle,
       color: "text-green-600",
       bgColor: "bg-green-50",

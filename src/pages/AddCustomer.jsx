@@ -301,7 +301,7 @@ export default function AddCustomer() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">GST No.</label>
                 <input
                   type="text"
-                  name="taxId"
+                  name="gst_number"
                   value={formData.gst_number}
                   onChange={handleInputChange}
                   placeholder="Enter gst no."

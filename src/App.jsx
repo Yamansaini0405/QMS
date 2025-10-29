@@ -22,6 +22,7 @@ import { QuotationProvider } from "./contexts/QuotationContext"
 import ProfilePage from "./pages/ProfilePage"
 import AllQuotations from "./pages/AllQuotations"
 import DraftQuotations from "./pages/DraftQuotations"
+import ConvertedLeadsPage from "./pages/ConvertedLeadsPage"
 
 
 function App() {
@@ -71,6 +72,7 @@ function App() {
               <Route path="/terms" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><ViewTermsAndCondition /></ProtectedRoute>} />
               <Route path="/members" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ViewMembers /></ProtectedRoute>} /> 
               <Route path="/profile" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><ProfilePage /></ProtectedRoute>} /> 
+              <Route path="/leads/converted" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><ConvertedLeadsPage /></ProtectedRoute>} />
               {/* ...other admin routes... */}
             </Routes>
           </Layout>

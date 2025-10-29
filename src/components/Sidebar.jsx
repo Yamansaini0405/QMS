@@ -17,6 +17,7 @@ import {
   ScrollText,
   SaveAll,
   Menu,
+  TargetIcon,
 } from "lucide-react"
 
 
@@ -51,8 +52,8 @@ const Sidebar = ({ open, onClose }) => {
       roles: ["ADMIN", "SALESPERSON"], // visible to all
       subItems: [
         { title: "Create Quotation", path: "/quotations/new", icon: Plus },
-        { title: "All Quotations", path: "/quotations", icon: Eye },
         { title: "List of Quotations", path: "/quotations/all", icon: Menu },
+        { title: "Cust. Quotations", path: "/quotations", icon: Eye },       
         { title: "Draft Quotations", path: "/quotations/draft", icon: SaveAll },
       ],
     },
@@ -64,7 +65,8 @@ const Sidebar = ({ open, onClose }) => {
       roles: ["ADMIN","SALESPERSON"], // only salesperson
       subItems: [
         { title: "Create Lead", path: "/leads/create", icon: Plus },
-        { title: "All Leads", path: "/leads", icon: LayoutDashboard },
+        { title: "Leads", path: "/leads", icon: LayoutDashboard },
+        { title: "Converted Leads", path: "/leads/converted", icon: TargetIcon },
       ],
     },
     {
