@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   Users,
   Building2,
@@ -233,9 +233,26 @@ export default function CustomersPage() {
 
   const ActionDropdown = ({ customer, isOpen }) => {
     const isAdmin = localStorage.getItem("role") === "ADMIN"
+    const dropdownRef = useRef(null)
+
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+          setOpenDropdown(null) // Close the dropdown
+        }
+      }
+
+      if (isOpen) {
+        document.addEventListener("mousedown", handleClickOutside)
+      }
+
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }, [isOpen])
 
     return (
-      <div className="relative">
+      <div className="relative z-10" ref={dropdownRef}>
         <button
           onClick={() => setOpenDropdown(isOpen ? null : customer.id)}
           className="p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200"
