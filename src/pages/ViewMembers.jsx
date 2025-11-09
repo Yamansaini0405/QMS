@@ -386,13 +386,47 @@ export default function ViewMembers() {
                   </td>
                   <td className="py-4 px-6 text-center flex justify-center ">
                     <div className="relative inline-block text-left">
-                      <button
-                        onClick={() => setOpenActionMenuId(openActionMenuId === member.id ? null : member.id)}
-                        className="p-2 rounded-full hover:bg-gray-200 transition-colors focus:outline-none"
-                        title="Actions"
-                      >
-                        <MoreHorizontal className="w-5 h-5" />
-                      </button>
+                      
+                        <select
+                          className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 shadow-sm hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition w-40"
+                          onChange={(e) => {
+                            const value = e.target.value;
+
+                            if (value === "manage") {
+                              handleManageMember(member);
+                            } else if (value === "grant") {
+                              handleGrantPermission(member);
+                            } else if (value === "performance") {
+                              handleViewPerformance(member);
+                            } else if (value === "toggle") {
+                              handleToggleRole(member.id, member.role);
+                            } else if (value === "delete") {
+                              handleDeleteMember(member.id);
+                            }
+                            e.target.value = "";
+                          }}
+                        >
+                          <option value="">Action</option>
+
+                          {/* Manage Member */}
+                          <option value="manage">Manage Member</option>
+
+                          {/* Grant Permission (only if not admin) */}
+                          {member.role !== "ADMIN" && (
+                            <option value="grant">Grant Permissions</option>
+                          )}
+
+                          {/* View Performance */}
+                          <option value="performance">View Performance</option>
+
+                          {/* Toggle Role */}
+                          <option value="toggle">Toggle Role</option>
+
+                          {/* Delete Member */}
+                          <option value="delete">Delete Member</option>
+                        </select>
+
+                      
 
                       {/* Dropdown Menu (This part is unchanged and will now work correctly) */}
                       {openActionMenuId === member.id && (
@@ -413,7 +447,7 @@ export default function ViewMembers() {
                                 handleGrantPermission(member)
                                 setOpenActionMenuId(null)
                               }}
-                            />):null}
+                            />) : null}
                             <DropdownItem
                               icon={<BarChart3 className="w-4 h-4 text-purple-600" />}
                               label="View Performance"
@@ -422,7 +456,7 @@ export default function ViewMembers() {
                                 setOpenActionMenuId(null)
                               }}
                             />
-                             <DropdownItem
+                            <DropdownItem
                               icon={<ArrowLeftRight className="w-4 h-4 text-blue-600" />}
                               label="Toggle Role"
                               onClick={() => {

@@ -69,10 +69,10 @@ const AssignQuotationModal = ({ isOpen, onClose, quotation, salespersons }) => {
         const errorData = await response.json()
         throw new Error(errorData.message || `Error: ${response.status}`)
       }
-      Swal.fire("Success!", "Quotation has been reassigned.", "success")      
+      Swal.fire("Success!", "Quotation has been reassigned.", "success")
       onClose()
       window.location.reload();
-      onConfirm(quotation.id, selectedSalespersonId)      
+      onConfirm(quotation.id, selectedSalespersonId)
 
 
     } catch (error) {
@@ -143,7 +143,7 @@ export default function AllQuotations() {
   const [isAssigneeModalOpen, setIsAssigneeModalOpen] = useState(false)
   const [quotationToReassign, setQuotationToReassign] = useState(null)
   const [salespersons, setSalespersons] = useState([])
-    const [isLogsModalOpen, setIsLogsModalOpen] = useState(false)
+  const [isLogsModalOpen, setIsLogsModalOpen] = useState(false)
   const [selectedQuotationLogs, setSelectedQuotationLogs] = useState(null)
   const [openDropdown, setOpenDropdown] = useState(null)
   const permissions = getUserPermissions();
@@ -247,52 +247,52 @@ export default function AllQuotations() {
     }
   }
   const handleDeleteQuotation = async (id) => {
-      const result = await Swal.fire({
-        title: "Are you sure?",
-        text: "This quotation will be permanently deleted!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Yes, delete it!",
-      })
-  
-      if (!result.isConfirmed) return
-  
-      try {
-  
-        Swal.fire({
-          title: "Deleting...",
-          text: "Please wait while we delete your Quotation.",
-          allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading()
-          },
-        })
-  
-        const token = localStorage.getItem("token")
-        const response = await fetch(`${baseUrl}/quotations/api/quotations/${id}/`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-  
-        if (!response.ok) {
-          const errorText = await response.text()
-          Swal.fire("Error!", `Failed to delete: ${errorText}`, "error")
-          throw new Error(`Delete failed: ${response.status} - ${errorText}`)
-        }
-  
-        setQuotations((prevQuotations) => prevQuotations.filter((q) => q.id !== id))  
-        Swal.fire("Deleted!", "The quotation has been deleted.", "success")
-      } catch (error) {
-        console.error("Failed to delete quotation:", error)
-        Swal.fire("Error!", "Something went wrong while deleting.", "error")
-      }
-    }
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This quotation will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    })
 
-    const handleViewLogs = async (activityLogs, quotationNumber) => {
+    if (!result.isConfirmed) return
+
+    try {
+
+      Swal.fire({
+        title: "Deleting...",
+        text: "Please wait while we delete your Quotation.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
+
+      const token = localStorage.getItem("token")
+      const response = await fetch(`${baseUrl}/quotations/api/quotations/${id}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        Swal.fire("Error!", `Failed to delete: ${errorText}`, "error")
+        throw new Error(`Delete failed: ${response.status} - ${errorText}`)
+      }
+
+      setQuotations((prevQuotations) => prevQuotations.filter((q) => q.id !== id))
+      Swal.fire("Deleted!", "The quotation has been deleted.", "success")
+    } catch (error) {
+      console.error("Failed to delete quotation:", error)
+      Swal.fire("Error!", "Something went wrong while deleting.", "error")
+    }
+  }
+
+  const handleViewLogs = async (activityLogs, quotationNumber) => {
     setSelectedQuotationLogs({
       logs: activityLogs || [],
       quotationNumber: quotationNumber || "",
@@ -428,49 +428,49 @@ export default function AllQuotations() {
     )
   }
 
-   const handleStatusChange = async (quotation, id, newStatus) => {
-      const payload = {
-        status: newStatus,
-      }
-  
-  
-      try {
-  
-        Swal.fire({
-          title: "Updating...",
-          text: "Please wait while we update your Quotation status.",
-          allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading()
-          },
-        })
-  
-        const res = await fetch(`${baseUrl}/accounts/api/quotations/${id}/status/`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(payload),
-        })
-  
-        if (!res.ok) {
-          throw new Error("Failed to update quotation status")
-        }
-  
-        setQuotations((prevQuotations) =>
-          prevQuotations.map((q) =>
-            q.id === id ? { ...q, status: newStatus } : q
-          )
-        )
-  
-        Swal.fire("Updated!", "Status updated.", "success")
-      } catch (err) {
-        console.error("❌ Error updating quotation status:", err)
-        Swal.fire("Error!", "Error updating status. Please try again.", "error")
-      }
+  const handleStatusChange = async (quotation, id, newStatus) => {
+    const payload = {
+      status: newStatus,
     }
-  
+
+
+    try {
+
+      Swal.fire({
+        title: "Updating...",
+        text: "Please wait while we update your Quotation status.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
+
+      const res = await fetch(`${baseUrl}/accounts/api/quotations/${id}/status/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        throw new Error("Failed to update quotation status")
+      }
+
+      setQuotations((prevQuotations) =>
+        prevQuotations.map((q) =>
+          q.id === id ? { ...q, status: newStatus } : q
+        )
+      )
+
+      Swal.fire("Updated!", "Status updated.", "success")
+    } catch (err) {
+      console.error("❌ Error updating quotation status:", err)
+      Swal.fire("Error!", "Error updating status. Please try again.", "error")
+    }
+  }
+
 
   // --- end ---
 
@@ -643,20 +643,20 @@ export default function AllQuotations() {
                         <p className="text-sm text-gray-500">Subtotal: ₹{quotation.subtotal}</p>
                       </div>
                     </td>
-                    
+
                     <td className="px-4 py-2">
-                                      <select
-                                        value={quotation.status}
-                                        onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
-                                        className={`${getStatusBadge(quotation.status)} text-md px-3 py-2  rounded-md focus:ring-2 `}
-                                      >
-                                        <option value="SENT">{getStatusIcon("SENT")}Sent</option>
-                                        <option value="PENDING">{getStatusIcon("PENDING")}Pending</option>
-                                        <option value="ACCEPTED">{getStatusIcon("ACCEPTED")}Accepted</option>
-                                        <option value="REJECTED">{getStatusIcon("REJECTED")}Rejected</option>
-                                        <option value="REVISED">{getStatusIcon("REVISED")}Revised</option>
-                                      </select>
-                                    </td>
+                      <select
+                        value={quotation.status}
+                        onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
+                        className={`${getStatusBadge(quotation.status)} text-md px-3 py-2  rounded-md focus:ring-2 `}
+                      >
+                        <option value="SENT">{getStatusIcon("SENT")}Sent</option>
+                        <option value="PENDING">{getStatusIcon("PENDING")}Pending</option>
+                        <option value="ACCEPTED">{getStatusIcon("ACCEPTED")}Accepted</option>
+                        <option value="REJECTED">{getStatusIcon("REJECTED")}Rejected</option>
+                        <option value="REVISED">{getStatusIcon("REVISED")}Revised</option>
+                      </select>
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
 
@@ -687,7 +687,7 @@ export default function AllQuotations() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center">
-                        {quotation.url && (
+                        {/* {quotation.url && (
                           <button
                             onClick={() => window.open(quotation.url, "_blank")}
                             className=" text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
@@ -695,8 +695,8 @@ export default function AllQuotations() {
                           >
                             <Eye className="w-4.5 h-4.5" />
                           </button>
-                        )}
-                        <div className="relative">
+                        )} */}
+                        {/* <div className="relative">
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
@@ -708,7 +708,7 @@ export default function AllQuotations() {
                             <MoreHorizontal className="w-4 h-4" />
                           </button>
 
-                          {/* Dropdown Menu */}
+                         
                           {openDropdown === quotation.id && (
                             <div className="z-10 absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px]">
                               <div className="py-1">
@@ -758,8 +758,37 @@ export default function AllQuotations() {
                               </div>
                             </div>
                           )}
-                        </div>
+                        </div> */}
+                        <select className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 shadow-sm hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition w-28"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            console.log("Selected action:", value);
+                            if (value === "view_pdf") {
+                              window.open(quotation.url, "_blank")
+                            } else if (value === "duplicate") {
+                              navigate(`/quotations/duplicate/${quotation.id}`);
+                            } else if (value === "delete") {
+                              handleDeleteQuotation(quotation.id);
+                            } else if (value === "edit") {
+                              navigate(`/quotations/edit/${quotation.id}`)
+                            } else if (value === "logs") {
+                              handleViewLogs(quotation.activity_logs, quotation.quotation_number);
+                            }
+                            e.target.value = "";
+                          }}
+                        >
+                          <option value="">Action</option>
+                          {quotation.url && <option value="view_pdf">View PDF</option>}
+                          {permissions?.quotation?.includes("edit") && <option value="edit">Edit</option>}
+                          <option value="duplicate">Duplicate</option>
+                          {permissions?.quotation?.includes("delete") &&
+                            <option value="delete">
+                              Delete
+                            </option>
+                          }
 
+                          <option value="logs">View Logs</option>
+                        </select>
                       </div>
                     </td>
                   </tr>
@@ -783,10 +812,10 @@ export default function AllQuotations() {
         salespersons={salespersons}
       />
       <ViewLogsModal
-              quotationLogs={selectedQuotationLogs}
-              isOpen={isLogsModalOpen}
-              onClose={() => setIsLogsModalOpen(false)}
-            />
+        quotationLogs={selectedQuotationLogs}
+        isOpen={isLogsModalOpen}
+        onClose={() => setIsLogsModalOpen(false)}
+      />
     </div>
   )
 }

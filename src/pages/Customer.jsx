@@ -27,6 +27,7 @@ import { fetchUserPermissions, getUserPermissions } from "@/utils/permissions"
 export default function CustomersPage() {
   const baseUrl = import.meta.env.VITE_BASE_URL
   const [searchTerm, setSearchTerm] = useState("")
+  const isAdmin = localStorage.getItem("role") === "ADMIN"
 
   const [customers, setCustomers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -271,20 +272,20 @@ export default function CustomersPage() {
               <span>View Customer</span>
             </button>
             {permissions?.customer?.includes("edit") && <button
-                  onClick={() => handleEditCustomer(customer)}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 border-b border-gray-100"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span>Edit Customer</span>
-                </button>}
+              onClick={() => handleEditCustomer(customer)}
+              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 border-b border-gray-100"
+            >
+              <Edit className="w-4 h-4" />
+              <span>Edit Customer</span>
+            </button>}
 
-                {permissions?.customer?.includes("delete") && <button
-                  onClick={() => handleDeleteCustomer(customer.id)}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Delete Customer</span>
-                </button>}
+            {permissions?.customer?.includes("delete") && <button
+              onClick={() => handleDeleteCustomer(customer.id)}
+              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Delete Customer</span>
+            </button>}
 
             {isAdmin && (
               <>
@@ -296,7 +297,7 @@ export default function CustomersPage() {
                   <span>View Activity</span>
                 </button>
 
-                
+
               </>
             )}
           </div>
@@ -466,7 +467,40 @@ export default function CustomersPage() {
                     <span className="text-sm text-gray-600">{new Date(cust.created_at).toLocaleString()}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <ActionDropdown customer={cust} isOpen={openDropdown === cust.id} />
+                    {/* <ActionDropdown customer={cust} isOpen={c === cust.id} /> */}
+
+                    <select
+                      className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 shadow-sm hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition w-28"
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        if (value === "view") {
+                          handleViewCustomer(cust);
+                        } else if (value === "edit") {
+                          handleEditCustomer(cust);
+                        } else if (value === "delete") {
+                          handleDeleteCustomer(cust.id);
+                        } else if (value === "activity") {
+                          handleViewActivity(cust);
+                        }
+
+                        // reset after action
+                        e.target.value = "";
+                      }}
+                    >
+                      <option value="">Action</option>
+                      <option value="view">View Customer</option>
+
+                      {permissions?.customer?.includes("edit") && (
+                        <option value="edit">Edit Customer</option>
+                      )}
+
+                      {permissions?.customer?.includes("delete") && (
+                        <option value="delete">Delete Customer</option>
+                      )}
+
+                      {isAdmin && <option value="activity">View Activity</option>}
+                    </select>
                   </td>
                 </tr>
               ))}
