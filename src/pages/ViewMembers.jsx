@@ -396,7 +396,7 @@ export default function ViewMembers() {
 
                       {/* Dropdown Menu (This part is unchanged and will now work correctly) */}
                       {openActionMenuId === member.id && (
-                        <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                        <div className=" origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
                           <div className="py-1" role="menu" aria-orientation="vertical">
                             <DropdownItem
                               icon={<UserCog className="w-4 h-4" />}

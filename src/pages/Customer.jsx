@@ -43,7 +43,7 @@ export default function CustomersPage() {
     const fetchCustomers = async () => {
       try {
         const token = localStorage.getItem("token")
-        const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
+        const response = await fetch(`${baseUrl}/quotations/api/customers/filtered/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

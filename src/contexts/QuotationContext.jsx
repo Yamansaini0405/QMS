@@ -877,7 +877,7 @@ export const QuotationProvider = ({ children }) => {
         setIsSearchingCustomers(true);
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
+            const response = await fetch(`${baseUrl}/quotations/api/customers/unfiltered/`, {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             const data = await response.json();
