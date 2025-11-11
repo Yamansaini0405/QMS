@@ -301,11 +301,11 @@ export default function AddLeads() {
     let error = ""
 
     // Email validation
-    if (name === "email" || name === "salespersonEmail") {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!value) error = "Email is required"
-      else if (!emailRegex.test(value)) error = "Invalid email address"
-    }
+    // if (name === "email" || name === "salespersonEmail") {
+    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    //   if (!value) error = "Email is required"
+    //   else if (!emailRegex.test(value)) error = "Invalid email address"
+    // }
 
     // Phone validation
     if (name === "phone" || name === "salespersonPhone") {
@@ -432,7 +432,7 @@ export default function AddLeads() {
 
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address (optional)</label>
                   <input
                     type="email"
                     name="email"
