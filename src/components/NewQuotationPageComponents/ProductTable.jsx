@@ -17,18 +17,18 @@ export default function ProductTable() {
     removeProductRow,
     setProductSearchStates,
     calculateTotals
-    
+
   } = useQuotation()
 
-const [showPercentageDiscount, setShowPercentageDiscount] = useState(false);
+  const [showPercentageDiscount, setShowPercentageDiscount] = useState(false);
 
-useEffect(() => {
-  if (formData.products?.some(p => p.percentage_discount && Number(p.percentage_discount) > 0)) {
-    setShowPercentageDiscount(true);
-  } else {
-    setShowPercentageDiscount(false);
-  }
-}, [formData.products]);
+  useEffect(() => {
+    if (formData.products?.some(p => p.percentage_discount && Number(p.percentage_discount) > 0)) {
+      setShowPercentageDiscount(true);
+    } else {
+      setShowPercentageDiscount(false);
+    }
+  }, [formData.products]);
 
 
   const calculateFinalAmount = (product) => {
@@ -43,9 +43,9 @@ useEffect(() => {
   }
 
   useEffect(() => {
-    !showPercentageDiscount ?formData.products.forEach(p => p.percentage_discount = 0) : null
+    !showPercentageDiscount ? formData.products.forEach(p => p.percentage_discount = 0) : null
     calculateTotals(formData.products)
-  },[showPercentageDiscount, setShowPercentageDiscount])
+  }, [showPercentageDiscount, setShowPercentageDiscount])
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 ">
       <div className="flex items-center space-x-2 mb-6">
@@ -85,53 +85,66 @@ useEffect(() => {
             <tr key={index} className="border-b border-gray-100">
               <td className="py-3 px-2 text-sm text-gray-600">{index + 1}</td>
               <td className="py-3 px-2">
-                <div className="relative">
-                  <input
-                    placeholder="Search and select product..."
-                    value={productSearchStates[index]?.query || product.name}
-                    onChange={(e) => handleProductSearchChange(e, index)}
-                    onFocus={() => {
-                      const currentQuery = productSearchStates[index]?.query || product.name
-                      if (currentQuery.trim()) {
-                        setProductSearchStates((prev) => ({
-                          ...prev,
-                          [index]: {
-                            ...prev[index],
-                            showResults: true,
-                          },
-                        }))
-                      }
-                    }}
-                    onBlur={() => setTimeout(() =>setProductSearchStates((prev) => ({
-                          ...prev,
-                          [index]: {
-                            ...prev[index],
-                            showResults: false,
-                          },
-                        })), 150 )}
-                    
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  {productSearchStates[index]?.showResults && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-scroll ">
-                      {isSearchingProducts[index] ? (
-                        <div className="px-4 py-3 text-sm text-gray-500">Searching products...</div>
-                      ) : productSearchResults[index]?.length > 0 ? (
-                        productSearchResults[index].map((searchProduct) => (
-                          <div
-                            key={searchProduct.id}
-                            onMouseDown={() => selectProduct(searchProduct, index)}
-                            className="px-4 py-3  hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                          >
-                            <div className="font-medium text-gray-900">{searchProduct.name}</div>
-                            <div className="text-sm text-gray-600">Rs. {searchProduct.selling_price}</div>
-                          </div>
-                        ))
-                      ) : (productSearchStates[index]?.query || product.name).trim() ? (
-                        <div className="px-4 py-3 text-sm text-gray-500">No products found</div>
-                      ) : null}
-                    </div>
+                <div className="flex items-center space-x-2">
+                  {product.imageUrl ? (
+                      <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="w-10 h-10 object-cover rounded-md border border-gray-200"
+                      />
+                  ) : (
+                      <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">
+                          <Package className="w-5 h-5 text-gray-400" />
+                      </div>
                   )}
+                  <div className="relative">
+                    <input
+                      placeholder="Search and select product..."
+                      value={productSearchStates[index]?.query || product.name}
+                      onChange={(e) => handleProductSearchChange(e, index)}
+                      onFocus={() => {
+                        const currentQuery = productSearchStates[index]?.query || product.name
+                        if (currentQuery.trim()) {
+                          setProductSearchStates((prev) => ({
+                            ...prev,
+                            [index]: {
+                              ...prev[index],
+                              showResults: true,
+                            },
+                          }))
+                        }
+                      }}
+                      onBlur={() => setTimeout(() => setProductSearchStates((prev) => ({
+                        ...prev,
+                        [index]: {
+                          ...prev[index],
+                          showResults: false,
+                        },
+                      })), 150)}
+
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    {productSearchStates[index]?.showResults && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-scroll ">
+                        {isSearchingProducts[index] ? (
+                          <div className="px-4 py-3 text-sm text-gray-500">Searching products...</div>
+                        ) : productSearchResults[index]?.length > 0 ? (
+                          productSearchResults[index].map((searchProduct) => (
+                            <div
+                              key={searchProduct.id}
+                              onMouseDown={() => selectProduct(searchProduct, index)}
+                              className="px-4 py-3  hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                            >
+                              <div className="font-medium text-gray-900">{searchProduct.name}</div>
+                              <div className="text-sm text-gray-600">Rs. {searchProduct.selling_price}</div>
+                            </div>
+                          ))
+                        ) : (productSearchStates[index]?.query || product.name).trim() ? (
+                          <div className="px-4 py-3 text-sm text-gray-500">No products found</div>
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </td>
               <td className="py-3 px-2">

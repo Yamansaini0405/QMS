@@ -64,7 +64,7 @@ export default function QuotationSummary() {
                   }
                   calculateTotals(formData.products)
                 }}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500"
               />
               <label htmlFor="special-discount" className="text-md text-gray-600">
                 Special Discount
@@ -72,7 +72,7 @@ export default function QuotationSummary() {
             </div>
             <div className="flex items-center space-x-2">
               <input
-                className="w-28 h-8 px-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-28 h-8 px-2 text-sm border border-gray-300 bg-white rounded-md focus:outline-none focus:ring-2 focus:border-transparent"
                 placeholder="0.00"
                 type="number"
                 value={formData.discount}
@@ -120,14 +120,14 @@ export default function QuotationSummary() {
               value={formData.additional_charge_name}
               onChange={(e) => updateFormData("additional_charge_name", e.target.value)}
               placeholder="Charge name"
-              className="flex-1 border max-w-80 border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="flex-1 border max-w-80 bg-white border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
             <input
               type="number"
               value={formData.additional_charge_amount}
               onChange={(e) => updateFormData("additional_charge_amount", e.target.value)}
               placeholder="Amount"
-              className="border border-gray-300 rounded-md p-2 w-24 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="border bg-white border-gray-300 rounded-md p-2 w-24 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
         </div>
@@ -153,7 +153,7 @@ export default function QuotationSummary() {
             <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
             <span className="text-md text-gray-600">Tax Rate:</span>
             <input
-              className="w-12 h-7 px-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-12 h-7 px-1 text-sm border bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               type="text"
               value={formData.taxRate}
               onChange={(e) => {

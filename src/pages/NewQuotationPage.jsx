@@ -10,6 +10,7 @@ import BottomActions from "../components/NewQuotationPageComponents/BottomAction
 import QuotationTemplate from "../components/QuotationTemplate";
 import { FileText, Eye, Send, EyeOff, SaveAll } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import QuickAddProductForm from "@/components/NewQuotationPageComponents/QuickAddProductForm";
 
 
 function NewQuotationPageContent() {
@@ -105,6 +106,7 @@ function NewQuotationPageContent() {
               <div className="lg:col-span-2 space-y-6">
                 <CustomerInfoForm />
                 <ProductTable />
+                <QuickAddProductForm/>
                 <QuotationSummary />
                 <TermsAndConditionsSelector />
                 <AdditionalSettings />

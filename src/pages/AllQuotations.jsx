@@ -602,8 +602,8 @@ export default function AllQuotations() {
               <tbody className="divide-y divide-gray-200">
                 {sortQuotations(filteredQuotations).map((quotation) => (
                   <tr key={quotation.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-3">
+                    <td className="px-6 py-4" >
+                      <div className="flex items-center space-x-3 cursor-pointer" onClick={() => window.open(quotation.url, "_blank")}>
                         <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
                           <FileText className="w-4 h-4 text-white" />
                         </div>
@@ -778,7 +778,7 @@ export default function AllQuotations() {
                           }}
                         >
                           <option value="">Action</option>
-                          {quotation.url && <option value="view_pdf">View PDF</option>}
+                          {/* {quotation.url && <option value="view_pdf">View PDF</option>} */}
                           {permissions?.quotation?.includes("edit") && <option value="edit">Edit</option>}
                           <option value="duplicate">Duplicate</option>
                           {permissions?.quotation?.includes("delete") &&

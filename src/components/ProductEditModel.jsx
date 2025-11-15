@@ -1,12 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { X, Package, DollarSign, FileText, Save } from "lucide-react"
+import { useState, useEffect, useRef } from "react" // <-- MODIFIED
+import { X, Package, DollarSign, FileText, Save, Image } from "lucide-react" // <-- MODIFIED
 import Swal from "sweetalert2"
 
-
 export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
-  const baseUrl = import.meta.env.VITE_BASE_URL;
+  const baseUrl = import.meta.env.VITE_BASE_URL
   const [formData, setFormData] = useState({
     id: "",
     name: "",
@@ -27,22 +26,25 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
   const [filteredCategories, setFilteredCategories] = useState([])
   const [loading, setLoading] = useState(false)
 
+  const [currentImageUrl, setCurrentImageUrl] = useState(null) 
+  const [imageFile, setImageFile] = useState(null)
+  const fileInputRef = useRef(null) 
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const token = localStorage.getItem("token")
         const res = await fetch(`${baseUrl}/quotations/api/categories/`, {
-          headers: { "Authorization": `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         })
         const data = await res.json()
         setCategories(data || [])
-        
       } catch (err) {
         console.error("Error fetching categories:", err)
       }
     }
     fetchCategories()
-  }, [])
+  }, [baseUrl])
 
   const handleCategoryChange = (e) => {
     const value = e.target.value
@@ -55,16 +57,14 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
         cat.name.toLowerCase().includes(value.toLowerCase())
       )
       setFilteredCategories(filtered)
-
     }
     setShowDropdown(true)
   }
 
-  // when selecting category from dropdown
   const handleSelectCategory = (categoryName) => {
     setFormData({
       ...formData,
-      category: categoryName
+      category: categoryName,
     })
     setShowDropdown(false)
   }
@@ -86,6 +86,14 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
         dimensions: product.dimensions || "",
         warranty_months: product.warranty_months || "",
       })
+
+      const existingImageUrl =
+        product.images && product.images.length > 0 ? product.images[0] : null
+      setCurrentImageUrl(existingImageUrl)
+      setImageFile(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = null
+      }
     }
   }, [product, isOpen])
 
@@ -95,6 +103,13 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }))
+  }
+
+  const handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0])
+      setCurrentImageUrl(URL.createObjectURL(e.target.files[0]))
+    }
   }
 
   const calculateProfitMargin = () => {
@@ -107,7 +122,6 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
   const handleSave = async () => {
     setLoading(true)
     try {
-
       Swal.fire({
         title: "Updating...",
         text: "Please wait while we update your Product.",
@@ -118,32 +132,54 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
       })
 
       const token = localStorage.getItem("token")
-      const payload = {
-        ...formData,
-        id: Number(formData.id),
-        cost_price: Number(formData.cost_price),
-        selling_price: Number(formData.selling_price),
-        tax_rate: Number(formData.tax_rate),
-        weight: Number(formData.weight),
-        warranty_months: formData.warranty_months ? Number(formData.warranty_months) : null,
+
+      const payload = new FormData()
+
+      payload.append("id", Number(formData.id))
+      payload.append("name", formData.name)
+      payload.append("description", formData.description)
+      payload.append("category", formData.category)
+      payload.append("brand", formData.brand)
+      payload.append("active", formData.active)
+      payload.append("cost_price", Number(formData.cost_price) || 0)
+      payload.append("selling_price", Number(formData.selling_price) || 0)
+      payload.append("unit", formData.unit)
+      payload.append("tax_rate", Number(formData.tax_rate) || 0)
+      payload.append("weight", Number(formData.weight) || 0)
+      payload.append("dimensions", formData.dimensions)
+      payload.append(
+        "warranty_months",
+        formData.warranty_months ? Number(formData.warranty_months) : ""
+      )
+
+      if (imageFile) {
+        payload.append("image", imageFile)
       }
 
-      const res = await fetch(`${baseUrl}/quotations/api/products/create/?id=${product.id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error("Failed to update product")
+      const res = await fetch(
+        `${baseUrl}/quotations/api/products/create/?id=${product.id}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: payload,
+        }
+      )
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null)
+        console.error("Server error response:", errorData)
+        throw new Error(errorData?.detail || "Failed to update product")
+      }
+
       Swal.fire("Updated!", "Product has been updated", "success")
       const updatedProduct = await res.json()
-      onSave(updatedProduct)
-      onClose()
+      onSave(updatedProduct) 
+      onClose() 
     } catch (error) {
       console.error("Error updating product:", error)
-      Swal.fire("Error!", "Failed to updated product", "error")
+      Swal.fire("Error!", `Failed to updated product: ${error.message}`, "error")
     } finally {
       setLoading(false)
     }
@@ -152,10 +188,14 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
   if (!isOpen || !product) return null
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-      onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto no-scrollbar"
-        onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto no-scrollbar"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
@@ -163,11 +203,16 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
               <Package className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Edit Product</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Edit Product
+              </h2>
               <p className="text-gray-600">Update product information</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
@@ -182,7 +227,9 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Product Name *
+                </label>
                 <input
                   type="text"
                   name="name"
@@ -192,7 +239,9 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
                 <textarea
                   name="description"
                   value={formData.description}
@@ -202,21 +251,21 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
                 />
               </div>
               <div className="mb-4 relative">
-                <label className="block text-sm font-medium mb-1">Category</label>
+                <label className="block text-sm font-medium mb-1">
+                  Category
+                </label>
                 <input
                   type="text"
                   value={formData.category}
                   onChange={handleCategoryChange}
                   onFocus={() => setShowDropdown(true)}
                   onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-
                   placeholder="Search category..."
                   className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
 
-                {/* Dropdown */}
                 {showDropdown && (
-                  <ul className="absolute z-10 bg-white border rounded-lg w-full max-h-40 overflow-y-auto mt-1 shadow-lg" >
+                  <ul className="absolute z-10 bg-white border rounded-lg w-full max-h-40 overflow-y-auto mt-1 shadow-lg">
                     {filteredCategories.length > 0 ? (
                       filteredCategories.map((cat, idx) => (
                         <li
@@ -228,13 +277,17 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
                         </li>
                       ))
                     ) : (
-                      <li className="px-3 py-2 text-gray-500 italic">No category found</li>
+                      <li className="px-3 py-2 text-gray-500 italic">
+                        No category found
+                      </li>
                     )}
                   </ul>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Brand
+                </label>
                 <input
                   type="text"
                   name="brand"
@@ -242,6 +295,36 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Product Image
+                </label>
+                {/* Show current image */}
+                {currentImageUrl && (
+                  <div className="mb-2 w-32 h-32 rounded-lg border border-gray-200 overflow-hidden">
+                    <img
+                      src={currentImageUrl}
+                      alt="Current product"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                {/* File input to change image */}
+                <input
+                  type="file"
+                  name="image"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  accept="image/png, image/jpeg, image/webp"
+                  className="w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {imageFile
+                    ? `Selected new: ${imageFile.name}`
+                    : "Upload a new file to replace the current image."}
+                </p>
               </div>
             </div>
             <div className="mt-4 flex items-center gap-3">
@@ -252,11 +335,12 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
                 onChange={handleInputChange}
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <label className="text-sm font-medium text-gray-700">Product is active and available for sale</label>
+              <label className="text-sm font-medium text-gray-700">
+                Product is active and available for sale
+              </label>
             </div>
           </div>
 
-          {/* Pricing & Tax */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <DollarSign className="w-5 h-5 mr-2" />
@@ -264,7 +348,9 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Cost Price</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Cost Price
+                </label>
                 <input
                   type="number"
                   name="cost_price"
@@ -274,7 +360,9 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Selling Price *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Selling Price *
+                </label>
                 <input
                   type="number"
                   name="selling_price"
@@ -284,7 +372,9 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Unit
+                </label>
                 <select
                   name="unit"
                   value={formData.unit}
@@ -300,7 +390,9 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tax Rate (%)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tax Rate (%)
+                </label>
                 <input
                   type="number"
                   name="tax_rate"
@@ -310,16 +402,19 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Profit Margin</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Profit Margin
+                </label>
                 <div className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
-                  <span className="font-medium text-green-600">{calculateProfitMargin()}%</span>
+                  <span className="font-medium text-green-600">
+                    {calculateProfitMargin()}%
+                  </span>
                   <span className="text-gray-500">profit margin</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Additional Details */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <FileText className="w-5 h-5 mr-2" />
@@ -327,7 +422,9 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Weight (kg)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Weight (kg)
+                </label>
                 <input
                   type="number"
                   name="weight"
@@ -338,7 +435,9 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Dimensions (L×W×H)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Dimensions (L×W×H)
+                </label>
                 <input
                   type="text"
                   name="dimensions"
@@ -349,7 +448,9 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Warranty Period (months)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Warranty Period (months)
+                </label>
                 <input
                   type="number"
                   name="warranty_months"

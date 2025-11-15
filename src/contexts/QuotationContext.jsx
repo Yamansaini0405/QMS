@@ -86,7 +86,7 @@ export const QuotationProvider = ({ children }) => {
         gst_number: "",
         additional_charge_name: "",
         additional_charge_amount: 0,
-        products: [{ id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 }],
+        products: [{ id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0, imageUrl: "" }],
         subtotal: "0.00",
         discount: "",
         tax: "0.00",
@@ -125,7 +125,7 @@ export const QuotationProvider = ({ children }) => {
                 gst_number: "",
                 additional_charge_name: "",
                 additional_charge_amount: 0,
-                products: [{ id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 }],
+                products: [{ id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0, imageUrl: "" }],
                 subtotal: "0.00",
                 discount: "",
                 tax: "0.00",
@@ -156,7 +156,7 @@ export const QuotationProvider = ({ children }) => {
             );
             if (!res.ok) throw new Error("Failed to fetch quotation");
             const data = await res.json();
-            
+
 
             const qutations = {
                 quotationDate: formatDate(new Date(data.data.created_at)),
@@ -178,6 +178,7 @@ export const QuotationProvider = ({ children }) => {
                     quantity: item.quantity,
                     selling_price: item.unit_price || "",
                     percentage_discount: item.discount || 0,
+                    imageUrl: item.product.images && item.product.images.length > 0 ? item.product.images[0] : "",
                 })) || [],
                 subtotal: data.data.subtotal || "0.00",
                 discount: data.data.discount || "",
@@ -235,7 +236,7 @@ export const QuotationProvider = ({ children }) => {
                 selling_price: Number(selling_price),
             }
 
-            
+
 
             const res = await fetch(
                 `${baseUrl}/quotations/api/products/create/`,
@@ -258,16 +259,22 @@ export const QuotationProvider = ({ children }) => {
         }
     }
 
-    // Handlers
 
-    // Create Quotation handler
     const createQuotation = async () => {
         setIsGeneratingPDF(true)
 
         try {
 
-            if (!validateForm()) {
-                Swal.fire("Validation Error", "Please fix errors before saving.", "error");
+            const validationErrors = validateForm();
+            const hasErrors = Object.values(validationErrors).some((err) => err);
+
+            if (hasErrors) {
+                if (validationErrors.terms) {
+                    Swal.fire("Validation Error", validationErrors.terms, "error");
+                } else {
+                    Swal.fire("Validation Error", "Please fix errors in the form.", "error");
+                }
+                setIsGeneratingPDF(false);
                 return;
             }
 
@@ -305,10 +312,7 @@ export const QuotationProvider = ({ children }) => {
                         Swal.showLoading()
                     },
                 })
-
             const token = localStorage.getItem("token");
-
-            // Build items array asynchronously
             const items = await Promise.all(
                 formData.products.map(async (p) => {
                     if (!p.id) {
@@ -383,12 +387,7 @@ export const QuotationProvider = ({ children }) => {
             }
 
             const result = await response.json();
-            
-
             Swal.fire(id ? location.pathname.startsWith('/quotations/edit') ? "Updated" : "Duplicated" : "Created!", `The Quotation has been ${id ? location.pathname.startsWith('/quotations/edit') ? "updated" : "duplicated" : "created"}.`, "success")
-
-
-            // ✅ Reset formData after success
             setFormData({
                 quotationDate: formatDate(new Date()),
                 validUntil: formatDate(new Date()),
@@ -404,7 +403,7 @@ export const QuotationProvider = ({ children }) => {
                 additional_charge_name: "",
                 additional_charge_amount: 0,
                 products: [
-                    { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 },
+                    { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0, imageUrl: "" },
                 ],
                 subtotal: "0.00",
                 discount: "",
@@ -433,9 +432,16 @@ export const QuotationProvider = ({ children }) => {
         setIsGeneratingPDF(true)
 
         try {
+            const validationErrors = validateForm();
+            const hasErrors = Object.values(validationErrors).some((err) => err);
 
-            if (!validateForm()) {
-                Swal.fire("Validation Error", "Please fix errors before saving.", "error");
+            if (hasErrors) {
+                if (validationErrors.terms) {
+                    Swal.fire("Validation Error", validationErrors.terms, "error");
+                } else {
+                    Swal.fire("Validation Error", "Please fix errors in the form.", "error");
+                }
+                setIsGeneratingPDF(false); 
                 return;
             }
 
@@ -549,8 +555,6 @@ export const QuotationProvider = ({ children }) => {
             const result = await response.json();
             Swal.fire(id ? location.pathname.startsWith('/quotations/edit') ? "Updated" : "Duplicated" : "Created!", `The Quotation has been ${id ? location.pathname.startsWith('/quotations/edit') ? "updated" : "duplicated" : "created"}.`, "success")
 
-
-            // ✅ Reset formData after success
             setFormData({
                 quotationDate: formatDate(new Date()),
                 validUntil: formatDate(new Date()),
@@ -566,7 +570,7 @@ export const QuotationProvider = ({ children }) => {
                 additional_charge_name: "",
                 additional_charge_amount: 0,
                 products: [
-                    { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 },
+                    { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0, imageUrl: "" },
                 ],
                 subtotal: "0.00",
                 discount: "",
@@ -591,8 +595,6 @@ export const QuotationProvider = ({ children }) => {
             setIsGeneratingPDF(false)
         }
     };
-
-    // Download PDF handler (dummy, replace with your logic)
     const downloadPDF = () => {
         alert("Download PDF logic goes here.");
     };
@@ -638,8 +640,6 @@ export const QuotationProvider = ({ children }) => {
 
             const newProduct = { id: "", name: query.trim(), quantity: 1, selling_price: 0, percentage_discount: 0 }
 
-            // data?.data.push(newProduct);
-
             const filtered = (data.data || []).filter((product) =>
                 product.name.toLowerCase().includes(query.toLowerCase()) ||
                 (product.description && product.description.toLowerCase().includes(query.toLowerCase()))
@@ -654,42 +654,39 @@ export const QuotationProvider = ({ children }) => {
 
     const resetFormData = () => {
         setFormData({
-                quotationDate: formatDate(new Date()),
-                validUntil: formatDate(new Date()),
-                validityNumber: 0,
-                validityType: "days",
-                followUpDate: "",
-                customerName: "",
-                companyName: "",
-                email: "",
-                phone: "",
-                address: "",
-                gst_number: "",
-                additional_charge_name: "",
-                additional_charge_amount: 0,
-                products: [
-                    { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0 },
-                ],
-                subtotal: "0.00",
-                discount: "",
-                tax: "0.00",
-                taxRate: "18",
-                discountType: "amount",
-                totalAmount: "0.00",
-                additionalNotes: "",
-                createdBy: localStorage.getItem("role"),
-                digitalSignature: "",
-                send_immediately: false,
-            });
+            quotationDate: formatDate(new Date()),
+            validUntil: formatDate(new Date()),
+            validityNumber: 0,
+            validityType: "days",
+            followUpDate: "",
+            customerName: "",
+            companyName: "",
+            email: "",
+            phone: "",
+            address: "",
+            gst_number: "",
+            additional_charge_name: "",
+            additional_charge_amount: 0,
+            products: [
+                { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0, imageUrl: "" },
+            ],
+            subtotal: "0.00",
+            discount: "",
+            tax: "0.00",
+            taxRate: "18",
+            discountType: "amount",
+            totalAmount: "0.00",
+            additionalNotes: "",
+            createdBy: localStorage.getItem("role"),
+            digitalSignature: "",
+            send_immediately: false,
+        });
     };
 
     const generatePDFAndSend = async () => {
         setIsGeneratingPDF(true)
 
         try {
-
-            // For now, just send the form data to backend without PDF generation
-            // You can add PDF generation library later
             const response = await fetch("/api/quotations/create", {
                 method: "POST",
                 headers: {
@@ -703,7 +700,7 @@ export const QuotationProvider = ({ children }) => {
 
             if (response.ok) {
                 const result = await response.json()
-                
+
                 alert("Quotation created and sent successfully!")
             } else {
                 throw new Error("Failed to send quotation to backend")
@@ -728,7 +725,7 @@ export const QuotationProvider = ({ children }) => {
             brand: product.brand ?? "",
             weight: product.weight ?? null,
             warranty_months: product.warranty_months ?? null,
-            // preserve existing row values
+            imageUrl: product.images && product.images.length > 0 ? product.images[0] : "",
             quantity: formData.products[productIndex]?.quantity ?? 1,
             percentage_discount: formData.products[productIndex]?.percentage_discount ?? 0,
         }
@@ -744,9 +741,6 @@ export const QuotationProvider = ({ children }) => {
             },
         }))
         setProductSearchResults((prev) => ({ ...prev, [productIndex]: [] }))
-
-        // Optional: If you want the global tax to follow the selected product's tax_rate, uncomment:
-        // setFormData((prev) => ({ ...prev, taxRate: String(mapped.tax_rate || prev.taxRate) }));
     }
 
     const handleChangeProductDetail = (e, productIndex) => {
@@ -804,7 +798,7 @@ export const QuotationProvider = ({ children }) => {
     };
 
     const addProductRow = () => {
-        const newProducts = [...formData.products, { id: "", name: "", quantity: 1, selling_price: 0 }];
+        const newProducts = [...formData.products, { id: "", name: "", quantity: 1, selling_price: 0, imageUrl: "" }];
         setFormData((prev) => ({ ...prev, products: newProducts }));
     };
 
@@ -835,7 +829,7 @@ export const QuotationProvider = ({ children }) => {
     };
 
     const calculateTotals = (products = formData.products) => {
-       
+
         const subtotal = products.reduce((sum, product) => {
             const baseAmount = (product.quantity || 0) * (product.selling_price || 0)
             const discount = product.percentage_discount ? (baseAmount * product.percentage_discount) / 100 : 0
@@ -970,13 +964,17 @@ export const QuotationProvider = ({ children }) => {
         errors.companyName = validateField("companyName", formData.companyName);
         // errors.email = validateField("email", formData.email);
         errors.phone = validateField("phone", formData.phone);
+        if (selectedTerms.length < 1) {
+            errors.terms = "Please select at least one term and condition.";
+        }
 
 
 
         setFormErrors(errors);
 
+
         // return true if no errors
-        return Object.values(errors).every((err) => !err);
+        return errors;
     };
 
 

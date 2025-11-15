@@ -1,15 +1,18 @@
 "use client"
 
-import { X, Package, DollarSign, Calendar, Tag, Weight, Ruler, Shield } from "lucide-react"
+import { X, Package, DollarSign, Calendar, Tag, Weight, Ruler, Shield, Image } from "lucide-react" // <-- MODIFIED (added Image icon)
 
 export default function ProductViewModal({ product, isOpen, onClose }) {
   if (!isOpen || !product) return null
 
+  // Determine the image URL, if available
+  const imageUrl = product.images && product.images.length > 0 ? product.images[0] : null // <-- NEW
+
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-    onClick={onClose}>
+      onClick={onClose}>
       <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto no-scrollbar"
-      onClick={(e) => e.stopPropagation()}>
+        onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
@@ -28,6 +31,21 @@ export default function ProductViewModal({ product, isOpen, onClose }) {
 
         {/* Content */}
         <div className="p-6 space-y-6">
+          {imageUrl && (
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Image className="w-5 h-5 mr-2" />
+                Product Image
+              </h3>
+              <div className="flex justify-center items-center h-64 w-64 mx-auto rounded-lg overflow-hidden border border-gray-200"> {/* <-- NEW: Fixed size container */}
+                <img
+                  src={imageUrl}
+                  alt={`Image of ${product.name}`}
+                  className="object-cover w-full h-full" 
+                />
+              </div>
+            </div>
+          )}
           {/* Basic Information */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
