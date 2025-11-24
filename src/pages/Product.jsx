@@ -7,7 +7,7 @@ import {
   Package,
   CheckCircle,
   Grid3X3,
-  DollarSign,
+  IndianRupee,
   TrendingUp,
   Star,
   Search,
@@ -141,7 +141,7 @@ export default function Products() {
     {
       title: "Avg. Price",
       value: avgPrice.toFixed(2),
-      icon: DollarSign,
+      icon: IndianRupee,
       color: "text-purple-500",
       bgColor: "bg-purple-100",
     },

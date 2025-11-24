@@ -5,7 +5,7 @@ import {
   FileText,
   Search,
   Eye,
-  DollarSign,
+  IndianRupee,
   User,
   Building2,
   Phone,
@@ -363,7 +363,7 @@ export default function AllQuotations() {
     {
       title: "Total Value",
       value: `₹${totalValue.toFixed(2)}`,
-      icon: DollarSign,
+      icon: IndianRupee,
       color: "text-green-600",
       bgColor: "bg-green-100",
     },

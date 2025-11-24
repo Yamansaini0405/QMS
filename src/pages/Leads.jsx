@@ -729,7 +729,7 @@ export default function Leads() {
                 .map((customer, index) => (
                   <>
                     {/* Customer Row */}
-                    <tr key={customer.id} className="hover:bg-gray-50 transition-colors duration-200">
+                    <tr key={customer.id} className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer" onClick={() => toggleExpand(customer.id)}>
 
                       <td className="px-6 py-4 text-gray-600">{index + 1}</td>
                       <td className="px-6 py-4 font-medium text-gray-900 flex items-center justify-start gap-2"><div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">

@@ -1,6 +1,6 @@
 "use client"
 
-import { X, Package, DollarSign, Calendar, Tag, Weight, Ruler, Shield, Image } from "lucide-react" // <-- MODIFIED (added Image icon)
+import { X, Package, IndianRupee, Calendar, Tag, Weight, Ruler, Shield, Image } from "lucide-react" // <-- MODIFIED (added Image icon)
 
 export default function ProductViewModal({ product, isOpen, onClose }) {
   if (!isOpen || !product) return null
@@ -99,7 +99,7 @@ export default function ProductViewModal({ product, isOpen, onClose }) {
           {/* Pricing Information */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <DollarSign className="w-5 h-5 mr-2" />
+              <IndianRupee className="w-5 h-5 mr-2" />
               Pricing & Tax
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

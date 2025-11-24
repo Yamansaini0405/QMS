@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { Save, Package, DollarSign, FileText, IndianRupee } from "lucide-react"
+import { Save, Package, FileText, IndianRupee } from "lucide-react"
 import Swal from "sweetalert2"
 
 export default function AddProduct() {

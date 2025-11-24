@@ -12,10 +12,10 @@ export default function AdditionalSettings() {
         <Settings className="w-5 h-5 text-gray-600" />
         <h2 className="text-lg font-semibold text-gray-900">Additional Settings</h2>
       </div>
-      <div className="flex items-center justify-between">
+      <div className=" md:flex items-center justify-around space-x-8">
 
 
-        <div className=" p-4 bg-gray-50 rounded-lg">
+        <div className=" p-6 py-12 md:py-16 bg-gray-50 rounded-lg min-w-[100%] md:min-w-[70%]">
           <h3 className="text-sm font-medium text-gray-700 mb-4">Validity Period Settings</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -65,7 +65,7 @@ export default function AdditionalSettings() {
             <span className="font-medium">{formData.followUpDate}</span>
           </div>
         </div>
-        <div className="flex gap-6">
+        <div className="flex flex-col gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Quotation Date</label>
             <div className="relative">

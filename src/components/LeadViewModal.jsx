@@ -1,6 +1,6 @@
 "use client"
 
-import { X, Target, User, FileText, DollarSign } from "lucide-react"
+import { X, Target, User, FileText, IndianRupee } from "lucide-react"
 
 export default function LeadViewModal({ customer, lead, isOpen, onClose }) {
   if (!isOpen || !lead) return null

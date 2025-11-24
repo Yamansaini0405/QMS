@@ -45,7 +45,7 @@ export default function QuotationSummary() {
         </div>
 
         {/* GROUP 2: Special Discount and Discount Type */}
-        <div className="bg-blue-50 px-4 py-4 rounded-lg border border-blue-200 space-y-3">
+        <div className="bg-white px-4 py-4 rounded-lg border border-gray-200 space-y-3">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
               <input
@@ -112,8 +112,8 @@ export default function QuotationSummary() {
         </div>
 
         {/* GROUP 3: Additional Charges */}
-        <div className="bg-teal-50 px-4 py-4 rounded-lg border border-teal-200">
-          <p className="text-gray-700 text-md font-medium mb-3">Additional Charges:</p>
+        <div className="bg-white px-4 py-4 rounded-lg border border-gray-200">
+          <p className="text-gray-900 text-md font-medium mb-3">Additional Charges:</p>
           <div className="flex items-center justify-between space-x-2">
             <input
               type="text"
@@ -133,9 +133,9 @@ export default function QuotationSummary() {
         </div>
 
         {/* GROUP 4: Grand Total */}
-        <div className="bg-green-50 px-4 py-4 rounded-lg border border-green-200 flex items-center justify-between">
+        <div className="bg-gray-50 px-4 py-4 rounded-lg border border-gray-200 flex items-center justify-between">
           <p className="text-gray-900 font-semibold text-md">Grand Total</p>
-          <span className="text-md font-bold text-green-700">
+          <span className="text-md font-bold text-gray-900">
             Rs. {(() => {
               const subtotal = Number.parseFloat(formData.subtotal) || 0
               const discountVal = Number.parseFloat(formData.discount) || 0
@@ -148,7 +148,7 @@ export default function QuotationSummary() {
         </div>
 
         {/* GROUP 5: Tax Rate */}
-        <div className="bg-red-50 px-4 py-4 rounded-lg border border-red-200 flex justify-between items-center">
+        <div className="bg-white px-4 py-4 rounded-lg border border-gray-200 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
             <span className="text-md text-gray-600">Tax Rate:</span>
@@ -167,10 +167,10 @@ export default function QuotationSummary() {
         </div>
 
         {/* GROUP 6: Total Amount */}
-        <div className="bg-green-600 px-4 py-4 rounded-lg">
+        <div className="bg-gray-50 px-4 py-4 rounded-lg border border-gray-200">
           <div className="flex justify-between items-center">
-            <span className="text-lg font-semibold text-white">Total Amount:</span>
-            <span className="text-lg font-bold text-white">Rs. {formData.totalAmount}</span>
+            <span className="text-lg font-semibold text-black">Total Amount:</span>
+            <span className="text-lg font-bold text-black">Rs. {formData.totalAmount}</span>
           </div>
         </div>
       </div>

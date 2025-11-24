@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Target, User, FileText, DollarSign, Mail, Phone, Search, MessageSquare, UserCog } from "lucide-react"
+import { Target, User, FileText, Search, MessageSquare, UserCog } from "lucide-react"
 import Swal from "sweetalert2"
 
 
@@ -14,7 +14,7 @@ export default function AddLeads() {
     phone: "",
     address: "",
     gst_number: "",
-    lead_status: "NEW",
+    lead_status: "PROPOSAL",
     lead_source: "WEBSITE",
     priority: "MEDIUM",
     assigned_to: "",
@@ -275,7 +275,7 @@ export default function AddLeads() {
         phone: "",
         address: "",
         gst_number: "",
-        lead_status: "NEW",
+        lead_status: "PROPOSAL",
         lead_source: "WEBSITE",
         priority: "MEDIUM",
         assigned_to: "",
@@ -499,7 +499,6 @@ export default function AddLeads() {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="NEW">New</option>
                   <option value="QUALIFIED">Qualified</option>
                   <option value="PROPOSAL">Proposal</option>
                   <option value="CONVERTED">Converted</option>
@@ -517,7 +516,6 @@ export default function AddLeads() {
                   <option value="WEBSITE">Website</option>
                   <option value="REFERRAL">Referral</option>
                   <option value="SOCIAL_MEDIA">Social Media</option>
-                  <option value="QUOTATION">Quotation</option>
                 </select>
               </div>
 

@@ -4,8 +4,6 @@ import { useState, useEffect } from "react"
 import {
     FileText,
     Search,
-    Eye,
-    DollarSign,
     User,
     Building2,
     Phone,

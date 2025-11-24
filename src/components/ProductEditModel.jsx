@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react" // <-- MODIFIED
-import { X, Package, DollarSign, FileText, Save, Image } from "lucide-react" // <-- MODIFIED
+import { X, Package, IndianRupee, FileText, Save, Image } from "lucide-react" // <-- MODIFIED
 import Swal from "sweetalert2"
 
 export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
@@ -343,7 +343,7 @@ export default function ProductEditModal({ product, isOpen, onClose, onSave }) {
 
           <div className="bg-gray-50 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <DollarSign className="w-5 h-5 mr-2" />
+              <IndianRupee className="w-5 h-5 mr-2" />
               Pricing & Tax
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

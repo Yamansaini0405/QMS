@@ -7,7 +7,7 @@ import {
   FileText,
   Clock,
   CheckCircle,
-  DollarSign,
+  IndianRupee,
   Search,
   Download,
   Plus,
@@ -140,7 +140,7 @@ const Quotations = () => {
     {
       title: "Total Value",
       value: `Rs. ${totalValue.toFixed(2)}`,
-      icon: DollarSign,
+      icon: IndianRupee,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
     },
@@ -358,6 +358,49 @@ const Quotations = () => {
     }
   }
 
+  const handleStatusChange = async (quotation, id, newStatus) => {
+    const payload = {
+      status: newStatus,
+    }
+
+
+    try {
+
+      Swal.fire({
+        title: "Updating...",
+        text: "Please wait while we update your Quotation status.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
+
+      const res = await fetch(`${baseUrl}/accounts/api/quotations/${id}/status/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        throw new Error("Failed to update quotation status")
+      }
+      setCustomers((prev) =>
+        prev.map((customer) => ({
+          ...customer,
+          quotations: customer.quotations.map((q) => (q.id === id ? { ...q, status: newStatus } : q)),
+        })),
+      )
+
+      Swal.fire("Updated!", "Status updated.", "success")
+    } catch (err) {
+      console.error("❌ Error updating quotation status:", err)
+      Swal.fire("Error!", "Error updating status. Please try again.", "error")
+    }
+  }
+
   const handleExport = async () => {
     const pdfUrls = filteredCustomers
       .flatMap((customer) => customer.quotations || [])
@@ -554,7 +597,7 @@ const Quotations = () => {
                 .map((customer, index) => (
                   <>
                     {/* Customer Row */}
-                    <tr key={customer.id} className="hover:bg-gray-50 transition-colors duration-200">
+                    <tr key={customer.id} className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer" onClick={() => toggleExpand(customer.id)}>
                       <td className="px-6 py-4 text-gray-600">{index + 1}</td>
                       <td className="px-6 py-4 font-medium text-gray-900 flex items-center justify-start gap-2">
                         <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
@@ -630,11 +673,18 @@ const Quotations = () => {
                                     <td className="px-4 py-2 font-medium text-gray-900">{quotation.quotation_number}</td>
                                     <td className="px-4 py-2 font-semibold text-gray-900">₹{quotation.total}</td>
 
-                                    <td className="px-6 py-4">
-                                      <div className="flex items-center space-x-2">
-                                        {getStatusIcon(quotation.status)}
-                                        <span className={getStatusBadge(quotation.status)}>{quotation.status}</span>
-                                      </div>
+                                    <td className="px-4 py-2">
+                                      <select
+                                        value={quotation.status}
+                                        onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
+                                        className={`${getStatusBadge(quotation.status)} text-md px-3 py-2  rounded-md focus:ring-2 `}
+                                      >
+                                        <option value="SENT">{getStatusIcon("SENT")}Sent</option>
+                                        <option value="PENDING">{getStatusIcon("PENDING")}Pending</option>
+                                        <option value="ACCEPTED">{getStatusIcon("ACCEPTED")}Accepted</option>
+                                        <option value="REJECTED">{getStatusIcon("REJECTED")}Rejected</option>
+                                        <option value="REVISED">{getStatusIcon("REVISED")}Revised</option>
+                                      </select>
                                     </td>
                                     <td className="px-4 py-2">{new Date(quotation.created_at).toLocaleDateString()}</td>
                                     <td className="px-4 py-2">{quotation.follow_up_date || "-"}</td>
