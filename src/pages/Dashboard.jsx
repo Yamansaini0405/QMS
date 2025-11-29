@@ -164,7 +164,7 @@ const Dashboard = () => {
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {topPerformers.map((performer, index) => (
+            {topPerformers.slice(0,3).map((performer, index) => (
               <div
                 key={performer.user_id}
                 className="relative p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200"
