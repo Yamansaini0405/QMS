@@ -258,7 +258,7 @@ export default function LeadDetailsPage() {
                                 )}
 
                             </div>
-                            <div>
+                            <div className="hidden md:block">
                                 <span
                                     className={`px-3 py-1 rounded-full text-sm font-semibold ${statusColors.badge} ${statusColors.text}`}
                                 >

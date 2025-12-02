@@ -26,7 +26,7 @@ export default function ListOfLeadsPage() {
         const fetchConvertedLeads = async () => {
             try {
                 setLoading(true)
-                const response = await fetch(`${baseUrl}/quotations/api/leads/?filter=converted`, {
+                const response = await fetch(`${baseUrl}/quotations/api/leads/`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -282,9 +282,9 @@ export default function ListOfLeadsPage() {
                             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                                 <CheckCircle className="w-6 h-6 text-green-600" />
                             </div>
-                            <h1 className="text-3xl font-bold text-gray-900">Converted Leads</h1>
+                            <h1 className="text-3xl font-bold text-gray-900">All Leads</h1>
                         </div>
-                        <p className="text-gray-600">Track and manage successfully converted leads</p>
+                        <p className="text-gray-600">Track and manage all leads</p>
                     </div>
                 </div>
             </div>
@@ -292,14 +292,14 @@ export default function ListOfLeadsPage() {
 
             {/* Search and Filter (unchanged) */}
             <div className="max-w-full mx-auto">
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-6">
                     <div className="flex items-center gap-3 mb-4">
                         <Search className="w-5 h-5 text-gray-400" />
                         <h2 className="text-lg font-semibold text-gray-900">Filters & Search</h2>
-                        <span className="text-sm text-gray-500">({filteredLeads.length} total leads found)</span>
+                        <span className="hidden md:blocktext-sm text-gray-500">({filteredLeads.length} total leads found)</span>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1 md:gap-4">
                         <div className="flex-1 relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                             <input
@@ -380,15 +380,36 @@ export default function ListOfLeadsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-4 text-sm text-gray-600">{lead.customer.company_name || "-"}</td>
-                                            <td className="text-center"><span className="px-2 py-2 rounded-md text-sm bg-green-100 text-green-800">{lead.status}</span></td>
-                                            <td className="text-center"><span className="px-2 py-2 rounded-md text-sm bg-blue-100 text-blue-800">{lead.priority}</span></td>
+                                            <td className="px-4 py-4 text-sm text-gray-600"><select
+                                                value={lead.status}
+                                                onChange={(e) => handleUpdateLead({ status: e.target.value }, lead.id)}
+                                                className={` inline-block px-1 py-1 rounded-md text-sm font-semibold cursor-pointer  border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200`}
+                                            >
+                                                {STATUS_OPTIONS.map((status) => (
+                                                    <option key={status} value={status}>
+                                                        {status}
+                                                    </option>
+                                                ))}
+                                            </select></td>
+                                            <td className="px-4 py-4 text-sm text-gray-600"><select
+                                                value={lead.priority}
+                                                onChange={(e) => handleUpdateLead({ priority: e.target.value }, lead.id)}
+                                                className={`inline-block px-1 py-1 rounded-md text-sm font-semibold cursor-pointer border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200`}
+                                            >
+                                                {PRIORITY_OPTIONS.map((priority) => (
+                                                    <option key={priority} value={priority}>
+                                                        {priority}
+                                                    </option>
+                                                ))}
+
+                                            </select></td>
                                             <td className="px-6 py-4 text-sm text-gray-600">{lead.assigned_to?.name || "-"}</td>
                                             <td className="px-6 py-4 text-sm text-center text-gray-600"><button
                                                 onClick={() => handleDeleteLead(lead.id)}
-                                                className="p-1 font-bold text-gray-400 hover:text-red-600"
+                                                className="p-1 text-gray-400 hover:text-red-600"
                                                 title="Delete Lead"
                                             >
-                                                <Trash className="w-4.5 h-4.5" />
+                                                <Trash className="w-4 h-4" />
                                             </button></td>
 
                                         </tr>

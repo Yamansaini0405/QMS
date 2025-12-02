@@ -890,7 +890,7 @@ export default function Leads() {
 
                                     {/* Actions */}
                                     {permissions?.lead?.includes("delete") && (
-                                      <td className="px-4 py-2 flex space-x-2">
+                                      <td className="px-4 py-2 flex space-x-1 text-center">
                                         <button
                                           onClick={() => handleDeleteLead(lead.id, customer)}
                                           className="p-1 text-gray-400 hover:text-red-600"
@@ -898,6 +898,11 @@ export default function Leads() {
                                         >
                                           <Trash className="w-4 h-4" />
                                         </button>
+                                        <Link to={`/leads/view/${lead.id}`}>
+                                          <button className=" bg-gray-200  px-2 py-0.5 rounded-md cursor-pointer hover:bg-gray-300 text-gray-700">
+                                          view
+                                        </button>
+                                        </Link>
                                       </td>
                                     )}
                                   </tr>
