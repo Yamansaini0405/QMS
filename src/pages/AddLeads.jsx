@@ -69,7 +69,7 @@ export default function AddLeads() {
     // /api/customers?search=${encodeURIComponent(query)}
     try {
       const token = localStorage.getItem("token")
-  const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
+      const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
@@ -132,7 +132,7 @@ export default function AddLeads() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-  `${baseUrl}/accounts/api/users/`,
+        `${baseUrl}/accounts/api/users/`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -246,7 +246,7 @@ export default function AddLeads() {
 
 
       const response = await fetch(
-  `${baseUrl}/quotations/api/leads/create/`,
+        `${baseUrl}/quotations/api/leads/create/`,
         {
           method: "POST",
           headers: {
@@ -358,7 +358,7 @@ export default function AddLeads() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column - Form */}
         <div className="lg:col-span-2 space-y-6">
           {/* Contact Information */}
@@ -460,26 +460,26 @@ export default function AddLeads() {
                 </div>
 
                 <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                <input
-                  placeholder="Enter address"
-                  value={formData.address}
-                  onChange={(e) => updateFormData("address", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Gst No. (optional)</label>
-                <input
-                  placeholder="Enter gst no."
-                  value={formData.gst_number}
-                  onChange={(e) => updateFormData("gst_number", e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                  <input
+                    placeholder="Enter address"
+                    value={formData.address}
+                    onChange={(e) => updateFormData("address", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Gst No. (optional)</label>
+                  <input
+                    placeholder="Enter gst no."
+                    value={formData.gst_number}
+                    onChange={(e) => updateFormData("gst_number", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
 
               </div>
-              
+
             </div>
           </div>
 
@@ -514,8 +514,12 @@ export default function AddLeads() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="WEBSITE">Website</option>
+                  <option value="COLD_CALL">Cold Call</option>
+                  <option value="WALK_IN">Walk In</option>
                   <option value="REFERRAL">Referral</option>
                   <option value="SOCIAL_MEDIA">Social Media</option>
+                  <option value="EMAIL">Email</option>
+
                 </select>
               </div>
 
@@ -705,7 +709,7 @@ export default function AddLeads() {
         </div>
 
         {/* Right Column - Summary */}
-        <div className="space-y-6">
+        {/* <div className="space-y-6">
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center gap-2 mb-6">
               <Target className="w-5 h-5 text-gray-600" />
@@ -746,7 +750,7 @@ export default function AddLeads() {
 
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
       <div className="mt-4 w-full">
         <button

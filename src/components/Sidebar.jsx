@@ -66,6 +66,7 @@ const Sidebar = ({ open, onClose }) => {
       subItems: [
         { title: "Create Lead", path: "/leads/create", icon: Plus },
         { title: "Leads", path: "/leads", icon: LayoutDashboard },
+        { title: "List of Leads", path: "/leads/all", icon: Menu },
         { title: "Converted Leads", path: "/leads/converted", icon: TargetIcon },
       ],
     },

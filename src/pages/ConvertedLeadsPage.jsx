@@ -16,7 +16,7 @@ export default function ConvertedLeadsPage() {
     const fetchConvertedLeads = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`${baseUrl}/quotations/api/leads/`, {
+        const response = await fetch(`${baseUrl}/quotations/api/leads/?filter=converted`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -166,50 +166,6 @@ export default function ConvertedLeadsPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Total Converted */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Total Converted</p>
-                <p className="text-4xl font-bold text-gray-900 mt-2">{totalConverted}</p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-
-          {/* With Quotations */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">With Quotations</p>
-                <p className="text-4xl font-bold text-gray-900 mt-2">{withQuotations}</p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-
-          {/* Avg Conversion Time */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Avg Conversion Time</p>
-                <p className="text-4xl font-bold text-gray-900 mt-2">{avgConversionTime}d</p>
-              </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-orange-600" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Search and Filter */}
       <div className="">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -288,7 +244,7 @@ export default function ConvertedLeadsPage() {
                       <td className="px-6 py-4 text-sm text-gray-600">{lead.customer.email}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{lead.customer.phone}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{lead.assigned_to?.name || "-"}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{formatDate(lead.updated_at)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{formatDate(lead.converted_date)}</td>
 
                     </tr>
                   ))}
