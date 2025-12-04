@@ -26,6 +26,7 @@ import ConvertedLeadsPage from "./pages/ConvertedLeadsPage"
 import ViewLead from "./pages/ViewLead"
 import LeadDetailsPage from "./pages/LeadDetailsPage"
 import ListOfLeadsPage from "./pages/ListOfLeadsPage"
+import TodaysFollowups from "./pages/TodaysFollowups"
 
 
 function App() {
@@ -78,6 +79,7 @@ function App() {
               <Route path="/members" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ViewMembers /></ProtectedRoute>} /> 
               <Route path="/profile" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><ProfilePage /></ProtectedRoute>} /> 
               <Route path="/leads/converted" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><ConvertedLeadsPage /></ProtectedRoute>} />
+              <Route path="/leads/followups" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><TodaysFollowups /></ProtectedRoute>} />
               {/* ...other admin routes... */}
             </Routes>
           </Layout>
