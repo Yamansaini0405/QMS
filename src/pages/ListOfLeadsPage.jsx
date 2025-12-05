@@ -5,7 +5,7 @@ import { Search, Download, CheckCircle, TrendingUp, Clock, AlertCircle, ChevronL
 import Swal from "sweetalert2"
 
 const baseUrl = import.meta.env.VITE_BASE_URL
-const STATUS_OPTIONS = ["NEW", "PENDING", "QUALIFIED", "LOST", "CONVERTED"];
+const STATUS_OPTIONS = ["PENDING", "QUALIFIED", "LOST", "CONVERTED"];
 const PRIORITY_OPTIONS = ["LOW", "MEDIUM", "HIGH"];
 
 export default function ListOfLeadsPage() {

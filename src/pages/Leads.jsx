@@ -837,7 +837,7 @@ export default function Leads() {
                                         onChange={(e) => handleStatusChange(lead, lead.id, e.target.value)}
                                         className="px-3 py-1.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800"
                                       >
-                                        <option value="NEW">New</option>
+                                        <option value="LOST">Lost</option>
                                         <option value="PENDING">Pending</option>
                                         <option value="QUALIFIED">Qualified</option>
                                         <option value="CONVERTED">Converted</option>
