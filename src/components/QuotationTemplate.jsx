@@ -1,6 +1,7 @@
 import Logo from "../assets/Godrej_Logo.svg.png"
 import EurekaLogo from "../assets/logo-eureka-forbes.png"
 import CarysilLogo from "../assets/Carysil-Logo-Vector.svg-.png"
+import { Package } from "lucide-react"
 
 function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
   return (
@@ -127,7 +128,19 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
                       return (
                         <tr key={index}>
                           <td className="border border-gray-300 p-3">{index + 1}</td>
-                          <td className="border border-gray-300 p-3">{product.name || "[Product/Service]"}</td>
+                          <td className="border border-gray-300 p-3 flex items-center space-x-3">
+                            <span>
+                              {product.imageUrl ? (
+                            <img
+                              src={product.imageUrl}
+                              alt={product.name}
+                              className="w-10 h-10 object-cover rounded-md border border-gray-200"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">
+                              <Package className="w-5 h-5 text-gray-400" />
+                            </div>
+                          )}</span><span>{product.name || "[Product/Service]"}</span></td>
                           <td className="border border-gray-300 p-3 text-center">{qty}</td>
                           <td className="border border-gray-300 p-3 text-right">Rs. {rate.toFixed(2)}</td>
 
@@ -170,11 +183,11 @@ function QuotationTemplate({ formData, forPrint = false, availableTerms }) {
                 )}
               </div>
             )}
-
-            <div className="flex justify-between">
+            {formData.additional_charge_amount > 0 && ( <div className="flex justify-between">
               <span>Additional Charges:</span>
               <span>+ Rs. {formData.additional_charge_amount || "0.00"}</span>
-            </div>
+            </div>)}
+            
             <div className="flex items-center justify-between space-x-2 mt-1">
               <p className="text-gray-900 font-semibold text-sm">Grand Total</p>
               <span className="text-md font-bold text-gray-900">

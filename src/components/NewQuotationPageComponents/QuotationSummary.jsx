@@ -38,7 +38,7 @@ export default function QuotationSummary() {
             <span className="text-md text-gray-600">Items:</span>
             <span className="text-md font-medium text-gray-900">{formData.products.length}</span>
           </div>
-          <div className="bg-white px-4 py-3 flex justify-between items-center">
+          <div className="bg-gray-50 px-4 py-3 flex justify-between items-center">
             <span className="text-md text-gray-600">Subtotal:</span>
             <span className="text-md font-medium text-gray-900">Rs. {formData.subtotal}</span>
           </div>

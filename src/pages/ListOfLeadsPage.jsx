@@ -1,12 +1,112 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Search, Download, CheckCircle, TrendingUp, Clock, AlertCircle, ChevronLeft, ChevronRight, Phone, Trash } from "lucide-react"
+import { Search, Download, CheckCircle, TrendingUp, Clock, AlertCircle, ChevronLeft, ChevronRight, Phone, Trash, ArrowRightLeft, X, Building, Building2 } from "lucide-react"
 import Swal from "sweetalert2"
+import { Link } from "react-router-dom"
 
 const baseUrl = import.meta.env.VITE_BASE_URL
-const STATUS_OPTIONS = ["PENDING", "QUALIFIED", "LOST", "CONVERTED"];
-const PRIORITY_OPTIONS = ["LOW", "MEDIUM", "HIGH"];
+const STATUS_OPTIONS = ["ALL", "PENDING", "QUALIFIED", "LOST", "CONVERTED"];
+const PRIORITY_OPTIONS = ["ALL", "LOW", "MEDIUM", "HIGH"];
+
+const AssignLeadModal = ({ isOpen, onClose, lead, salespersons }) => {
+    if (!isOpen) return null
+
+    const [searchTerm, setSearchTerm] = useState("")
+    const [selectedSalespersonId, setSelectedSalespersonId] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
+
+    const filteredSalespersons = salespersons.filter((sp) =>
+        sp?.username.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    const handleConfirm = async () => {
+        if (!selectedSalespersonId) {
+            console.error("No salesperson ID is selected.")
+            return
+        }
+
+        setIsLoading(true) // Start loading
+
+        try {
+            Swal.fire({
+                title: "Reassigning...",
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+            })
+            const response = await fetch(`${baseUrl}/quotations/api/leads/${lead.id}/assign/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({
+                    assigned_to_id: selectedSalespersonId,
+                }),
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.message || `API Error: ${response.status}`)
+            }
+            Swal.fire("Success!", "Lead has been reassigned.", "success")
+
+            onClose()
+            window.location.reload()
+        } catch (error) {
+            console.error("Failed to assign lead:", error)
+            // You could add another state here to display an error message to the user
+        } finally {
+            setIsLoading(false) // Stop loading, whether it succeeded or failed
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold">Reassign Lead</h2>
+                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+                <p className="mb-4 text-gray-600">
+                    Reassigning lead for: <span className="font-medium text-gray-800">{lead.customer?.name}</span>
+                </p>
+                <input
+                    type="text"
+                    placeholder="Search salesperson..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg mb-4"
+                />
+                <div className="max-h-60 overflow-y-auto border rounded-lg">
+                    {filteredSalespersons.map((sp) => (
+                        <div
+                            key={sp.id}
+                            onClick={() => setSelectedSalespersonId(sp.id)}
+                            className={`p-3 cursor-pointer hover:bg-gray-100 ${selectedSalespersonId === sp.id ? "bg-blue-100 font-semibold" : ""
+                                }`}
+                        >
+                            {sp.username}({sp.role})
+                        </div>
+                    ))}
+                </div>
+                <div className="mt-6 flex justify-end space-x-3">
+                    <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleConfirm}
+                        disabled={!selectedSalespersonId}
+                        className="px-4 py-2 bg-gray-900 text-white rounded-lg disabled:bg-gray-400 hover:bg-gray-800"
+                    >
+                        Confirm Assignment
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
 
 export default function ListOfLeadsPage() {
     const [leads, setLeads] = useState([])
@@ -15,6 +115,12 @@ export default function ListOfLeadsPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [currentPage, setCurrentPage] = useState(1) // New state for current page
+    const [leadToReassign, setLeadToReassign] = useState(null)
+    const [isAssigneeModalOpen, setIsAssigneeModalOpen] = useState(false)
+    const [salespersons, setSalespersons] = useState([])
+
+    const [statusFilter, setStatusFilter] = useState("ALL")
+    const [priorityFilter, setPriorityFilter] = useState("ALL")
 
     // Leads per page constant
     const LEADS_PER_PAGE = 30
@@ -57,16 +163,44 @@ export default function ListOfLeadsPage() {
     useEffect(() => {
         const filtered = leads.filter((lead) => {
             const searchLower = searchTerm.toLowerCase()
-            return (
+
+            const searchMatch = (
                 lead.customer.name.toLowerCase().includes(searchLower) ||
                 lead.customer.email.toLowerCase().includes(searchLower) ||
                 lead.customer.company_name.toLowerCase().includes(searchLower) ||
                 lead.customer.phone.includes(searchTerm)
             )
+
+            const statusMatch = statusFilter === "ALL" || lead.status === statusFilter
+
+            const priorityMatch = priorityFilter === "ALL" || lead.priority === priorityFilter
+
+            return searchMatch && statusMatch && priorityMatch
         })
+
         setFilteredLeads(filtered)
         setCurrentPage(1) // Important: Reset page when filtering
-    }, [searchTerm, leads])
+
+    }, [searchTerm, leads, statusFilter, priorityFilter])
+
+    useEffect(() => {
+        const fetchSalespersons = async () => {
+            try {
+                const token = localStorage.getItem("token")
+                const res = await fetch(`${baseUrl}/accounts/api/users/`, { // Assuming this is your endpoint
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (!res.ok) throw new Error("Failed to fetch salespeople")
+                const data = await res.json()
+                setSalespersons(data.data.filter((sp) => sp.phone_number !== null) || [])
+            } catch (error) {
+                console.error("❌ Error fetching salespeople:", error)
+            }
+        }
+        fetchSalespersons()
+    }, [])
 
     // --- PAGINATION LOGIC ---
     const totalPages = Math.ceil(filteredLeads.length / LEADS_PER_PAGE)
@@ -272,6 +406,12 @@ export default function ListOfLeadsPage() {
         }
     }
 
+    //reomove customer deoendency
+    const handleOpenAssignModal = (lead) => {
+        setLeadToReassign(lead)
+        setIsAssigneeModalOpen(true)
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 space-y-6 "> {/* Added p-8 for better spacing */}
             {/* Header (unchanged) */}
@@ -299,7 +439,7 @@ export default function ListOfLeadsPage() {
                         <span className="hidden md:blocktext-sm text-gray-500">({filteredLeads.length} total leads found)</span>
                     </div>
 
-                    <div className="flex items-center gap-1 md:gap-4">
+                    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-4">
                         <div className="flex-1 relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                             <input
@@ -310,10 +450,37 @@ export default function ListOfLeadsPage() {
                                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                             />
                         </div>
-                        <button className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        >
+                            <option value="ALL" disabled>Filter by Status</option>
+                            {STATUS_OPTIONS.map((status) => (
+                                <option key={status} value={status}>
+                                    {status === "ALL" ? "All Statuses" : status}
+                                </option>
+                            ))}
+                        </select>
+
+                        <select
+                            value={priorityFilter}
+                            onChange={(e) => setPriorityFilter(e.target.value)}
+                            className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        >
+                            <option value="ALL" disabled>Filter by Priority</option>
+                            {PRIORITY_OPTIONS.map((priority) => (
+                                <option key={priority} value={priority}>
+                                    {priority === "ALL" ? "All Priorities" : priority}
+                                </option>
+                            ))}
+                        </select>
+
+                        <button className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors border border-gray-300 w-full md:w-auto"
                             onClick={handleExport}>
                             <Download className="w-5 h-5" />
-                            <span className="text-sm font-medium">Export All {totalConverted}</span>
+                            <span className="text-sm font-medium">Export {totalConverted}</span>
                         </button>
                     </div>
                 </div>
@@ -323,7 +490,7 @@ export default function ListOfLeadsPage() {
             <div className="max-w-7xl mx-auto">
                 {loading ? (
                     <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-                        <p className="text-gray-600">Loading converted leads...</p>
+                        <p className="text-gray-600">Loading leads...</p>
                     </div>
                 ) : error ? (
                     <div className="bg-white rounded-lg border border-red-200 p-8 flex items-center gap-3">
@@ -344,7 +511,7 @@ export default function ListOfLeadsPage() {
                                     <tr className="border-b border-gray-200 bg-gray-50">
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Customer</th>
-                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Company</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Follow Up</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Priority</th>
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Assigned To</th>
@@ -367,11 +534,11 @@ export default function ListOfLeadsPage() {
                                                     <div>
                                                         <p className="font-medium text-gray-900">{lead.customer.name}</p>
 
-                                                        <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
+                                                        <div className="flex items-center space-x-4 text-sm text-gray-500 mt-">
 
                                                             <span className="flex items-center space-x-1">
-                                                                <Phone className="w-3 h-3" />
-                                                                <span>{lead.customer.phone}</span>
+                                                                <Building2 className="w-3 h-3" />
+                                                                <span>{lead.customer.company_name || "-"}</span>
                                                             </span>
                                                         </div>
                                                     </div>
@@ -379,7 +546,7 @@ export default function ListOfLeadsPage() {
 
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-4 text-sm text-gray-600">{lead.customer.company_name || "-"}</td>
+                                            <td className="px-4 py-4 text-sm text-gray-600">{lead.next_date || "No Follow-up"}</td>
                                             <td className="px-4 py-4 text-sm text-gray-600"><select
                                                 value={lead.status}
                                                 onChange={(e) => handleUpdateLead({ status: e.target.value }, lead.id)}
@@ -403,14 +570,32 @@ export default function ListOfLeadsPage() {
                                                 ))}
 
                                             </select></td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">{lead.assigned_to?.name || "-"}</td>
-                                            <td className="px-6 py-4 text-sm text-center text-gray-600"><button
-                                                onClick={() => handleDeleteLead(lead.id)}
-                                                className="p-1 text-gray-400 hover:text-red-600"
-                                                title="Delete Lead"
-                                            >
-                                                <Trash className="w-4 h-4" />
-                                            </button></td>
+                                            <td className="px-4 py-2">
+                                                <div className="flex items-center space-x-">
+                                                    <span>{lead.assigned_to?.name || "Unassigned"}</span>
+                                                    <button
+                                                        onClick={() => handleOpenAssignModal(lead)}
+                                                        title="Reassign Lead"
+                                                        className="p-1 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-100"
+                                                    >
+                                                        <ArrowRightLeft className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-center text-gray-600 flex items-center justify-center ">
+                                                <button
+                                                    onClick={() => handleDeleteLead(lead.id)}
+                                                    className="p-1 text-gray-400 hover:text-red-600"
+                                                    title="Delete Lead"
+                                                >
+                                                    <Trash className="w-4 h-4" />
+                                                </button>
+                                                <Link to={`/leads/view/${lead.id}`}>
+                                                    <button className=" bg-gray-200  px-2 py-0.5 rounded-md cursor-pointer hover:bg-gray-300 text-gray-700">
+                                                        view
+                                                    </button>
+                                                </Link>
+                                            </td>
 
                                         </tr>
                                     ))}
@@ -450,6 +635,12 @@ export default function ListOfLeadsPage() {
                     </div>
                 </div>
             )}
+            <AssignLeadModal
+                isOpen={isAssigneeModalOpen}
+                onClose={() => setIsAssigneeModalOpen(false)}
+                lead={leadToReassign}
+                salespersons={salespersons}
+            />
         </div>
     )
 }
