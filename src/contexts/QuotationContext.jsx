@@ -62,6 +62,8 @@ export const QuotationProvider = ({ children }) => {
     const [customerSearchQuery, setCustomerSearchQuery] = useState("");
     const [customerSearchResults, setCustomerSearchResults] = useState([]);
     const [isSearchingCustomers, setIsSearchingCustomers] = useState(false);
+    const [companySearchResults, setCompanySearchResults] = useState([]);
+    const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
     const [availableTerms, setAvailableTerms] = useState([]);
     const [selectedTerms, setSelectedTerms] = useState([]);
     const [termsSearchQuery, setTermsSearchQuery] = useState("");
@@ -441,7 +443,7 @@ export const QuotationProvider = ({ children }) => {
                 } else {
                     Swal.fire("Validation Error", "Please fix errors in the form.", "error");
                 }
-                setIsGeneratingPDF(false); 
+                setIsGeneratingPDF(false);
                 return;
             }
 
@@ -901,7 +903,9 @@ export const QuotationProvider = ({ children }) => {
         }));
         setCustomerSearchQuery("");
         setShowCustomerSearch(false);
+        setShowCompanyDropdown(false); // Add this line
         setCustomerSearchResults([]);
+        setCompanySearchResults([]); // Add this line
     };
 
     const handleCustomerSearchChange = (e) => {
@@ -915,6 +919,38 @@ export const QuotationProvider = ({ children }) => {
             setCustomerSearchResults([]);
         }
     };
+
+    const handleCompanySearchChange = async (e) => {
+        const query = e.target.value;
+        updateFormData("companyName", query);
+
+        if (!query.trim()) {
+            setShowCompanyDropdown(false);
+            setCompanySearchResults([]);
+            return;
+        }
+
+        setShowCompanyDropdown(true);
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${baseUrl}/quotations/api/customers/unfiltered/`, {
+                headers: { "Authorization": `Bearer ${token}` },
+            });
+            const data = await response.json();
+
+            // Filter specifically for the company dropdown
+            const filtered = (data.data || []).filter((customer) =>
+                (customer.company_name && customer.company_name.toLowerCase().includes(query.toLowerCase())) ||
+                (customer.name && customer.name.toLowerCase().includes(query.toLowerCase()))
+            );
+            setCompanySearchResults(filtered);
+        } catch (error) {
+            setCompanySearchResults([]);
+        }
+    };
+
+    // 3. Make sure to update selectCustomer to close the company dropdown
+    
 
     const handleTermSelection = (termId) => {
         const updatedSelectedTerms = selectedTerms.includes(termId)
@@ -1000,6 +1036,9 @@ export const QuotationProvider = ({ children }) => {
                 productSearchStates, setProductSearchStates,
                 productSearchResults, setProductSearchResults,
                 isSearchingProducts, setIsSearchingProducts,
+                showCompanyDropdown, setShowCompanyDropdown,
+                companySearchResults, setCompanySearchResults,
+                handleCompanySearchChange,
                 formData, setFormData, resetFormData,
                 updateFormData,
                 updateProduct,

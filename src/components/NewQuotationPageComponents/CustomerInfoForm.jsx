@@ -4,7 +4,8 @@ import { useQuotation } from "../../contexts/QuotationContext";
 export default function CustomerInfoForm() {
   const {
     customerSearchQuery, handleCustomerSearchChange, showCustomerSearch, setShowCustomerSearch,
-    customerSearchResults, isSearchingCustomers, selectCustomer, formData, updateFormData, formErrors
+    customerSearchResults, isSearchingCustomers, selectCustomer, formData, updateFormData, formErrors, showCompanyDropdown, setShowCompanyDropdown,
+    companySearchResults,handleCompanySearchChange
   } = useQuotation();
 
   return (
@@ -62,8 +63,8 @@ export default function CustomerInfoForm() {
               value={formData.customerName}
               onChange={(e) => updateFormData("customerName", e.target.value)}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${formErrors.customerName
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-blue-500"
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
                 }`}
             />
             {formErrors.customerName && (
@@ -74,23 +75,36 @@ export default function CustomerInfoForm() {
           </div>
 
           {/* Company Name */}
-          <div>
+          <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Company Name <span className="text-red-500">*</span>
             </label>
             <input
-              placeholder="Enter company name"
+              placeholder="Search company..."
               value={formData.companyName}
-              onChange={(e) => updateFormData("companyName", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${formErrors.companyName
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-blue-500"
+              onChange={handleCompanySearchChange}
+              onFocus={() => {
+                if (formData.companyName.trim()) setShowCompanyDropdown(true);
+              }}
+              onBlur={() => setTimeout(() => setShowCompanyDropdown(false), 200)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${formErrors.companyName ? "border-red-500" : "border-gray-300"
                 }`}
             />
-            {formErrors.companyName && (
-              <p className="text-red-500 text-sm mt-1">
-                {formErrors.companyName}
-              </p>
+
+            {/* ONLY use companySearchResults here */}
+            {showCompanyDropdown && companySearchResults.length > 0 && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                {companySearchResults.map((customer) => (
+                  <div
+                    key={customer.id}
+                    onMouseDown={() => selectCustomer(customer)}
+                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="font-medium text-gray-900">{customer.company_name}</div>
+                    <div className="text-sm text-gray-600">{customer.name}</div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -109,8 +123,8 @@ export default function CustomerInfoForm() {
               onChange={(e) => updateFormData("phone", e.target.value)}
               maxLength={10}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${formErrors.phone
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-blue-500"
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
                 }`}
             />
             {formErrors.phone && (
@@ -128,8 +142,8 @@ export default function CustomerInfoForm() {
               value={formData.email}
               onChange={(e) => updateFormData("email", e.target.value)}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${formErrors.email
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-blue-500"
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-blue-500"
                 }`}
             />
             {formErrors.email && (
