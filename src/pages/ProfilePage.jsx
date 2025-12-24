@@ -315,7 +315,6 @@ export default function ProfilePage() {
                   <>
                     <img src={signature} alt="Signature" className="max-h-24 mb-4 object-contain bg-white p-2 rounded border" />
                     <div className="flex gap-2">
-                      <button onClick={() => fileInputRef.current.click()} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Upload className="w-5 h-5"/></button>
                       <button onClick={handleDeleteSignature} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-5 h-5"/></button>
                     </div>
                   </>
