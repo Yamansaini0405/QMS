@@ -14,7 +14,7 @@ export default function AddLeads() {
     phone: "",
     address: "",
     gst_number: "",
-    lead_status: "PROPOSAL",
+    lead_status: "PROSPECTIVE",
     lead_source: "WEBSITE",
     priority: "MEDIUM",
     assigned_to: "",
@@ -275,7 +275,7 @@ export default function AddLeads() {
         phone: "",
         address: "",
         gst_number: "",
-        lead_status: "PROPOSAL",
+        lead_status: "PROSPECTIVE",
         lead_source: "WEBSITE",
         priority: "MEDIUM",
         assigned_to: "",
@@ -500,7 +500,8 @@ export default function AddLeads() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="QUALIFIED">Qualified</option>
-                  <option value="PROPOSAL">Proposal</option>
+                  <option value="PROSPECTIVE">Prospective</option>
+                  <option value="NEGOTIATION">Negotiation</option>
                   <option value="CONVERTED">Converted</option>
                 </select>
               </div>

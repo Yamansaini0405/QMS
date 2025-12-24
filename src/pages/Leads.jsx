@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trash2, Building2, FileText, ArrowRightLeft, X } from "lucide-react"
+import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trash2, Building2, FileText, ArrowRightLeft, X, TrendingDown } from "lucide-react"
 import LeadViewModal from "../components/LeadViewModal"
 import { Link } from "react-router-dom"
 import QuotationEditModal from "@/components/QuotationEditModel"
@@ -219,9 +219,9 @@ export default function Leads() {
   }, [])
 
   const totalLeads = customers.map((c => c.leads ? c.leads.length : 0)).reduce((a, b) => a + b, 0)
-  const newLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "NEW").length : 0)).reduce((a, b) => a + b, 0)
+  const lostLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "LOST").length : 0)).reduce((a, b) => a + b, 0)
   const qualifiedLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "QUALIFIED").length : 0)).reduce((a, b) => a + b, 0)
-  const pendingLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "PENDING").length : 0)).reduce((a, b) => a + b, 0)
+  const pendingLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "PROSPECTIVE").length : 0)).reduce((a, b) => a + b, 0)
 
   const handleOpenAssignModal = (lead) => {
     setLeadToReassign({ ...lead, customer: customers.find(c => c.leads.some(l => l.id === lead.id)) })
@@ -288,9 +288,9 @@ export default function Leads() {
       bgColor: "bg-orange-50",
     },
     {
-      title: "New",
-      value: newLeads.toString(),
-      icon: TrendingUp,
+      title: "Lost",
+      value: lostLeads.toString(),
+      icon: TrendingDown,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
     },
@@ -838,10 +838,10 @@ export default function Leads() {
                                         className="px-3 py-1.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800"
                                       >
                                         <option value="LOST">Lost</option>
-                                        <option value="PENDING">Pending</option>
+                                        <option value="PROSPECTIVE">Prospective</option>
                                         <option value="QUALIFIED">Qualified</option>
                                         <option value="CONVERTED">Converted</option>
-                                        <option value="REVISED">Revised</option>
+                                        <option value="NEGOTIATION">Negotiation</option>
                                       </select>
                                     </td>
 

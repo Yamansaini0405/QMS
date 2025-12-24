@@ -18,6 +18,7 @@ import {
   SaveAll,
   Menu,
   TargetIcon,
+  Building2,
 } from "lucide-react"
 
 
@@ -53,8 +54,10 @@ const Sidebar = ({ open, onClose }) => {
       subItems: [
         { title: "Create Quotation", path: "/quotations/new", icon: Plus },
         { title: "List of Quotations", path: "/quotations/all", icon: Menu },
-        { title: "Cust. Quotations", path: "/quotations", icon: Eye },       
+        { title: "Cust. Quotations", path: "/quotations", icon: Eye },
+        { title: "Company Quotations", path: "/quotations/company", icon: Building2 },       
         { title: "Draft Quotations", path: "/quotations/draft", icon: SaveAll },
+        
       ],
     },
     {
