@@ -6,7 +6,7 @@ import { useParams, useNavigate } from "react-router-dom"
 import Swal from "sweetalert2"
 
 const baseUrl = import.meta.env.VITE_BASE_URL
-const STATUS_OPTIONS = ["PENDING", "QUALIFIED", "LOST", "CONVERTED"];
+const STATUS_OPTIONS = ["PROSPECTIVE", "QUALIFIED", "LOST", "CONVERTED", "NEGOTIATION"];
 const PRIORITY_OPTIONS = ["LOW", "MEDIUM", "HIGH"];
 
 export default function LeadDetailsPage() {

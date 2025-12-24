@@ -1,6 +1,6 @@
 "use client"
 
-import { FileText, Clock, Target, TrendingUp, Plus, Eye, Trophy, Users } from "lucide-react"
+import { FileText, Clock, Target, TrendingUp, Plus, Eye, Trophy, Users, Download } from "lucide-react"
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import DashboardSkeleton from "@/components/DashboardSkeleton"
@@ -52,6 +52,47 @@ const Dashboard = () => {
 
     fetchData()
   }, [])
+
+  const handleExportTopPerformers = () => {
+    if (topPerformers.length === 0) {
+      Swal.fire("Info", "No performance data to export", "info");
+      return;
+    }
+
+    const escapeCSVValue = (value) => {
+      const stringValue = String(value == null ? '' : value);
+      if (/[",\n]/.test(stringValue)) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      return stringValue;
+    };
+
+    const headers = ["Rank", "Name", "Email", "Phone", "Quotations Sent", "Accepted", "Conversion Rate (%)"];
+    let csvContent = headers.join(",") + "\n";
+
+    topPerformers.forEach((performer, index) => {
+      const row = [
+        index + 1,
+        performer.name,
+        performer.email,
+        performer.phone || "-",
+        performer.total_sent,
+        performer.total_accepted,
+        performer.conversion_rate.toFixed(2)
+      ];
+      csvContent += row.map(escapeCSVValue).join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Sales_Performance_${new Date().toLocaleDateString()}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
 
   const totalQuotations = quotations.length
@@ -156,9 +197,18 @@ const Dashboard = () => {
               </div>
               <h2 className="text-xl font-bold text-gray-900">Top Performers</h2>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Users className="w-4 h-4" />
-              <span>Sales Team Performance</span>
+            <div className="flex items-center space-x-4">
+              <button 
+                onClick={handleExportTopPerformers}
+                className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                <span>Export Performance</span>
+              </button>
+              <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
+                <Users className="w-4 h-4" />
+                <span>Sales Team Performance</span>
+              </div>
             </div>
           </div>
         </div>
