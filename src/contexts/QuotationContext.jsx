@@ -907,6 +907,17 @@ export const QuotationProvider = ({ children }) => {
         setCustomerSearchResults([]);
         setCompanySearchResults([]); // Add this line
     };
+    const selectCustomerCompany = (customer) => {
+        setFormData((prev) => ({
+            ...prev,
+            companyName: customer.company_name,
+        }));
+        setCustomerSearchQuery("");
+        setShowCustomerSearch(false);
+        setShowCompanyDropdown(false); // Add this line
+        setCustomerSearchResults([]);
+        setCompanySearchResults([]); // Add this line
+    };
 
     const handleCustomerSearchChange = (e) => {
         const query = e.target.value;
@@ -1038,7 +1049,7 @@ export const QuotationProvider = ({ children }) => {
                 isSearchingProducts, setIsSearchingProducts,
                 showCompanyDropdown, setShowCompanyDropdown,
                 companySearchResults, setCompanySearchResults,
-                handleCompanySearchChange,
+                handleCompanySearchChange,selectCustomerCompany,
                 formData, setFormData, resetFormData,
                 updateFormData,
                 updateProduct,

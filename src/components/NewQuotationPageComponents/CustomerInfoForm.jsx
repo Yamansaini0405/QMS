@@ -5,7 +5,7 @@ export default function CustomerInfoForm() {
   const {
     customerSearchQuery, handleCustomerSearchChange, showCustomerSearch, setShowCustomerSearch,
     customerSearchResults, isSearchingCustomers, selectCustomer, formData, updateFormData, formErrors, showCompanyDropdown, setShowCompanyDropdown,
-    companySearchResults,handleCompanySearchChange
+    companySearchResults,handleCompanySearchChange,selectCustomerCompany
   } = useQuotation();
 
   return (
@@ -97,7 +97,7 @@ export default function CustomerInfoForm() {
                 {companySearchResults.map((customer) => (
                   <div
                     key={customer.id}
-                    onMouseDown={() => selectCustomer(customer)}
+                    onMouseDown={() => selectCustomerCompany(customer)}
                     className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                   >
                     <div className="font-medium text-gray-900">{customer.company_name}</div>
