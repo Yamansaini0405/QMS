@@ -47,7 +47,7 @@ export default function ProductTable() {
     calculateTotals(formData.products)
   }, [showPercentageDiscount, setShowPercentageDiscount])
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 ">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-scroll">
       <div className="flex items-center space-x-2 mb-6">
         <Package className="w-5 h-5 text-gray-600" />
         <h2 className="text-lg font-semibold text-gray-900">Add Products/Services</h2>
@@ -66,7 +66,7 @@ export default function ProductTable() {
           </label>
         </div>
       </div>
-      <table className="w-full">
+      <table className="w-full ">
         <thead>
           <tr className="border-b border-gray-200">
             <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">S.No.</th>
@@ -82,7 +82,7 @@ export default function ProductTable() {
         </thead>
         <tbody>
           {formData.products.map((product, index) => (
-            <tr key={index} className="border-b border-gray-100">
+            <tr key={index} className="border-b border-gray-100 ">
               <td className="py-3 px-2 text-sm text-gray-600">{index + 1}</td>
               <td className="py-3 px-2">
                 <div className="flex items-center space-x-2">
