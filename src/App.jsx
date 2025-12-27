@@ -28,6 +28,7 @@ import LeadDetailsPage from "./pages/LeadDetailsPage"
 import ListOfLeadsPage from "./pages/ListOfLeadsPage"
 import TodaysFollowups from "./pages/TodaysFollowups"
 import CompanyQuotations from "./pages/CompanyQuotations"
+import CompanyLeads from "./pages/CompanyLeads"
 
 
 function App() {
@@ -73,6 +74,7 @@ function App() {
               <Route path="/leads/create" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><AddLeads /></ProtectedRoute>} />
               <Route path="/leads" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><Leads /></ProtectedRoute>} />
               <Route path="/leads/all" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><ListOfLeadsPage/></ProtectedRoute>} />
+              <Route path="/leads/company" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><CompanyLeads/></ProtectedRoute>} />
               <Route path="/leads/view/:id" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><LeadDetailsPage/></ProtectedRoute>} />
               <Route path="/customers" element={<ProtectedRoute allowedRoles={["ADMIN","SALESPERSON"]}><Customer /></ProtectedRoute>} />
               <Route path="/products" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><Products /></ProtectedRoute>} />

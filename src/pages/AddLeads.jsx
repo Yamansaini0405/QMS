@@ -515,6 +515,7 @@ export default function AddLeads() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="WEBSITE">Website</option>
+                  <option value="QUOTATION">Quotation</option>
                   <option value="COLD_CALL">Cold Call</option>
                   <option value="WALK_IN">Walk In</option>
                   <option value="REFERRAL">Referral</option>
@@ -683,7 +684,7 @@ export default function AddLeads() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description </label>
                 <textarea
                   name="description"
                   value={formData.description}

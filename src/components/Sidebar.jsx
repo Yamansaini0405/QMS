@@ -70,6 +70,7 @@ const Sidebar = ({ open, onClose }) => {
         { title: "Create Lead", path: "/leads/create", icon: Plus },
         { title: "Leads", path: "/leads", icon: LayoutDashboard },
         { title: "List of Leads", path: "/leads/all", icon: Menu },
+        { title: "Company Leads", path: "/leads/company", icon: Building2 },
         { title: "Converted Leads", path: "/leads/converted", icon: TargetIcon },
       ],
     },
