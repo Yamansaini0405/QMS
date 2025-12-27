@@ -1,5 +1,5 @@
 "use client"
-import React  from "react"
+import React from "react"
 
 import { useState, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
@@ -457,33 +457,33 @@ const CompanyQuotations = () => {
   }
 
   // Group filtered customers by Company Name
-const groupedByCompany = filteredCustomers.reduce((acc, customer) => {
-  const companyKey = customer.company_name || "No Company";
-  
-  if (!acc[companyKey]) {
-    acc[companyKey] = {
-      company_name: companyKey,
-      contacts: [],
-      allQuotations: []
-    };
-  }
-  
-  // Collect contact details for this company
-  acc[companyKey].contacts.push({
-    name: customer.name,
-    email: customer.email,
-    phone: customer.phone
-  });
+  const groupedByCompany = filteredCustomers.reduce((acc, customer) => {
+    const companyKey = customer.company_name || "No Company";
 
-  // Merge all quotations for this company
-  if (customer.quotations) {
-    acc[companyKey].allQuotations.push(...customer.quotations);
-  }
-  
-  return acc;
-}, {});
+    if (!acc[companyKey]) {
+      acc[companyKey] = {
+        company_name: companyKey,
+        contacts: [],
+        allQuotations: []
+      };
+    }
 
-const companies = Object.values(groupedByCompany);
+    // Collect contact details for this company
+    acc[companyKey].contacts.push({
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone
+    });
+
+    // Merge all quotations for this company
+    if (customer.quotations) {
+      acc[companyKey].allQuotations.push(...customer.quotations);
+    }
+
+    return acc;
+  }, {});
+
+  const companies = Object.values(groupedByCompany);
 
 
 
@@ -586,138 +586,155 @@ const companies = Object.values(groupedByCompany);
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-  <div className="overflow-x-auto">
-    <table className="w-full">
-      <thead className="bg-gray-50 border-b border-gray-200">
-        <tr>
-          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
-          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Company Name</th>
-          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Contacts</th>
-          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Total Quotes</th>
-          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Latest Quote Date</th>
-          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900"></th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-200">
-        {companies.map((company, index) => (
-          <React.Fragment key={company.company_name}>
-            {/* Company Row */}
-            <tr 
-              className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer bg-slate-50/30" 
-              onClick={() => toggleExpand(company.company_name)}
-            >
-              <td className="px-6 py-4 text-gray-600">{index + 1}</td>
-              <td className="px-6 py-4 font-bold text-gray-900">
-                <div className="flex items-center justify-start gap-2">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Building2 className="w-4 h-4 text-purple-600" />
-                  </div>
-                  {company.company_name}
-                </div>
-              </td>
-              <td className="px-6 py-4">
-                <div className="flex -space-x-2 overflow-hidden">
-                  {company.contacts.map((contact, i) => (
-                    <div 
-                      key={i} 
-                      title={contact.name}
-                      className=" h-8 w-8 rounded-full ring-2 ring-white bg-purple-600 flex items-center justify-center text-[10px] text-white font-bold"
-                    >
-                      {contact.name.charAt(0)}
-                    </div>
-                  ))}
-                  <span className="ml-4 text-xs text-gray-500 self-center">
-                    {company.contacts.length} Contact(s)
-                  </span>
-                </div>
-              </td>
-              <td className="px-6 py-4 font-semibold text-blue-600">
-                {company.allQuotations.length} Quotations
-              </td>
-              <td className="px-6 py-4 text-gray-600 text-sm">
-                {company.allQuotations.length > 0 
-                  ? new Date(Math.max(...company.allQuotations.map(q => new Date(q.created_at)))).toLocaleDateString()
-                  : "-"}
-              </td>
-              <td className="px-6 py-4 text-right">
-                <button className="text-gray-500 hover:text-gray-800">
-                  {expandedCustomer === company.company_name ? (
-                    <ChevronDown className="w-5 h-5" />
-                  ) : (
-                    <ChevronRight className="w-5 h-5" />
-                  )}
-                </button>
-              </td>
-            </tr>
-
-            {/* Sub-table for Company Quotations */}
-            {expandedCustomer === company.company_name && (
-              <tr className="bg-white">
-                <td colSpan={6} className="px-6 py-4">
-                  <div className="border rounded-xl overflow-hidden shadow-inner bg-gray-50/50 p-4">
-                    <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                      <FileText className="w-4 h-4" /> Quotations for {company.company_name}
-                    </h4>
-                    <table className="w-full text-sm">
-                      <thead className="text-gray-500 border-b">
-                        <tr>
-                          <th className="px-4 py-2 text-left">Quote ID</th>
-                          <th className="px-4 py-2 text-left">Amount</th>
-                          <th className="px-4 py-2 text-left">Status</th>
-                          <th className="px-4 py-2 text-left">Created At</th>
-                          <th className="px-4 py-2 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {sortQuotations(company.allQuotations).map((quotation) => (
-                          <tr key={quotation.id} className="hover:bg-white transition-colors">
-                            <td className="px-4 py-3 font-medium text-gray-900">{quotation.quotation_number}</td>
-                            <td className="px-4 py-3 font-bold">₹{quotation.total}</td>
-                            <td className="px-4 py-3">
-                              <select
-                                value={quotation.status}
-                                onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
-                                className={`${getStatusBadge(quotation.status)} text-xs px-2 py-1 rounded-md`}
-                              >
-                                <option value="SENT">Sent</option>
-                                <option value="PENDING">Pending</option>
-                                <option value="ACCEPTED">Accepted</option>
-                                <option value="REJECTED">Rejected</option>
-                                <option value="REVISED">Revised</option>
-                              </select>
-                            </td>
-                            <td className="px-4 py-3 text-gray-500">
-                              {new Date(quotation.created_at).toLocaleDateString()}
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <button
-                                onClick={() => handleViewQuotation(quotation)}
-                                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                title="View PDF"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Company Name</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Contacts</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Total Quotes</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Latest Quote Date</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900"></th>
               </tr>
-            )}
-          </React.Fragment>
-        ))}
-      </tbody>
-    </table>
-  </div>
-  {companies.length === 0 && (
-    <div className="text-center py-12">
-      <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-      <p className="text-gray-500">No company data found</p>
-    </div>
-  )}
-</div>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {companies.map((company, index) => (
+                <React.Fragment key={company.company_name}>
+                  {/* Company Row */}
+                  <tr
+                    className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer bg-slate-50/30"
+                    onClick={() => toggleExpand(company.company_name)}
+                  >
+                    <td className="px-6 py-4 text-gray-600">{index + 1}</td>
+                    <td className="px-6 py-4 font-bold text-gray-900">
+                      <div className="flex items-center justify-start gap-2">
+                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                          <Building2 className="w-4 h-4 text-purple-600" />
+                        </div>
+                        {company.company_name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {/* Displaying contact badges similar to Leads page */}
+                      <div className="flex flex-wrap gap-1">
+                        {company.contacts.map((contact, i) => (
+                          <span key={i} className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs font-medium border border-purple-100">
+                            {contact.name}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-blue-600">
+                      {company.allQuotations.length} Quotations
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 text-sm">
+                      {company.allQuotations.length > 0
+                        ? new Date(Math.max(...company.allQuotations.map(q => new Date(q.created_at)))).toLocaleDateString()
+                        : "-"}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button className="text-gray-500 hover:text-gray-800">
+                        {expandedCustomer === company.company_name ? (
+                          <ChevronDown className="w-5 h-5" />
+                        ) : (
+                          <ChevronRight className="w-5 h-5" />
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+
+                  {/* Sub-table for Company Quotations & Detailed Contact Info */}
+                  {expandedCustomer === company.company_name && (
+                    <tr className="bg-white">
+                      <td colSpan={6} className="px-6 py-4">
+                        <div className="border rounded-xl overflow-hidden shadow-sm bg-white">
+
+                          {/* Associate Customer Details Section */}
+                          <div className="bg-gray-50 p-4 border-b">
+                            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Associate Customer Details</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {company.contacts.map((contact, i) => (
+                                <div key={i} className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-200">
+                                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                    {contact.name.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-semibold text-gray-900">{contact.name}</p>
+                                    <p className="text-xs text-gray-500">{contact.email}</p>
+                                    <p className="text-xs text-gray-400">{contact.phone}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Quotations List */}
+                          <div className="p-4">
+                            <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-purple-600" /> Quotations List
+                            </h4>
+                            <table className="w-full text-sm">
+                              <thead className="text-gray-500 border-b">
+                                <tr>
+                                  <th className="px-4 py-2 text-left">Quote ID</th>
+                                  <th className="px-4 py-2 text-left">Amount</th>
+                                  <th className="px-4 py-2 text-left">Status</th>
+                                  <th className="px-4 py-2 text-left">Created At</th>
+                                  <th className="px-4 py-2 text-right">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-200">
+                                {sortQuotations(company.allQuotations).map((quotation) => (
+                                  <tr key={quotation.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-4 py-3 font-medium text-gray-900">{quotation.quotation_number}</td>
+                                    <td className="px-4 py-3 font-bold">₹{quotation.total}</td>
+                                    <td className="px-4 py-3">
+                                      <select
+                                        value={quotation.status}
+                                        onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
+                                        className={`${getStatusBadge(quotation.status)} text-xs px-2 py-1 rounded-md outline-none cursor-pointer`}
+                                      >
+                                        <option value="SENT">Sent</option>
+                                        <option value="PENDING">Pending</option>
+                                        <option value="ACCEPTED">Accepted</option>
+                                        <option value="REJECTED">Rejected</option>
+                                        <option value="REVISED">Revised</option>
+                                      </select>
+                                    </td>
+                                    <td className="px-4 py-3 text-gray-500">
+                                      {new Date(quotation.created_at).toLocaleDateString()}
+                                    </td>
+                                    <td className="px-4 py-3 text-right">
+                                      <button
+                                        onClick={() => handleViewQuotation(quotation)}
+                                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                        title="View PDF"
+                                      >
+                                        <Eye className="w-4 h-4" />
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {companies.length === 0 && (
+          <div className="text-center py-12">
+            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No company data found</p>
+          </div>
+        )}
+      </div>
 
       <QuotationEditModel
         quotation={selectedQuotation}
