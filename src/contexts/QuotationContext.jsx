@@ -180,7 +180,7 @@ export const QuotationProvider = ({ children }) => {
                     quantity: item.quantity,
                     selling_price: item.unit_price || "",
                     percentage_discount: item.discount || 0,
-                    imageUrl: item.product.images && item.product.images.length > 0 ? item.product.images[0] : "",
+                    imageUrl: item.product.image_url ||  "",
                 })) || [],
                 subtotal: data.data.subtotal || "0.00",
                 discount: data.data.discount || "",
@@ -201,7 +201,6 @@ export const QuotationProvider = ({ children }) => {
                 qutations.discount = ""
                 qutations.discountType = "amount"
             }
-            // Map backend response → formData structure
             setFormData(qutations);
             setSelectedTerms(data.data.terms || [])
 
@@ -350,7 +349,7 @@ export const QuotationProvider = ({ children }) => {
                 additional_charge_name: "",
                 additional_charge_amount: 0,
                 auto_assign: true,
-                status: formData.status,
+                status: id ? null : formData.status,
                 discount: formData.discount ? Number.parseFloat(formData.discount) : 0,
                 tax_rate: formData.taxRate,
                 discount_type: formData.discountType,
