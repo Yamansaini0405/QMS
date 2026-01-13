@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import { Search, Download, CheckCircle, TrendingUp, Clock, AlertCircle, ChevronLeft, ChevronRight, Phone, Trash, ArrowRightLeft, X, Building, Building2, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react"
 import Swal from "sweetalert2"
 import { Link } from "react-router-dom"
+import { getUserPermissions } from "@/utils/permissions"
 
 const baseUrl = import.meta.env.VITE_BASE_URL
 const STATUS_OPTIONS = ["PROSPECTIVE", "QUALIFIED", "LOST", "CONVERTED", "NEGOTIATION"];
@@ -126,6 +127,8 @@ export default function ListOfLeadsPage() {
 
     const LEADS_PER_PAGE = 30
     const baseUrl = import.meta.env.VITE_BASE_URL || ""
+
+    const permissions = getUserPermissions();
 
     useEffect(() => {
         const fetchConvertedLeads = async () => {
@@ -376,7 +379,7 @@ export default function ListOfLeadsPage() {
                             <table className="w-full">
                                 <thead>
                                     <tr className="border-b border-gray-200 bg-gray-50">
-                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Unique No.</th>
                                         <th onClick={() => requestSort('customer.name')} className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100 transition-colors">
                                             <div className="flex items-center gap-2">Customer <SortIcon columnKey="customer.name" /></div>
                                         </th>
@@ -398,7 +401,7 @@ export default function ListOfLeadsPage() {
                                 <tbody>
                                     {currentLeads.map((lead, index) => (
                                         <tr key={lead.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 text-sm text-gray-900">{((currentPage - 1) * LEADS_PER_PAGE) + index + 1}</td>
+                                            <td className="px-6 py-4 text-sm font-semibold text-gray-900">{lead.quotation_number}</td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold ${getAvatarColor(lead.customer.name)}`}>
@@ -438,7 +441,11 @@ export default function ListOfLeadsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 flex items-center justify-center gap-3">
-                                                <button onClick={() => handleDeleteLead(lead.id)} className="p-1 text-gray-400 hover:text-red-600" title="Delete"><Trash className="w-4 h-4" /></button>
+                                                {permissions?.quotation?.includes("delete") && (
+                                                    <button onClick={() => handleDeleteLead(lead.id)} className="p-1 text-gray-400 hover:text-red-600" title="Delete"><Trash className="w-4 h-4" /></button>
+
+                                                )}
+                                                
                                                 <Link to={`/leads/view/${lead.id}`} className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded transition-colors">view</Link>
                                             </td>
                                         </tr>

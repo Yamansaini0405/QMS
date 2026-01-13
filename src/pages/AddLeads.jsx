@@ -240,7 +240,7 @@ export default function AddLeads() {
         lead_source: formData.lead_source,
         follow_up_date: followUpDate,
         notes: formData.description,
-        assigned_to: formData.assigned_to,
+        assigned_to: formData.assigned_to,  
         priority: formData.priority,
       }
 
@@ -297,6 +297,26 @@ export default function AddLeads() {
     }
   }
 
+  const handleRestFormData = () => {
+    setFormData({
+        customerName: "",
+        companyName: "",
+        email: "",
+        phone: "",
+        address: "",
+        gst_number: "",
+        lead_status: "PROSPECTIVE",
+        lead_source: "WEBSITE",
+        priority: "MEDIUM",
+        assigned_to: "",
+        follow_up_date: "",
+        description: "",
+        additional_notes: "",
+      })
+      setCustomerSearchQuery("")
+      setSalespersonQuery("")
+  }
+
   const validateField = (name, value) => {
     let error = ""
 
@@ -347,13 +367,8 @@ export default function AddLeads() {
               </div>
             </div>
           </div>
-          {/* <button
-            onClick={handleSaveLead}
-            className="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
-          >
-            <Target className="w-4 h-4" />
-            Save Lead
-          </button> */}
+            <button className="px-8 py-2 text-sm border border-gray-300 bg-gray-900 text-white rounded-md hover:bg-gray-100 transition-colors"
+            onClick={handleRestFormData}>Reset</button>
 
         </div>
       </div>
@@ -431,19 +446,7 @@ export default function AddLeads() {
                 </div>
 
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address (optional)</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    placeholder="Enter email"
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
-      ${formErrors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"}`}
-                  />
-                  {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
-                </div>
+
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
@@ -460,7 +463,21 @@ export default function AddLeads() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address (optional)</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    placeholder="Enter email"
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
+      ${formErrors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"}`}
+                  />
+                  {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Address (optional)</label>
                   <input
                     placeholder="Enter address"
                     value={formData.address}
@@ -695,7 +712,7 @@ export default function AddLeads() {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
                 <textarea
                   name="additional_notes"
@@ -705,7 +722,7 @@ export default function AddLeads() {
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

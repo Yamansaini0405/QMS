@@ -54,8 +54,8 @@ const Sidebar = ({ open, onClose }) => {
       subItems: [
         { title: "Create Quotation", path: "/quotations/new", icon: Plus },
         { title: "List of Quotations", path: "/quotations/all", icon: Menu },
-        { title: "Cust. Quotations", path: "/quotations", icon: Eye },
-        { title: "Company Quotations", path: "/quotations/company", icon: Building2 },       
+        { title: "Company Quotations", path: "/quotations/company", icon: Building2 },
+        { title: "Cust. Quotations", path: "/quotations", icon: Eye },       
         { title: "Draft Quotations", path: "/quotations/draft", icon: SaveAll },
         
       ],
@@ -68,9 +68,9 @@ const Sidebar = ({ open, onClose }) => {
       roles: ["ADMIN","SALESPERSON"], // only salesperson
       subItems: [
         { title: "Create Lead", path: "/leads/create", icon: Plus },
-        { title: "Leads", path: "/leads", icon: LayoutDashboard },
         { title: "List of Leads", path: "/leads/all", icon: Menu },
         { title: "Company Leads", path: "/leads/company", icon: Building2 },
+        { title: "Leads", path: "/leads", icon: LayoutDashboard },
         { title: "Converted Leads", path: "/leads/converted", icon: TargetIcon },
       ],
     },

@@ -41,7 +41,7 @@ const Dashboard = () => {
         })
         const tpData = await tpRes.json()
         setTopPerformers(tpData.data || [])
-       
+
       } catch (err) {
         setError("Failed to load dashboard data")
         console.error(err)
@@ -188,112 +188,95 @@ const Dashboard = () => {
       </div>
 
       {/* Top Performers section */}
-      {localStorage.getItem("role") == "ADMIN" ? <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
+      {localStorage.getItem("role") === "ADMIN" && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 max-h-[500px] overflow-y-scroll ">
+          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-yellow-50 rounded-lg flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-yellow-600" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-900">Top Performers</h2>
+              <Trophy className="w-5 h-5 text-yellow-600" />
+              <h2 className="text-lg font-bold text-gray-900">Team Performance</h2>
             </div>
-            <div className="flex items-center space-x-4">
-              <button 
-                onClick={handleExportTopPerformers}
-                className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                <span>Export Performance</span>
-              </button>
-              <div className="hidden md:flex items-center space-x-2 text-sm text-gray-500">
-                <Users className="w-4 h-4" />
-                <span>Sales Team Performance</span>
+            <button
+              onClick={handleExportTopPerformers}
+              className="flex items-center space-x-2 px-3 py-1 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">Export</span>
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
+                <tr>
+                  <th className="px-6 py-3">Rank</th>
+                  <th className="px-6 py-3">Sales Person</th>
+                  <th className="px-6 py-3 text-center">Sent</th>
+                  <th className="px-6 py-3 text-center">Accepted</th>
+                  <th className="px-6 py-3">Conversion</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {topPerformers?.map((performer, index) => (
+                  <tr key={performer.user_id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${index === 0 ? "bg-yellow-100 text-yellow-700" :
+                          index === 1 ? "bg-gray-100 text-gray-600" :
+                            index === 2 ? "bg-orange-100 text-orange-700" : "text-gray-400"
+                        }`}>
+                        {index + 1}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-blue-600">
+                            {performer.name.split(" ").map(n => n[0]).join("").toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{performer.name}</div>
+                          <div className="text-xs text-gray-500">{performer.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center text-sm text-gray-600">
+                      {performer.total_sent}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-sm font-semibold text-emerald-600">
+                        {performer.total_accepted}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-3 min-w-[120px]">
+                        <div className="flex-1 bg-gray-100 rounded-full h-1.5 hidden sm:block">
+                          <div
+                            className={`h-1.5 rounded-full ${performer.conversion_rate > 20 ? "bg-emerald-500" :
+                                performer.conversion_rate > 10 ? "bg-yellow-500" : "bg-gray-400"
+                              }`}
+                            style={{ width: `${Math.min(performer.conversion_rate, 100)}%` }}
+                          />
+                        </div>
+                        <span className={`text-sm font-bold ${performer.conversion_rate > 20 ? "text-emerald-600" :
+                            performer.conversion_rate > 10 ? "text-yellow-600" : "text-gray-600"
+                          }`}>
+                          {performer.conversion_rate}%
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {(!topPerformers || topPerformers.length === 0) && (
+              <div className="text-center py-10">
+                <p className="text-gray-500 text-sm">No performance data available</p>
               </div>
-            </div>
+            )}
           </div>
         </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {topPerformers.slice(0,3).map((performer, index) => (
-              <div
-                key={performer.user_id}
-                className="relative p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-              >
-                {index < 3 && (
-                  <div className="absolute -top-2 -right-2">
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${index === 0 ? "bg-yellow-500" : index === 1 ? "bg-gray-400" : "bg-orange-500"
-                        }`}
-                    >
-                      {index + 1}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-semibold text-blue-600">
-                      {performer.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{performer.name}</h3>
-                    <p className="text-xs text-gray-500">{performer.email}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Quotations Sent</span>
-                    <span className="font-semibold text-gray-900">{performer.total_sent}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Accepted</span>
-                    <span className="font-semibold text-emerald-600">{performer.total_accepted}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Conversion Rate</span>
-                    <span
-                      className={`font-semibold ${performer.conversion_rate > 20
-                        ? "text-emerald-600"
-                        : performer.conversion_rate > 10
-                          ? "text-yellow-600"
-                          : "text-gray-600"
-                        }`}
-                    >
-                      {performer.conversion_rate}%
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-3">
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${performer.conversion_rate > 20
-                        ? "bg-emerald-500"
-                        : performer.conversion_rate > 10
-                          ? "bg-yellow-500"
-                          : "bg-gray-400"
-                        }`}
-                      style={{ width: `${Math.min(performer.conversion_rate, 100)}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {topPerformers?.length === 0 && (
-            <div className="text-center py-8">
-              <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No Top Performer found</p>
-            </div>
-          )}
-        </div>
-      </div> : ""}
+      )}
 
       {/* Recent Quotations and Leads */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -363,7 +346,7 @@ const Dashboard = () => {
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center justify-center gap-1">
-              
+
                 <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
                   <Target className="w-6 h-6 text-orange-600" />
                 </div>

@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo } from "react"
 import { Search, Download, CheckCircle, TrendingUp, Clock, AlertCircle, ChevronLeft, ChevronRight, Phone, Trash, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react"
 import Swal from "sweetalert2"
+import { Link } from "react-router-dom"
+import { getUserPermissions } from "@/utils/permissions"
 
 const baseUrl = import.meta.env.VITE_BASE_URL
 const STATUS_OPTIONS = ["PROSPECTIVE", "QUALIFIED", "LOST", "CONVERTED", "NEGOTIATION"];
@@ -21,6 +23,8 @@ export default function ListOfLeadsPage() {
 
     const LEADS_PER_PAGE = 30
     const baseUrl = import.meta.env.VITE_BASE_URL || ""
+
+    const permissions = getUserPermissions();
 
     useEffect(() => {
         const fetchConvertedLeads = async () => {
@@ -130,7 +134,7 @@ export default function ListOfLeadsPage() {
         const headers = ["Sno.", "Customer", "Company", "Email", "Phone", "Assigned To", "Converted Date"];
         let csvContent = headers.join(",") + "\n";
         leads.forEach((lead, index) => {
-            const row = [index + 1, lead.customer?.name || "-", lead.customer?.company_name || "-", lead.customer?.email || "-", lead.customer?.phone || "-", lead.assigned_to?.name || "-", formatDate(lead.updated_at)];
+            const row = [index + 1, lead.customer?.name || "-", lead.customer?.company_name || "-", lead.customer?.email || "-", lead.customer?.phone || "-", lead.assigned_to?.name || "-", formatDate(lead.converted_date)];
             csvContent += row.map(escapeCSVValue).join(",") + "\n";
         });
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -226,32 +230,32 @@ export default function ListOfLeadsPage() {
                             <table className="w-full">
                                 <thead>
                                     <tr className="border-b border-gray-200 bg-gray-50">
-                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
-                                        <th 
+                                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Unique No.</th>
+                                        <th
                                             className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100 transition-colors"
                                             onClick={() => requestSort('customer.name')}
                                         >
                                             <div className="flex items-center">Customer <SortIcon columnKey="customer.name" /></div>
                                         </th>
-                                        <th 
+                                        <th
                                             className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100 transition-colors"
                                             onClick={() => requestSort('customer.company_name')}
                                         >
                                             <div className="flex items-center">Company <SortIcon columnKey="customer.company_name" /></div>
                                         </th>
-                                        <th 
+                                        <th
                                             className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100 transition-colors"
                                             onClick={() => requestSort('status')}
                                         >
                                             <div className="flex items-center">Status <SortIcon columnKey="status" /></div>
                                         </th>
-                                        <th 
+                                        <th
                                             className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100 transition-colors"
                                             onClick={() => requestSort('priority')}
                                         >
                                             <div className="flex items-center">Priority <SortIcon columnKey="priority" /></div>
                                         </th>
-                                        <th 
+                                        <th
                                             className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100 transition-colors"
                                             onClick={() => requestSort('assigned_to.name')}
                                         >
@@ -263,8 +267,8 @@ export default function ListOfLeadsPage() {
                                 <tbody>
                                     {currentLeads.map((lead, index) => (
                                         <tr key={lead.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 text-sm text-gray-900">
-                                                {((currentPage - 1) * LEADS_PER_PAGE) + index + 1}
+                                            <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                                                {lead.quotation_number}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
@@ -283,11 +287,23 @@ export default function ListOfLeadsPage() {
                                             <td className="px-6 py-4 text-left"><span className="px-2 py-1 rounded-md text-xs bg-green-100 text-green-800">{lead.status}</span></td>
                                             <td className="px-6 py-4 text-left"><span className="px-2 py-1 rounded-md text-xs bg-blue-100 text-blue-800">{lead.priority}</span></td>
                                             <td className="px-6 py-4 text-sm text-gray-600">{lead.assigned_to?.name || "-"}</td>
-                                            <td className="px-6 py-4 text-center">
-                                                <button onClick={() => handleDeleteLead(lead.id)} className="p-1 text-gray-400 hover:text-red-600" title="Delete Lead">
-                                                    <Trash className="w-4 h-4" />
-                                                </button>
+                                            <td className="px-6 py-4 text-center flex items-center justify-center">
+                                                {localStorage.getItem("role") === "ADMIN" && (
+                                                    <button
+                                                        onClick={() => handleDeleteLead(lead.id)}
+                                                        className="p-1 text-gray-400 hover:text-red-600"
+                                                        title="Delete Lead"
+                                                    >
+                                                        <Trash className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                                <Link to={`/leads/view/${lead.id}`}>
+                                                    <button className=" bg-gray-200 text-sm px-2 py-0.5 rounded-md cursor-pointer hover:bg-gray-300 text-gray-700">
+                                                        view
+                                                    </button>
+                                                </Link>
                                             </td>
+
                                         </tr>
                                     ))}
                                 </tbody>

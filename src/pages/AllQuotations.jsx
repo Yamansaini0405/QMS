@@ -393,6 +393,9 @@ export default function AllQuotations() {
       } else if (quotationSortConfig.key === "customer") {
         valueA = a.customer?.name?.toLowerCase() || ""
         valueB = b.customer?.name?.toLowerCase() || ""
+      } else if (quotationSortConfig.key === "assign_to") {
+        valueA = a.assigned_to?.name?.toLowerCase() || ""
+        valueB = b.assigned_to?.name?.toLowerCase() || ""
       } else {
         valueA = valueA ?? ""
         valueB = valueB ?? ""
@@ -592,6 +595,7 @@ export default function AllQuotations() {
               >
                 <option value="All">All Status</option>
                 <option value="SENT">Sent</option>
+                <option value="PENDING">Pending</option>
                 <option value="ACCEPTED">Accepted</option>
                 <option value="REJECTED">Rejected</option>
                 <option value="REVISED">Revised</option>
@@ -645,7 +649,10 @@ export default function AllQuotations() {
                     Created <QuotationSortIcon column="created_at" />
                   </th>
 
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Assigned To</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                    onClick={() => handleQuotationSort("assign_to")}>
+                         Assigned To <QuotationSortIcon column="assign_to" />
+                  </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
                 </tr>
               </thead>

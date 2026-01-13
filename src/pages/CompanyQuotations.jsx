@@ -643,81 +643,79 @@ const CompanyQuotations = () => {
                       </button>
                     </td>
                   </tr>
-
-                  {/* Sub-table for Company Quotations & Detailed Contact Info */}
                   {expandedCustomer === company.company_name && (
                     <tr className="bg-white">
                       <td colSpan={6} className="px-6 py-4">
                         <div className="border rounded-xl overflow-hidden shadow-sm bg-white">
-
-                          {/* Associate Customer Details Section */}
-                          <div className="bg-gray-50 p-4 border-b">
-                            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Associate Customer Details</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {company.contacts.map((contact, i) => (
-                                <div key={i} className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-200">
-                                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                    {contact.name.charAt(0)}
-                                  </div>
-                                  <div>
-                                    <p className="text-sm font-semibold text-gray-900">{contact.name}</p>
-                                    <p className="text-xs text-gray-500">{contact.email}</p>
-                                    <p className="text-xs text-gray-400">{contact.phone}</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Quotations List */}
                           <div className="p-4">
                             <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
                               <FileText className="w-4 h-4 text-purple-600" /> Quotations List
                             </h4>
-                            <table className="w-full text-sm">
-                              <thead className="text-gray-500 border-b">
-                                <tr>
-                                  <th className="px-4 py-2 text-left">Quote ID</th>
-                                  <th className="px-4 py-2 text-left">Amount</th>
-                                  <th className="px-4 py-2 text-left">Status</th>
-                                  <th className="px-4 py-2 text-left">Created At</th>
-                                  <th className="px-4 py-2 text-right">Actions</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-gray-200">
-                                {sortQuotations(company.allQuotations).map((quotation) => (
-                                  <tr key={quotation.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-4 py-3 font-medium text-gray-900">{quotation.quotation_number}</td>
-                                    <td className="px-4 py-3 font-bold">₹{quotation.total}</td>
-                                    <td className="px-4 py-3">
-                                      <select
-                                        value={quotation.status}
-                                        onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
-                                        className={`${getStatusBadge(quotation.status)} text-xs px-2 py-1 rounded-md outline-none cursor-pointer`}
-                                      >
-                                        <option value="SENT">Sent</option>
-                                        <option value="PENDING">Pending</option>
-                                        <option value="ACCEPTED">Accepted</option>
-                                        <option value="REJECTED">Rejected</option>
-                                        <option value="REVISED">Revised</option>
-                                      </select>
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-500">
-                                      {new Date(quotation.created_at).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-4 py-3 text-right">
-                                      <button
-                                        onClick={() => handleViewQuotation(quotation)}
-                                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                        title="View PDF"
-                                      >
-                                        <Eye className="w-4 h-4" />
-                                      </button>
-                                    </td>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-sm">
+                                <thead className="text-gray-500 border-b bg-gray-50">
+                                  <tr>
+                                    <th className="px-4 py-2 text-left">Customer Name</th>
+                                    <th className="px-4 py-2 text-left">Quote ID</th>
+                                    <th className="px-4 py-2 text-left">Amount</th>
+                                    <th className="px-4 py-2 text-left">Status</th>
+                                    <th className="px-4 py-2 text-left">Created At</th>
+                                    <th className="px-4 py-2 text-left">Assigned To</th>
+                                    <th className="px-4 py-2 text-right">Actions</th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                  {company.allQuotations.map((quotation) => (
+                                    <tr key={quotation.id} className="hover:bg-gray-50 transition-colors">
+                                      <td className="px-4 py-3 text-gray-700 font-medium">
+                                        {company.contacts.find(c => c.name)?.name || "N/A"}
+                                      </td>
+                                      <td className="px-4 py-3 text-gray-900">{quotation.quotation_number}</td>
+                                      <td className="px-4 py-3 font-bold text-gray-900">₹{quotation.total}</td>
+                                      <td className="px-4 py-3">
+                                        <select
+                                          value={quotation.status}
+                                          onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
+                                          className={`${getStatusBadge(quotation.status)} text-xs px-2 py-1 rounded-md outline-none cursor-pointer border-none shadow-sm`}
+                                        >
+                                          <option value="SENT">Sent</option>
+                                          <option value="PENDING">Pending</option>
+                                          <option value="ACCEPTED">Accepted</option>
+                                          <option value="REJECTED">Rejected</option>
+                                          <option value="REVISED">Revised</option>
+                                        </select>
+                                      </td>
+                                      <td className="px-4 py-3 text-gray-500">
+                                        {new Date(quotation.created_at).toLocaleDateString("en-IN", {
+                                          day: '2-digit',
+                                          month: 'short',
+                                          year: 'numeric'
+                                        })}
+                                      </td>
+                                      <td className="px-4 py-3">
+                                        {quotation.assigned_to?.name ? (
+                                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">
+                                            <Users className="w-3 h-3 mr-1" />
+                                            {quotation.assigned_to.name}
+                                          </span>
+                                        ) : (
+                                          <span className="text-gray-400 italic">Unassigned</span>
+                                        )}
+                                      </td>
+                                      <td className="px-4 py-3 text-right">
+                                        <button
+                                          onClick={() => handleViewQuotation(quotation)}
+                                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                          title="View PDF"
+                                        >
+                                          <Eye className="w-4 h-4" />
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         </div>
                       </td>

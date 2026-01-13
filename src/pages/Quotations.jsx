@@ -222,6 +222,12 @@ const Quotations = () => {
       let valueA = a[quotationSortConfig.key]
       let valueB = b[quotationSortConfig.key]
 
+      // Handle nested assigned_to sorting
+      if (quotationSortConfig.key === "assigned_to") {
+        valueA = a.assigned_to?.name?.toLowerCase() ?? ""
+        valueB = b.assigned_to?.name?.toLowerCase() ?? ""
+      }
+
       // handle special cases
       if (quotationSortConfig.key === "created_at" || quotationSortConfig.key === "follow_up_date") {
         valueA = new Date(valueA)
@@ -633,37 +639,45 @@ const Quotations = () => {
                               <thead className="bg-gray-200">
                                 <tr>
                                   <th
-                                    className="px-4 py-3 text-left cursor-pointer"
+                                    className="px-4 py-3 text-left cursor-pointer hover:bg-gray-300 transition-colors"
                                     onClick={() => handleQuotationSort("quotation_number")}
                                   >
                                     Quote ID <QuotationSortIcon column="quotation_number" />
                                   </th>
                                   <th
-                                    className="px-4 py-3 text-left cursor-pointer"
+                                    className="px-4 py-3 text-left cursor-pointer hover:bg-gray-300 transition-colors"
                                     onClick={() => handleQuotationSort("total")}
                                   >
                                     Amount <QuotationSortIcon column="total" />
                                   </th>
                                   <th
-                                    className="px-4 py-3 text-left cursor-pointer"
+                                    className="px-4 py-3 text-left cursor-pointer hover:bg-gray-300 transition-colors"
                                     onClick={() => handleQuotationSort("status")}
                                   >
                                     Status <QuotationSortIcon column="status" />
                                   </th>
                                   <th
-                                    className="px-4 py-3 text-left cursor-pointer"
+                                    className="px-4 py-3 text-left cursor-pointer hover:bg-gray-300 transition-colors"
                                     onClick={() => handleQuotationSort("created_at")}
                                   >
                                     Created <QuotationSortIcon column="created_at" />
                                   </th>
                                   <th
-                                    className="px-4 py-3 text-left cursor-pointer"
+                                    className="px-4 py-3 text-left cursor-pointer hover:bg-gray-300 transition-colors"
                                     onClick={() => handleQuotationSort("follow_up_date")}
                                   >
                                     Valid Until <QuotationSortIcon column="follow_up_date" />
                                   </th>
-                                  <th className="px-4 py-3 text-left">Assigned To</th>
-                                  <th className="px-4 py-3 text-left">Actions</th>
+                                  <th
+                                    className="px-4 py-3 text-left cursor-pointer hover:bg-gray-300 transition-colors"
+                                    onClick={() => handleQuotationSort("assigned_to")}
+                                  >
+                                    <div className="flex items-center">
+                                      Assigned To
+                                      <QuotationSortIcon column="assigned_to" />
+                                    </div>
+                                  </th>
+                                  <th className="px-4 py-3 text-left hover:bg-gray-300 transition-colors">Actions</th>
                                 </tr>
                               </thead>
                               <tbody>

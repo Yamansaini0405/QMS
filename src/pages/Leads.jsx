@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trash2, Building2, FileText, ArrowRightLeft, X, TrendingDown } from "lucide-react"
 import LeadViewModal from "../components/LeadViewModal"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import QuotationEditModal from "@/components/QuotationEditModel"
 import Swal from "sweetalert2"
 import CustomerViewModal from "@/components/CustomerViewModal"
@@ -112,6 +112,9 @@ const AssignLeadModal = ({ isOpen, onClose, lead, salespersons }) => {
 
 
 export default function Leads() {
+
+  const navigate = useNavigate()
+
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("All Status")
   const [sourceFilter, setSourceFilter] = useState("All Sources")
@@ -811,9 +814,9 @@ export default function Leads() {
                                     Quotation <LeadSortIcon column="quotation" />
                                   </th>
 
-                                  {permissions?.lead?.includes("delete") && (
+                              
                                     <th className="px-4 py-3 text-left">Actions</th>
-                                  )}
+                                  
                                 </tr>
 
                               </thead>
@@ -880,8 +883,8 @@ export default function Leads() {
                                         </a>
                                       ) : (
                                         <button
-                                          onClick={() => handleCreateQuotation(lead.quotation)}
-                                          className="text-white hover:underline bg-green-700 px-2 py-1 rounded-lg   "
+                                          onClick={() => navigate(`/quotations/edit/${lead.quotation}`)}
+                                          className="text-white hover:underline bg-green-700 px-2 py-1 rounded-lg"
                                         >
                                           Create
                                         </button>

@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { UserCog, User, Building, MapPin, FileText, Mail, Phone, FileEdit, Calendar, BarChart3 } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { UserCog, User, Building, MapPin,Building2, FileText, Mail, Phone, FileEdit, Calendar, BarChart3 } from "lucide-react"
 import Swal from "sweetalert2"
 
 
@@ -18,9 +18,42 @@ export default function AddCustomer() {
     shippingAddress: "",
   })
 
+  // --- Searchable Company Logic States ---
+  const [companies, setCompanies] = useState([])
+  const [filteredCompanies, setFilteredCompanies] = useState([])
+  const [showDropdown, setShowDropdown] = useState(false)
+  const dropdownRef = useRef(null)
+
   const [errors, setErrors] = useState({})
   const [touched, setTouched] = useState({})
   const [isLoading, setIsLoading] = useState(false)
+
+  // Fetch companies on mount
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        const res = await fetch(`${baseUrl}/quotations/api/companies/`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        const result = await res.json()
+        if (result.data) setCompanies(result.data)
+      } catch (err) {
+        console.error("Error fetching companies:", err)
+      }
+    }
+    fetchCompanies()
+  }, [baseUrl])
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const validateField = (name, value, all = formData) => {
     let msg = ""
@@ -72,18 +105,35 @@ export default function AddCustomer() {
     let { value } = e.target
 
     if (name === "phoneNumber") {
-      value = value.replace(/\D/g, "").slice(0, 10) // only digits, max 10
+      value = value.replace(/\D/g, "").slice(0, 10)
     }
 
     const nextForm = { ...formData, [name]: value }
     setFormData(nextForm)
 
-    if (!touched[name]) {
-      setTouched((prev) => ({ ...prev, [name]: true }))
+    // Handle Search Dropdown for Company Name
+    if (name === "companyName") {
+      if (value.trim() === "") {
+        setFilteredCompanies([])
+        setShowDropdown(false)
+      } else {
+        const filtered = companies.filter(c =>
+          c.toLowerCase().includes(value.toLowerCase())
+        )
+        setFilteredCompanies(filtered)
+        setShowDropdown(true)
+      }
     }
 
-    const msg = validateField(name, value, nextForm)
-    setErrors((prev) => ({ ...prev, [name]: msg }))
+    if (touched[name]) {
+      setErrors((prev) => ({ ...prev, [name]: validateField(name, value, nextForm) }))
+    }
+  }
+
+  const selectCompany = (name) => {
+    setFormData(prev => ({ ...prev, companyName: name }))
+    setShowDropdown(false)
+    setErrors(prev => ({ ...prev, companyName: "" }))
   }
 
   const handleBlur = (e) => {
@@ -226,22 +276,6 @@ export default function AddCustomer() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  onBlur={handleBlur}
-                  placeholder="customer@company.com"
-                  className={inputClass("email")}
-                />
-                {touched.email && errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-                )}
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
                 <input
                   type="tel"
@@ -256,57 +290,72 @@ export default function AddCustomer() {
                   <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>
                 )}
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  placeholder="customer@company.com"
+                  className={inputClass("email")}
+                />
+                {touched.email && errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Company Information */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          {/* Company Information with Dropdown Search */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
               <Building className="w-5 h-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Company Information </h2>
+              <h2 className="text-lg font-semibold text-gray-900">Company Information</h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
-                <input
-                  type="text"
-                  name="companyName"
-                  value={formData.companyName}
-                  onChange={handleInputChange}
-                  onBlur={handleBlur}
-                  placeholder="Enter company name"
-                  className={inputClass("companyName")}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1 relative" ref={dropdownRef}>
+                <label className="text-sm font-semibold text-gray-700">Company Name *</label>
+                <input 
+                  type="text" 
+                  name="companyName" 
+                  value={formData.companyName} 
+                  onChange={handleInputChange} 
+                  onBlur={handleBlur} 
+                  autoComplete="off"
+                  placeholder="Type to search or add new..." 
+                  className={inputClass("companyName")} 
                 />
-                {touched.companyName && errors.companyName && (
-                  <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>
+                
+                {/* Search Results Dropdown */}
+                {showDropdown && filteredCompanies.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                    {filteredCompanies.map((company, index) => (
+                      <div
+                        key={index}
+                        onClick={() => selectCompany(company)}
+                        className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm flex items-center gap-2 border-b last:border-none border-gray-50"
+                      >
+                        <Building2 className="w-3.5 h-3.5 text-gray-400" />
+                        {company}
+                      </div>
+                    ))}
+                  </div>
                 )}
+                {touched.companyName && errors.companyName && <p className="text-red-500 text-xs">{errors.companyName}</p>}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
-                <input
-                  type="url"
-                  name="website"
-                  value={formData.website}
-                  onChange={handleInputChange}
-                  placeholder="https://www.company.com"
-                  className={inputClass("website")}
-                />
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-gray-700">Website</label>
+                <input type="url" name="website" value={formData.website} onChange={handleInputChange} placeholder="https://www.company.com" className={inputClass("website")} />
               </div>
 
-
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">GST No.</label>
-                <input
-                  type="text"
-                  name="gst_number"
-                  value={formData.gst_number}
-                  onChange={handleInputChange}
-                  placeholder="Enter gst no."
-                  className={inputClass("gst_number")}
-                />
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-gray-700">GST No.</label>
+                <input type="text" name="gst_number" value={formData.gst_number} onChange={handleInputChange} placeholder="Enter GSTIN" className={inputClass("gst_number")} />
               </div>
             </div>
           </div>
