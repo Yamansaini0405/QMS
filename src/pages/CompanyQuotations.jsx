@@ -29,13 +29,10 @@ import Swal from "sweetalert2"
 import ViewLogsModal from "@/components/ViewLogsModal"
 import { useQuotation } from "../contexts/QuotationContext"
 
-
-
 const CompanyQuotations = () => {
   const baseUrl = import.meta.env.VITE_BASE_URL;
 
   const { setFormData, updateFormData } = useQuotation()
-
 
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("All Status")
@@ -44,7 +41,7 @@ const CompanyQuotations = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
   const [quotationSortConfig, setQuotationSortConfig] = useState({ key: null, direction: "asc" })
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
+  const [sortConfig, setSortConfig] = useState({ key: "company_name", direction: "asc" })
   const [expandedCustomer, setExpandedCustomer] = useState(null)
   const [isLogsModalOpen, setIsLogsModalOpen] = useState(false)
   const [selectedQuotationLogs, setSelectedQuotationLogs] = useState(null)
@@ -59,6 +56,7 @@ const CompanyQuotations = () => {
   const closeDropdown = () => {
     setOpenDropdown(null)
   }
+
   useEffect(() => {
     const fetchCustomers = async () => {
       setLoading(true)
@@ -73,20 +71,16 @@ const CompanyQuotations = () => {
         const result = await response.json()
 
         if (result.data && Array.isArray(result.data)) {
-          // Apply the same filtering logic here
           const filteredCustomers = result.data
             .map(customer => {
-              // For each customer, filter out their draft quotations
               const nonDraftQuotations = (customer.quotations || []).filter(
                 q => q.status !== "DRAFT"
               )
-              // Return a new customer object with the filtered quotations
               return {
                 ...customer,
                 quotations: nonDraftQuotations,
               }
             })
-            // Then, filter out any customer who no longer has any quotations
             .filter(customer => customer.quotations.length > 0)
 
           setCustomers(filteredCustomers)
@@ -112,9 +106,6 @@ const CompanyQuotations = () => {
 
   const pendingCount = allQuotations.filter((q) => q.status === "PENDING").length
   const acceptedCount = allQuotations.filter((q) => q.status === "ACCEPTED").length
-
-
-
 
   const stats = [
     {
@@ -158,56 +149,6 @@ const CompanyQuotations = () => {
       Swal.fire("Error!", "PDF not available for this quotation.", "error")
     }
   }
-  const handleDeleteQuotation = async (id) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "This quotation will be permanently deleted!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    })
-
-    if (!result.isConfirmed) return
-
-    try {
-
-      Swal.fire({
-        title: "Deleting...",
-        text: "Please wait while we delete your Quotation.",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading()
-        },
-      })
-
-      const token = localStorage.getItem("token")
-      const response = await fetch(`${baseUrl}/quotations/api/quotations/${id}/`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        Swal.fire("Error!", `Failed to delete: ${errorText}`, "error")
-        throw new Error(`Delete failed: ${response.status} - ${errorText}`)
-      }
-
-      setCustomers((prev) =>
-        prev.map((customer) => ({
-          ...customer,
-          quotations: customer.quotations.filter((q) => q.id !== id),
-        })),
-      )
-      Swal.fire("Deleted!", "The quotation has been deleted.", "success")
-    } catch (error) {
-      console.error("Failed to delete quotation:", error)
-      Swal.fire("Error!", "Something went wrong while deleting.", "error")
-    }
-  }
 
   const handleQuotationSort = (key) => {
     let direction = "asc"
@@ -223,16 +164,15 @@ const CompanyQuotations = () => {
       let valueA = a[quotationSortConfig.key]
       let valueB = b[quotationSortConfig.key]
 
-      // handle special cases
-      if (quotationSortConfig.key === "created_at" || quotationSortConfig.key === "follow_up_date") {
+      if (quotationSortConfig.key === "created_at") {
         valueA = new Date(valueA)
         valueB = new Date(valueB)
       } else if (quotationSortConfig.key === "total") {
         valueA = parseFloat(a.total) || 0
         valueB = parseFloat(b.total) || 0
       } else {
-        valueA = valueA ?? ""
-        valueB = valueB ?? ""
+        valueA = (valueA ?? "").toString().toLowerCase()
+        valueB = (valueB ?? "").toString().toLowerCase()
       }
 
       if (valueA < valueB) return quotationSortConfig.direction === "asc" ? -1 : 1
@@ -242,15 +182,13 @@ const CompanyQuotations = () => {
   }
 
   const QuotationSortIcon = ({ column }) => {
-    if (quotationSortConfig.key !== column) return null
+    if (quotationSortConfig.key !== column) return <ArrowUp className="inline w-3 h-3 ml-1 text-gray-300" />
     return quotationSortConfig.direction === "asc" ? (
-      <ArrowUp className="inline w-4 h-4 ml-1" />
+      <ArrowUp className="inline w-3 h-3 ml-1 text-blue-600" />
     ) : (
-      <ArrowDown className="inline w-4 h-4 ml-1" />
+      <ArrowDown className="inline w-3 h-3 ml-1 text-blue-600" />
     )
   }
-
-
 
   const handleSort = (key) => {
     let direction = "asc"
@@ -261,119 +199,32 @@ const CompanyQuotations = () => {
   }
 
   const SortIcon = ({ column }) => {
-    if (sortConfig.key !== column) return null
+    if (sortConfig.key !== column) return <ArrowUp className="inline w-4 h-4 ml-1 text-gray-300" />
     return sortConfig.direction === "asc" ? (
-      <ArrowUp className="inline w-4 h-4 ml-1" />
+      <ArrowUp className="inline w-4 h-4 ml-1 text-purple-600" />
     ) : (
-      <ArrowDown className="inline w-4 h-4 ml-1" />
+      <ArrowDown className="inline w-4 h-4 ml-1 text-purple-600" />
     )
-  }
-
-  const sortedCustomers = [...customers].sort((a, b) => {
-    if (!sortConfig.key) return 0
-    let valueA, valueB
-
-    if (sortConfig.key === "name") {
-      valueA = a.name ?? ""
-      valueB = b.name ?? ""
-    } else if (sortConfig.key === "company_name") {
-      valueA = a.company_name ?? ""
-      valueB = b.company_name ?? ""
-    } else if (sortConfig.key === "email") {
-      valueA = a.email ?? ""
-      valueB = b.email ?? ""
-    } else if (sortConfig.key === "phone") {
-      valueA = a.phone ?? ""
-      valueB = b.phone ?? ""
-    } else {
-      valueA = a[sortConfig.key] ?? ""
-      valueB = b[sortConfig.key] ?? ""
-    }
-
-    if (valueA < valueB) return sortConfig.direction === "asc" ? -1 : 1
-    if (valueA > valueB) return sortConfig.direction === "asc" ? 1 : -1
-    return 0
-  })
-
-  const filteredCustomers = sortedCustomers.filter((customer) => {
-    const matchesSearch =
-      customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-
-    if (statusFilter === "All Status") {
-      return matchesSearch
-    } else {
-      const hasMatchingQuotation = customer.quotations?.some((q) => q.status === statusFilter)
-      return matchesSearch && hasMatchingQuotation
-    }
-  })
-
-  const handleEditQuotation = (quotation) => {
-    setSelectedQuotation(quotation)
-    setIsEditModalOpen(true)
-  }
-
-
-
-  const handleSaveQuotation = (updatedQuotation) => {
-    setCustomers((prev) =>
-      prev.map((customer) => ({
-        ...customer,
-        quotations: customer.quotations.map((q) => (q.id === updatedQuotation.id ? updatedQuotation : q)),
-      })),
-    )
-  }
-
-
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "SENT":
-        return <Clock className="w-4 h-4 text-blue-500" />
-      case "ACCEPTED":
-        return <CheckCircle className="w-4 h-4 text-green-500" />
-      case "REJECTED":
-        return <XCircle className="w-4 h-4 text-red-500" />
-      case "REVISED":
-        return <ArrowLeftRight className="w-4 h-4 text-black" />
-      default:
-        return <AlertCircle className="w-4 h-4 text-gray-500" />
-    }
   }
 
   const getStatusBadge = (status) => {
     const baseClasses = "px-3 py-1 rounded-full text-xs font-medium"
     switch (status) {
-      case "SENT":
-        return `${baseClasses} bg-blue-100 text-blue-800`
-      case "ACCEPTED":
-        return `${baseClasses} bg-green-100 text-green-800`
-      case "REJECTED":
-        return `${baseClasses} bg-red-100 text-red-800`
-      case "REVISED":
-        return `${baseClasses} bg-black text-white`
-      default:
-        return `${baseClasses} bg-gray-100 text-gray-800`
+      case "SENT": return `${baseClasses} bg-blue-100 text-blue-800`
+      case "ACCEPTED": return `${baseClasses} bg-green-100 text-green-800`
+      case "REJECTED": return `${baseClasses} bg-red-100 text-red-800`
+      case "REVISED": return `${baseClasses} bg-black text-white`
+      default: return `${baseClasses} bg-gray-100 text-gray-800`
     }
   }
 
   const handleStatusChange = async (quotation, id, newStatus) => {
-    const payload = {
-      status: newStatus,
-    }
-
-
     try {
-
       Swal.fire({
         title: "Updating...",
-        text: "Please wait while we update your Quotation status.",
+        text: "Updating status.",
         allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading()
-        },
+        didOpen: () => Swal.showLoading(),
       })
 
       const res = await fetch(`${baseUrl}/accounts/api/quotations/${id}/status/`, {
@@ -382,23 +233,19 @@ const CompanyQuotations = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ status: newStatus }),
       })
 
-      if (!res.ok) {
-        throw new Error("Failed to update quotation status")
-      }
-      setCustomers((prev) =>
-        prev.map((customer) => ({
-          ...customer,
-          quotations: customer.quotations.map((q) => (q.id === id ? { ...q, status: newStatus } : q)),
-        })),
-      )
+      if (!res.ok) throw new Error("Failed to update status")
+      
+      setCustomers(prev => prev.map(cust => ({
+        ...cust,
+        quotations: cust.quotations.map(q => q.id === id ? { ...q, status: newStatus } : q)
+      })))
 
       Swal.fire("Updated!", "Status updated.", "success")
     } catch (err) {
-      console.error("❌ Error updating quotation status:", err)
-      Swal.fire("Error!", "Error updating status. Please try again.", "error")
+      Swal.fire("Error!", "Failed to update status.", "error")
     }
   }
 
@@ -409,84 +256,82 @@ const CompanyQuotations = () => {
       .filter((url) => !!url)
 
     if (pdfUrls.length === 0) {
-      Swal.fire("Missing Url", "No PDF URLs available to export.", "warning")
+      Swal.fire("Missing Url", "No PDF URLs available.", "warning")
       return
     }
 
-    const payload = {
-      pdf_urls: pdfUrls,
-    }
-
     try {
-
-
       const response = await fetch(`${baseUrl}/quotations/api/merge/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ pdf_urls: pdfUrls }),
       })
 
-      if (!response.ok) {
-        throw new Error("Failed to export PDFs")
-      }
-
+      if (!response.ok) throw new Error("Failed to export")
       const data = await response.json()
-      Swal.fire("Exported!!", "All Quotation are successfully exported", "success")
-
-      if (data.final_url) {
-        window.open(data.final_url, "_blank")
-      } else {
-        Swal.fire("Error!", "Export failed: no final PDF URL received.", "error")
-      }
+      if (data.final_url) window.open(data.final_url, "_blank")
     } catch (error) {
-      console.error("❌ Export failed:", error)
-      Swal.fire("Error!", "Export failed. Please try again.", "error")
+      Swal.fire("Error!", "Export failed.", "error")
     }
   }
 
-  const handleViewLogs = async (quotation) => {
-    setSelectedQuotationLogs({
-      quotation,
-      logs: quotation.activity_logs || [],
-    })
-    setIsLogsModalOpen(true)
-    closeDropdown()
-  }
-
-  // Group filtered customers by Company Name
-  const groupedByCompany = filteredCustomers.reduce((acc, customer) => {
+  // Grouped logic with calculation for sortable derived fields
+  const groupedByCompany = customers.reduce((acc, customer) => {
     const companyKey = customer.company_name || "No Company";
-
     if (!acc[companyKey]) {
       acc[companyKey] = {
         company_name: companyKey,
         contacts: [],
-        allQuotations: []
+        allQuotations: [],
+        latestDate: new Date(0)
       };
     }
-
-    // Collect contact details for this company
-    acc[companyKey].contacts.push({
-      name: customer.name,
-      email: customer.email,
-      phone: customer.phone
-    });
-
-    // Merge all quotations for this company
+    acc[companyKey].contacts.push({ name: customer.name, email: customer.email, phone: customer.phone });
     if (customer.quotations) {
-      acc[companyKey].allQuotations.push(...customer.quotations);
+      acc[companyKey].allQuotations.push(...customer.quotations.map(q => ({ ...q, contact_person: customer.name })));
+      
+      const custLatest = customer.quotations.length > 0 
+        ? Math.max(...customer.quotations.map(q => new Date(q.created_at))) 
+        : 0;
+      if (custLatest > acc[companyKey].latestDate) acc[companyKey].latestDate = custLatest;
     }
-
     return acc;
   }, {});
 
   const companies = Object.values(groupedByCompany);
 
+  // Filter Search
+  const filteredCompanies = companies.filter(company => {
+    const matchesSearch = 
+      company.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.contacts.some(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    return matchesSearch;
+  });
 
+  // Sort Table logic
+  const sortedCompanies = [...filteredCompanies].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    let valA = a[sortConfig.key];
+    let valB = b[sortConfig.key];
 
+    if (sortConfig.key === "total_quotes") {
+      valA = a.allQuotations.length;
+      valB = b.allQuotations.length;
+    } else if (sortConfig.key === "latest_quote") {
+      valA = new Date(a.latestDate);
+      valB = new Date(b.latestDate);
+    } else {
+      valA = (valA ?? "").toString().toLowerCase();
+      valB = (valB ?? "").toString().toLowerCase();
+    }
+
+    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
 
   if (loading) {
     return (
@@ -541,48 +386,26 @@ const CompanyQuotations = () => {
 
       {/* Filters & Search */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-            <Search className="w-5 h-5" />
-            <span>Filters & Search</span>
-          </h2>
-        </div>
-
         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 md:space-x-4">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search customers..."
+                placeholder="Search company or contact..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
               />
             </div>
           </div>
-
-          <div className="flex items-center space-x-4">
-
-
-            {localStorage.getItem("role") === "ADMIN" ? <button
-              onClick={handleExport}
-              className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-            >
+          {localStorage.getItem("role") === "ADMIN" && (
+            <button onClick={handleExport} className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg border">
               <Download className="w-4 h-4" />
-              <span>Export All  ({filteredCustomers.reduce((total, customer) => {
-                return total + (customer.quotations ? customer.quotations.length : 0)
-              }, 0)})</span>
-            </button> : ""}
-          </div>
+              <span>Export Merged PDF</span>
+            </button>
+          )}
         </div>
-
-        <p className="text-sm text-gray-500 mt-4">
-          Showing {filteredCustomers.length} customers with {filteredCustomers.reduce((total, customer) => {
-            return total + (customer.quotations ? customer.quotations.filter((prev) => prev.status !== "DRAFT").length : 0)
-          }, 0)} total quotations
-
-        </p>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -591,17 +414,31 @@ const CompanyQuotations = () => {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Company Name</th>
+                <th 
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort("company_name")}
+                >
+                  Company Name <SortIcon column="company_name" />
+                </th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Contacts</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Total Quotes</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Latest Quote Date</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900"></th>
+                <th 
+                   className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                   onClick={() => handleSort("total_quotes")}
+                >
+                  Total Quotes <SortIcon column="total_quotes" />
+                </th>
+                <th 
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort("latest_quote")}
+                >
+                  Latest Quote Date <SortIcon column="latest_quote" />
+                </th>
+                <th className="px-6 py-4"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {companies.map((company, index) => (
+              {sortedCompanies.map((company, index) => (
                 <React.Fragment key={company.company_name}>
-                  {/* Company Row */}
                   <tr
                     className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer bg-slate-50/30"
                     onClick={() => toggleExpand(company.company_name)}
@@ -616,7 +453,6 @@ const CompanyQuotations = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {/* Displaying contact badges similar to Leads page */}
                       <div className="flex flex-wrap gap-1">
                         {company.contacts.map((contact, i) => (
                           <span key={i} className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs font-medium border border-purple-100">
@@ -629,17 +465,11 @@ const CompanyQuotations = () => {
                       {company.allQuotations.length} Quotations
                     </td>
                     <td className="px-6 py-4 text-gray-600 text-sm">
-                      {company.allQuotations.length > 0
-                        ? new Date(Math.max(...company.allQuotations.map(q => new Date(q.created_at)))).toLocaleDateString()
-                        : "-"}
+                      {company.latestDate !== 0 ? new Date(company.latestDate).toLocaleDateString() : "-"}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button className="text-gray-500 hover:text-gray-800">
-                        {expandedCustomer === company.company_name ? (
-                          <ChevronDown className="w-5 h-5" />
-                        ) : (
-                          <ChevronRight className="w-5 h-5" />
-                        )}
+                        {expandedCustomer === company.company_name ? <ChevronDown /> : <ChevronRight />}
                       </button>
                     </td>
                   </tr>
@@ -655,20 +485,27 @@ const CompanyQuotations = () => {
                               <table className="w-full text-sm">
                                 <thead className="text-gray-500 border-b bg-gray-50">
                                   <tr>
-                                    <th className="px-4 py-2 text-left">Customer Name</th>
-                                    <th className="px-4 py-2 text-left">Quote ID</th>
-                                    <th className="px-4 py-2 text-left">Amount</th>
+                                    <th className="px-4 py-2 text-left" onClick={() => handleQuotationSort("contact_person")}>Customer Name<QuotationSortIcon column="customer_name" /></th>
+                                    <th className="px-4 py-2 text-left cursor-pointer" onClick={() => handleQuotationSort("quotation_number")}>
+                                      Quote ID <QuotationSortIcon column="quotation_number" />
+                                    </th>
+                                    <th className="px-4 py-2 text-left cursor-pointer" onClick={() => handleQuotationSort("total")}>
+                                      Amount <QuotationSortIcon column="total" />
+                                    </th>
                                     <th className="px-4 py-2 text-left">Status</th>
-                                    <th className="px-4 py-2 text-left">Created At</th>
+                                    <th className="px-4 py-2 text-left cursor-pointer" onClick={() => handleQuotationSort("created_at")}>
+                                      Created At <QuotationSortIcon column="created_at" />
+                                    </th>
                                     <th className="px-4 py-2 text-left">Assigned To</th>
                                     <th className="px-4 py-2 text-right">Actions</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                  {company.allQuotations.map((quotation) => (
+                                  {console.log(company)}
+                                  {sortQuotations(company.allQuotations).map((quotation) => (
                                     <tr key={quotation.id} className="hover:bg-gray-50 transition-colors">
                                       <td className="px-4 py-3 text-gray-700 font-medium">
-                                        {company.contacts.find(c => c.name)?.name || "N/A"}
+                                        {quotation.contact_person}
                                       </td>
                                       <td className="px-4 py-3 text-gray-900">{quotation.quotation_number}</td>
                                       <td className="px-4 py-3 font-bold text-gray-900">₹{quotation.total}</td>
@@ -687,25 +524,20 @@ const CompanyQuotations = () => {
                                       </td>
                                       <td className="px-4 py-3 text-gray-500">
                                         {new Date(quotation.created_at).toLocaleDateString("en-IN", {
-                                          day: '2-digit',
-                                          month: 'short',
-                                          year: 'numeric'
+                                          day: '2-digit', month: 'short', year: 'numeric'
                                         })}
                                       </td>
                                       <td className="px-4 py-3">
                                         {quotation.assigned_to?.name ? (
                                           <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">
-                                            <Users className="w-3 h-3 mr-1" />
-                                            {quotation.assigned_to.name}
+                                            <Users className="w-3 h-3 mr-1" /> {quotation.assigned_to.name}
                                           </span>
-                                        ) : (
-                                          <span className="text-gray-400 italic">Unassigned</span>
-                                        )}
+                                        ) : <span className="text-gray-400 italic">Unassigned</span>}
                                       </td>
                                       <td className="px-4 py-3 text-right">
                                         <button
                                           onClick={() => handleViewQuotation(quotation)}
-                                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
                                           title="View PDF"
                                         >
                                           <Eye className="w-4 h-4" />
@@ -726,19 +558,13 @@ const CompanyQuotations = () => {
             </tbody>
           </table>
         </div>
-        {companies.length === 0 && (
-          <div className="text-center py-12">
-            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No company data found</p>
-          </div>
-        )}
       </div>
 
       <QuotationEditModel
         quotation={selectedQuotation}
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        onSave={handleSaveQuotation}
+        onSave={(updated) => setCustomers(prev => prev.map(c => ({...c, quotations: c.quotations.map(q => q.id === updated.id ? updated : q)})))}
       />
       <ViewLogsModal
         quotationLogs={selectedQuotationLogs}

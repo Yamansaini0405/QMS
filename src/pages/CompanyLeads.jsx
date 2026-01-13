@@ -4,7 +4,7 @@ import React from "react"
 import { useState, useEffect } from "react"
 import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trash2, Building2, FileText, ArrowRightLeft, X, TrendingDown } from "lucide-react"
 import LeadViewModal from "../components/LeadViewModal"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import QuotationEditModal from "@/components/QuotationEditModel"
 import Swal from "sweetalert2"
 import CustomerViewModal from "@/components/CustomerViewModal"
@@ -28,7 +28,7 @@ const AssignLeadModal = ({ isOpen, onClose, lead, salespersons }) => {
       return
     }
 
-    setIsLoading(true) // Start loading
+    setIsLoading(true)
 
     try {
       Swal.fire({
@@ -57,9 +57,8 @@ const AssignLeadModal = ({ isOpen, onClose, lead, salespersons }) => {
       window.location.reload()
     } catch (error) {
       console.error("Failed to assign lead:", error)
-      // You could add another state here to display an error message to the user
     } finally {
-      setIsLoading(false) // Stop loading, whether it succeeded or failed
+      setIsLoading(false)
     }
   }
 
@@ -113,25 +112,20 @@ const AssignLeadModal = ({ isOpen, onClose, lead, salespersons }) => {
 
 
 export default function CompanyLeads() {
+
+const navigate = useNavigate();
+
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("All Status")
-  const [sourceFilter, setSourceFilter] = useState("All Sources")
-  const [assigneeFilter, setAssigneeFilter] = useState("All Assignees")
-  const [leads, setLeads] = useState([])
+  const [customers, setCustomers] = useState([])
   const [loading, setLoading] = useState(true)
   const [viewModalOpen, setViewModalOpen] = useState(false)
-  const [editModalOpen, setEditModalOpen] = useState(false)
   const [selectedLead, setSelectedLead] = useState(null)
   const [editQuotationOpen, setEditQuotationOpen] = useState(false)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
+  const [sortConfig, setSortConfig] = useState({ key: "company_name", direction: "asc" })
   const [leadSortConfig, setLeadSortConfig] = useState({ key: null, direction: "asc" })
-
   const [selectedCustomer, setSelectedCustomer] = useState(null)
-
-  const [customers, setCustomers] = useState([])
   const [expandedCustomer, setExpandedCustomer] = useState(null)
-
   const [isAssigneeModalOpen, setIsAssigneeModalOpen] = useState(false)
   const [leadToReassign, setLeadToReassign] = useState(null)
   const [salespersons, setSalespersons] = useState([])
@@ -148,11 +142,8 @@ export default function CompanyLeads() {
             Authorization: `Bearer ${token}`,
           },
         })
-
         if (!res.ok) throw new Error("Failed to fetch customers")
-
         const data = await res.json()
-        //backend returns data:[{}] inside 
         setCustomers(data.data || data)
         await fetchUserPermissions();
       } catch (err) {
@@ -161,22 +152,15 @@ export default function CompanyLeads() {
         setLoading(false)
       }
     }
-
     fetchCustomers()
   }, [])
-
-  const toggleExpand = (customerId) => {
-    setExpandedCustomer(expandedCustomer === customerId ? null : customerId)
-  }
 
   useEffect(() => {
     const fetchSalespersons = async () => {
       try {
         const token = localStorage.getItem("token")
-        const res = await fetch(`${baseUrl}/accounts/api/users/`, { // Assuming this is your endpoint
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const res = await fetch(`${baseUrl}/accounts/api/users/`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Failed to fetch salespeople")
         const data = await res.json()
@@ -188,130 +172,46 @@ export default function CompanyLeads() {
     fetchSalespersons()
   }, [])
 
-  useEffect(() => {
-    const fetchLeads = async () => {
-      try {
-        const token = localStorage.getItem("token") // 🔑 get token
-
-        const res = await fetch(`${baseUrl}/quotations/api/leads/`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch leads")
-        }
-
-        const data = await res.json()
-
-
-        // backend may return {data: [...]} or [...]
-        setLeads(data.data || data)
-      } catch (error) {
-        console.error("❌ Error fetching leads:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchLeads()
-  }, [])
-
-  const totalLeads = customers.map((c => c.leads ? c.leads.length : 0)).reduce((a, b) => a + b, 0)
-  const lostLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "LOST").length : 0)).reduce((a, b) => a + b, 0)
-  const qualifiedLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "QUALIFIED").length : 0)).reduce((a, b) => a + b, 0)
-  const pendingLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "PROSPECTIVE").length : 0)).reduce((a, b) => a + b, 0)
+  const toggleExpand = (customerId) => {
+    setExpandedCustomer(expandedCustomer === customerId ? null : customerId)
+  }
 
   const handleOpenAssignModal = (lead) => {
     setLeadToReassign({ ...lead, customer: customers.find(c => c.leads.some(l => l.id === lead.id)) })
     setIsAssigneeModalOpen(true)
   }
 
-  const handleConfirmAssignment = async (leadId, newAssigneeId) => {
-    try {
-      Swal.fire({
-        title: "Reassigning...",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      })
-
-      const token = localStorage.getItem("token")
-      const res = await fetch(`${baseUrl}/quotations/api/leads/${leadId}/assign/`, { // Assuming this is your endpoint
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ assignee_id: newAssigneeId }),
-      })
-
-      if (!res.ok) {
-        throw new Error("Server failed to reassign lead.")
-      }
-      const updatedLeadData = await res.json();
-
-
-      // Update state locally
-      setCustomers((prevCustomers) =>
-        prevCustomers.map((customer) => {
-          if (customer.leads.some((l) => l.id === leadId)) {
-            return {
-              ...customer,
-              leads: customer.leads.map((lead) =>
-                lead.id === leadId ? { ...lead, assigned_to: updatedLeadData.assigned_to } : lead
-              ),
-            }
-          }
-          return customer
-        })
-      )
-
-      setIsAssigneeModalOpen(false)
-      Swal.fire("Success!", "Lead has been reassigned.", "success")
-      window.location.reload()
-    } catch (error) {
-      console.error("❌ Failed to reassign lead:", error)
-      Swal.fire("Error!", "Could not reassign lead. Please try again.", "error")
-    }
-  }
-
-
-
+  const totalLeads = customers.map((c => c.leads ? c.leads.length : 0)).reduce((a, b) => a + b, 0)
+  const lostLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "LOST").length : 0)).reduce((a, b) => a + b, 0)
+  const qualifiedLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "QUALIFIED").length : 0)).reduce((a, b) => a + b, 0)
+  const pendingLeads = customers.map((c => c.leads ? c.leads.filter((l) => l.status === "PROSPECTIVE").length : 0)).reduce((a, b) => a + b, 0)
 
   const stats = [
-    {
-      title: "Total Leads",
-      value: totalLeads.toString(),
-      icon: Target,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-    },
-    {
-      title: "Lost",
-      value: lostLeads.toString(),
-      icon: TrendingDown,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-    },
-    {
-      title: "Qualified",
-      value: qualifiedLeads.toString(),
-      icon: Users,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-    },
-    {
-      title: "Pending",
-      value: pendingLeads.toString(),
-      icon: CheckCircle,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-    },
-    ,
+    { title: "Total Leads", value: totalLeads.toString(), icon: Target, color: "text-orange-600", bgColor: "bg-orange-50" },
+    { title: "Lost", value: lostLeads.toString(), icon: TrendingDown, color: "text-blue-600", bgColor: "bg-blue-50" },
+    { title: "Qualified", value: qualifiedLeads.toString(), icon: Users, color: "text-purple-600", bgColor: "bg-purple-50" },
+    { title: "Pending", value: pendingLeads.toString(), icon: CheckCircle, color: "text-green-600", bgColor: "bg-green-50" },
   ]
 
+  // Sorting Logic for Company Table
+  const handleSortCust = (key) => {
+    let direction = "asc"
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc"
+    }
+    setSortConfig({ key, direction })
+  }
+
+  const SortIcon = ({ column }) => {
+    if (sortConfig.key !== column) return <ArrowUp className="inline w-4 h-4 ml-1 text-gray-300" />
+    return sortConfig.direction === "asc" ? (
+      <ArrowUp className="inline w-4 h-4 ml-1 text-orange-600" />
+    ) : (
+      <ArrowDown className="inline w-4 h-4 ml-1 text-orange-600" />
+    )
+  }
+
+  // Sorting Logic for Leads List
   const handleSortLead = (key) => {
     let direction = "asc"
     if (leadSortConfig.key === key && leadSortConfig.direction === "asc") {
@@ -321,82 +221,40 @@ export default function CompanyLeads() {
   }
 
   const LeadSortIcon = ({ column }) => {
-    if (leadSortConfig.key !== column) return null
+    if (leadSortConfig.key !== column) return <ArrowUp className="inline w-3 h-3 ml-1 text-gray-300" />
     return leadSortConfig.direction === "asc" ? (
-      <ArrowUp className="inline w-3 h-3 ml-1" />
+      <ArrowUp className="inline w-3 h-3 ml-1 text-orange-600" />
     ) : (
-      <ArrowDown className="inline w-3 h-3 ml-1" />
+      <ArrowDown className="inline w-3 h-3 ml-1 text-orange-600" />
     )
   }
 
-
-
-  const SortIcon = ({ column }) => {
-    if (sortConfig.key !== column) return null
-    return sortConfig.direction === "asc" ? (
-      <ArrowUp className="inline w-4 h-4 ml-1" />
-    ) : (
-      <ArrowDown className="inline w-4 h-4 ml-1" />
-    )
-  }
-
-  const handleSortCust = (key) => {
-    let direction = "asc"
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc"
+  const handleStatusChange = async (lead, id, newStatus) => {
+    try {
+      Swal.fire({
+        title: "Updating...",
+        text: "Updating status.",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      })
+      const res = await fetch(`${baseUrl}/accounts/api/leads/${id}/status/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (!res.ok) throw new Error("Failed to update status")
+      
+      setCustomers((prev) => prev.map((customer) => ({
+        ...customer,
+        leads: customer.leads ? customer.leads.map((l) => l.id === id ? { ...l, status: newStatus } : l) : []
+      })))
+      Swal.fire("Updated!", "Lead status updated.", "success")
+    } catch (err) {
+      Swal.fire("Error!", "Failed to update status.", "error")
     }
-    setSortConfig({ key, direction })
-  }
-  const sortedCustomers = [...customers].sort((a, b) => {
-    if (!sortConfig.key) return 0
-    const valueA = a[sortConfig.key] ?? ""
-    const valueB = b[sortConfig.key] ?? ""
-    if (valueA < valueB) return sortConfig.direction === "asc" ? -1 : 1
-    if (valueA > valueB) return sortConfig.direction === "asc" ? 1 : -1
-    return 0
-  })
-
-  const filteredCustomers = sortedCustomers.filter(
-    (customer) =>
-      customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(customer.phone).toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
-  const sortedLeads = (leads) => {
-    return [...leads].sort((a, b) => {
-      if (!leadSortConfig.key) return 0
-      let valueA, valueB
-
-      if (leadSortConfig.key === "customer") {
-        valueA = a.customer?.name ?? ""
-        valueB = b.customer?.name ?? ""
-      } else if (leadSortConfig.key === "company") {
-        valueA = a.customer?.company_name ?? ""
-        valueB = b.customer?.company_name ?? ""
-      } else if (leadSortConfig.key === "assignee") {
-        valueA = a.assigned_to?.name ?? ""
-        valueB = b.assigned_to?.name ?? ""
-      } else {
-        valueA = a[leadSortConfig.key] ?? ""
-        valueB = b[leadSortConfig.key] ?? ""
-      }
-
-      if (valueA < valueB) return leadSortConfig.direction === "asc" ? -1 : 1
-      if (valueA > valueB) return leadSortConfig.direction === "asc" ? 1 : -1
-      return 0
-    })
-  }
-
-  const handleViewLead = (lead) => {
-    setSelectedLead(lead)
-    setViewModalOpen(true)
-  }
-
-  const handleEditLead = (lead) => {
-    setSelectedLead(lead)
-    setEditModalOpen(true)
   }
 
   const handleDeleteLead = async (id) => {
@@ -405,246 +263,124 @@ export default function CompanyLeads() {
       text: "This lead will be permanently deleted!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
     })
-
     if (!result.isConfirmed) return
 
     try {
-      // 🔹 call backend API
-      Swal.fire({
-        title: "Deleting...",
-        text: "Please wait while we delete your Lead.",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading()
-        },
-      })
-
+      Swal.fire({ title: "Deleting...", allowOutsideClick: false, didOpen: () => Swal.showLoading() })
       const res = await fetch(`${baseUrl}/quotations/api/leads/${id}/`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       })
-
-      if (!res.ok) {
-        throw new Error("Failed to delete lead from server")
-      }
-
-      // 🔹 update UI
-      setLeads((prev) => prev.filter((lead) => lead.id !== id))
-      setCustomers((prev) =>
-        prev.map((c) => ({
-          ...c,
-          leads: c.leads ? c.leads.filter((l) => l.id !== id) : [],
-        }))
-      )
-
-      Swal.fire("Deleted!", "The lead has been deleted.", "success")
-
-
-
-
+      if (!res.ok) throw new Error("Delete failed")
+      
+      setCustomers((prev) => prev.map((c) => ({
+        ...c,
+        leads: c.leads ? c.leads.filter((l) => l.id !== id) : [],
+      })))
+      Swal.fire("Deleted!", "Lead removed.", "success")
     } catch (err) {
-      console.error(err)
-      Swal.fire("Error!", "Failed to delete lead. Please try again.", "error")
-
-
+      Swal.fire("Error!", "Failed to delete lead.", "error")
     }
   }
 
   const handleCreateQuotation = async (quotationId) => {
     try {
-      const token = localStorage.getItem("token")
-
-
-
       const res = await fetch(`${baseUrl}/quotations/api/quotations/${quotationId}/`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       })
-
-      if (!res.ok) {
-        throw new Error("Failed to fetch quotation for this lead")
-      }
-
+      if (!res.ok) throw new Error("Fetch failed")
       const data = await res.json()
-
-
-      // 🔹 open modal with fetched quotation
       setSelectedQuotation(data.data)
       setEditQuotationOpen(true)
     } catch (error) {
-      console.error("❌ Error fetching quotation:", error)
-      alert("Error loading quotation. Please try again.")
+      Swal.fire("Error!", "Could not load quotation.", "error")
     }
-  }
-
-  const handleStatusChange = async (lead, id, newStatus) => {
-    const payload = {
-      id: id,
-      // customer_name: lead.customer.name,
-      // customer_email: lead.customer.email,
-      // customer_phone: lead.customer.phone,
-      status: newStatus,
-      // priority: lead.priority,
-    }
-
-    try {
-      Swal.fire({
-        title: "Updating...",
-        text: "Please wait while we update your Lead status.",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading()
-        },
-      })
-      const res = await fetch(`${baseUrl}/accounts/api/leads/${id}/status/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      })
-
-      if (!res.ok) {
-        throw new Error("Failed to update status on server")
-      }
-
-      // ✅ Update UI
-      //change the status in leads state setCustomers
-      setCustomers((prevCustomers) =>
-        prevCustomers.map((customer) => {
-          if (customer.leads.some((l) => l.id === id)) {
-            return {
-              ...customer,
-              leads: customer.leads.map((lead) =>
-                lead.id === id ? { ...lead, status: newStatus } : lead
-              ),
-            }
-          }
-          return customer
-        })
-      )
-
-      Swal.fire("Updated!", "The lead has been updated.", "success")
-
-    } catch (err) {
-      console.error(err)
-      Swal.fire("Error!", "Failed to update lead. Please try again.", "error")
-
-    }
-  }
-
-  const handleSaveLead = async (updatedLead) => {
-    try {
-
-
-      // Simulate API call
-      const response = await fetch("/api/leads/" + updatedLead.id, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedLead),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to update lead. Please try again.")
-      }
-
-      const savedLead = await response.json()
-      setLeads((prev) => prev.map((lead) => (lead.id === savedLead.id ? savedLead : lead)))
-      setEditModalOpen(false)
-    } catch (error) {
-      console.error("❌ Error saving lead:", error)
-      // For demo purposes, still update locally
-      setLeads((prev) => prev.map((lead) => (lead.id === updatedLead.id ? updatedLead : lead)))
-      setEditModalOpen(false)
-    }
-  }
-
-  const handleViewCustomer = (customer) => {
-    setSelectedCustomer(customer)
-    setViewModalOpen(true)
   }
 
   const handleExportExcel = () => {
-    if (!filteredCustomers.length) {
-      Swal.fire("No Leads to export", "No leads found for filtered customers", "warning")
-      return
-    }
-
-    // Flatten leads for all filtered customers
     const exportData = []
-    filteredCustomers.forEach((c, cIndex) => {
-      if (c.leads && c.leads.length > 0) {
-        c.leads.forEach((lead, lIndex) => {
-          exportData.push({
-            "S.No.": exportData.length + 1,
-            Customer: c.name,
-            Company: c.company_name || "",
-            Email: c.email || "",
-            Phone: c.phone || "",
-            LeadStatus: lead.status || "",
-            LeadSource: lead.lead_source || "",
-            Assignee: lead.assigned_to?.name || "Unassigned",
-            CreatedAt: lead.created_at ? lead.created_at.split("T")[0] : "",
-          })
+    filteredCompanies.forEach((company) => {
+      company.allLeads.forEach((lead) => {
+        exportData.push({
+          Company: company.company_name,
+          Contact: lead.contact_person,
+          Status: lead.status,
+          Source: lead.lead_source,
+          Assignee: lead.assigned_to?.name || "Unassigned",
+          Created: new Date(lead.created_at).toLocaleDateString()
         })
-      }
+      })
     })
+    const ws = XLSX.utils.json_to_sheet(exportData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Leads")
+    XLSX.writeFile(wb, "Company_Leads.xlsx")
+  }
 
-    if (!exportData.length) {
-      Swal.fire("No Leads", "Filtered customers have no leads to export", "info")
-      return
+  // Grouping and Filtering
+  const groupedByCompany = customers.reduce((acc, customer) => {
+    const companyKey = customer.company_name || "No Company";
+    if (!acc[companyKey]) {
+      acc[companyKey] = { company_name: companyKey, contacts: [], allLeads: [] };
+    }
+    if (!acc[companyKey].contacts.includes(customer.name)) acc[companyKey].contacts.push(customer.name);
+    if (customer.leads) {
+      acc[companyKey].allLeads.push(...customer.leads.map(lead => ({ ...lead, contact_person: customer.name })));
+    }
+    return acc;
+  }, {});
+
+  const companyData = Object.values(groupedByCompany);
+
+  const filteredCompanies = companyData.filter(company => 
+    company.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.contacts.some(c => c.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  // Apply sorting to Company Table
+  const sortedCompanies = [...filteredCompanies].sort((a, b) => {
+    if (!sortConfig.key) return 0
+    let valA = a[sortConfig.key]
+    let valB = b[sortConfig.key]
+
+    if (sortConfig.key === "total_leads") {
+      valA = a.allLeads.length;
+      valB = b.allLeads.length;
+    } else {
+      valA = (valA ?? "").toString().toLowerCase();
+      valB = (valB ?? "").toString().toLowerCase();
     }
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Leads")
+    if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1
+    if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1
+    return 0
+  });
 
-    XLSX.writeFile(workbook, "leads.xlsx")
+  // Function to sort nested leads
+  const sortedLeads = (leads) => {
+    return [...leads].sort((a, b) => {
+      if (!leadSortConfig.key) return 0
+      let valA = a[leadSortConfig.key]
+      let valB = b[leadSortConfig.key]
+
+      if (leadSortConfig.key === "created_at") {
+        valA = new Date(valA);
+        valB = new Date(valB);
+      } else if (leadSortConfig.key === "assignee") {
+        valA = (a.assigned_to?.name ?? "").toLowerCase();
+        valB = (b.assigned_to?.name ?? "").toLowerCase();
+      } else {
+        valA = (valA ?? "").toString().toLowerCase();
+        valB = (valB ?? "").toString().toLowerCase();
+      }
+
+      if (valA < valB) return leadSortConfig.direction === "asc" ? -1 : 1
+      if (valA > valB) return leadSortConfig.direction === "asc" ? 1 : -1
+      return 0
+    })
   }
-
-  // Group customers and their leads by Company Name
-const groupedByCompany = filteredCustomers.reduce((acc, customer) => {
-  const companyKey = customer.company_name || "No Company";
-  
-  if (!acc[companyKey]) {
-    acc[companyKey] = {
-      company_name: companyKey,
-      contacts: [],
-      allLeads: []
-    };
-  }
-  
-  // Collect unique contact names for this company
-  if (!acc[companyKey].contacts.includes(customer.name)) {
-    acc[companyKey].contacts.push(customer.name);
-  }
-
-  // Merge all leads from this specific customer into the company pool
-  if (customer.leads && customer.leads.length > 0) {
-    acc[companyKey].allLeads.push(...customer.leads.map(lead => ({
-      ...lead,
-      // Ensure the lead object retains context of which contact it belongs to
-      contact_person: customer.name 
-    })));
-  }
-  
-  return acc;
-}, {});
-
-const companyData = Object.values(groupedByCompany);
-
 
   if (loading) {
     return (
@@ -696,187 +432,161 @@ const companyData = Object.values(groupedByCompany);
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-            <Search className="w-5 h-5" />
-            <span>Filters & Search</span>
-          </h2>
-        </div>
-
         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 md:space-x-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search leads..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 mr-4"
-              />
-
-            </div>
-
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search company or contact..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
           </div>
-          {localStorage.getItem("role") === "ADMIN" ? <div>
-            <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-              onClick={() => handleExportExcel()}>
+          {localStorage.getItem("role") === "ADMIN" && (
+            <button onClick={handleExportExcel} className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg border">
               <Download className="w-4 h-4" />
-              <span>Export All {filteredCustomers.reduce((count, customer) => {
-                return count + (customer.leads ? customer.leads.length : 0)
-              }, 0)}</span>
+              <span>Export All Leads</span>
             </button>
-          </div> : ""}
+          )}
         </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-  <div className="overflow-x-auto">
-    <table className="w-full">
-      <thead className="bg-gray-50 border-b border-gray-200">
-        <tr>
-          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
-          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Company Name</th>
-          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Associated Contacts</th>
-          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Total Leads</th>
-          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900"></th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-200">
-        {companyData.map((company, index) => (
-          <React.Fragment key={company.company_name}>
-            {/* Company Level Row */}
-            <tr 
-              className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer" 
-              onClick={() => toggleExpand(company.company_name)}
-            >
-              <td className="px-6 py-4 text-gray-600">{index + 1}</td>
-              <td className="px-6 py-4 font-bold text-gray-900">
-                <div className="flex items-center justify-start gap-2">
-                  <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
-                    <Building2 className="w-4 h-4 text-white" />
-                  </div>
-                  {company.company_name}
-                </div>
-              </td>
-              <td className="px-6 py-4 text-gray-600">
-                <div className="flex flex-wrap gap-1">
-                  {company.contacts.map((name, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-gray-100 rounded text-xs font-medium">
-                      {name}
-                    </span>
-                  ))}
-                </div>
-              </td>
-              <td className="px-6 py-4 font-semibold text-orange-600">
-                {company.allLeads.length} Leads
-              </td>
-              <td className="px-6 py-4 text-right">
-                <button className="text-gray-500">
-                  {expandedCustomer === company.company_name ? (
-                    <ChevronDown className="w-5 h-5" />
-                  ) : (
-                    <ChevronRight className="w-5 h-5" />
-                  )}
-                </button>
-              </td>
-            </tr>
-
-            {/* Expanded Sub-table for Leads */}
-            {expandedCustomer === company.company_name && (
-              <tr className="bg-gray-50">
-                <td colSpan={5} className="px-6 py-4">
-                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="px-4 py-3 text-left">Contact Person</th>
-                          <th className="px-4 py-3 text-left">Status</th>
-                          <th className="px-4 py-3 text-left">Source</th>
-                          <th className="px-4 py-3 text-left">Assignee</th>
-                          <th className="px-4 py-3 text-left">Created</th>
-                          <th className="px-4 py-3 text-left">Quotation</th>
-                          <th className="px-4 py-3 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sortedLeads(company.allLeads).map((lead) => (
-                          <tr key={lead.id} className="border-t hover:bg-gray-50">
-                            <td className="px-4 py-2 font-medium">{lead.contact_person}</td>
-                            <td className="px-4 py-2">
-                              <select
-                                value={lead.status}
-                                onChange={(e) => handleStatusChange(lead, lead.id, e.target.value)}
-                                className="px-2 py-1 rounded border text-xs bg-blue-50 text-blue-800"
-                              >
-                                <option value="LOST">Lost</option>
-                                <option value="PROSPECTIVE">Prospective</option>
-                                <option value="QUALIFIED">Qualified</option>
-                                <option value="CONVERTED">Converted</option>
-                                <option value="NEGOTIATION">Negotiation</option>
-                              </select>
-                            </td>
-                            <td className="px-4 py-2">{lead.lead_source || "-"}</td>
-                            <td className="px-4 py-2">
-                              <div className="flex items-center gap-2">
-                                <span>{lead.assigned_to?.name || "Unassigned"}</span>
-                                <button onClick={() => handleOpenAssignModal(lead)} className="text-gray-400 hover:text-blue-600">
-                                  <ArrowRightLeft className="w-3 h-3" />
-                                </button>
-                              </div>
-                            </td>
-                            <td className="px-4 py-2">{new Date(lead.created_at).toLocaleDateString()}</td>
-                            <td className="px-4 py-2">
-                              {lead.file_url ? (
-                                <a href={lead.file_url} target="_blank" rel="noreferrer" className="text-xs bg-green-700 text-white px-2 py-1 rounded">Download</a>
-                              ) : (
-                                <button onClick={() => handleCreateQuotation(lead.quotation)} className="text-xs bg-green-700 text-white px-2 py-1 rounded">Create</button>
-                              )}
-                            </td>
-                            <td className="px-4 py-2 text-right">
-                              <div className="flex justify-end gap-2">
-                                <Link to={`/leads/view/${lead.id}`} className="p-1 hover:bg-gray-100 rounded">
-                                  <Eye className="w-4 h-4 text-gray-500" />
-                                </Link>
-                                {permissions?.lead?.includes("delete") && (
-                                  <button onClick={() => handleDeleteLead(lead.id)} className="p-1 hover:bg-red-50 text-red-600 rounded">
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
+                <th 
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSortCust("company_name")}
+                >
+                  Company Name <SortIcon column="company_name" />
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Associated Contacts</th>
+                <th 
+                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSortCust("total_leads")}
+                >
+                  Total Leads <SortIcon column="total_leads" />
+                </th>
+                <th className="px-6 py-4"></th>
               </tr>
-            )}
-          </React.Fragment>
-        ))}
-      </tbody>
-    </table>
-  </div>
-</div>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {sortedCompanies.map((company, index) => (
+                <React.Fragment key={company.company_name}>
+                  <tr className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer" onClick={() => toggleExpand(company.company_name)}>
+                    <td className="px-6 py-4 text-gray-600">{index + 1}</td>
+                    <td className="px-6 py-4 font-bold text-gray-900">
+                      <div className="flex items-center justify-start gap-2">
+                        <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+                          <Building2 className="w-4 h-4 text-white" />
+                        </div>
+                        {company.company_name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {company.contacts.map((name, i) => (
+                          <span key={i} className="px-2 py-0.5 bg-gray-100 rounded text-xs font-medium">{name}</span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-orange-600">{company.allLeads.length} Leads</td>
+                    <td className="px-6 py-4 text-right">
+                      <button className="text-gray-500">
+                        {expandedCustomer === company.company_name ? <ChevronDown /> : <ChevronRight />}
+                      </button>
+                    </td>
+                  </tr>
+
+                  {expandedCustomer === company.company_name && (
+                    <tr className="bg-gray-50">
+                      <td colSpan={5} className="px-6 py-4">
+                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                          <table className="w-full text-sm">
+                            <thead className="bg-gray-100">
+                              <tr>
+                                <th className="px-4 py-3 text-left cursor-pointer hover:bg-gray-200" onClick={() => handleSortLead("contact_person")}>
+                                  Contact Person <LeadSortIcon column="contact_person" />
+                                </th>
+                                <th className="px-4 py-3 text-left cursor-pointer hover:bg-gray-200" onClick={() => handleSortLead("status")}>
+                                  Status <LeadSortIcon column="status" />
+                                </th>
+                                <th className="px-4 py-3 text-left">Source</th>
+                                <th className="px-4 py-3 text-left cursor-pointer hover:bg-gray-200" onClick={() => handleSortLead("assignee")}>
+                                  Assignee <LeadSortIcon column="assignee" />
+                                </th>
+                                <th className="px-4 py-3 text-left cursor-pointer hover:bg-gray-200" onClick={() => handleSortLead("created_at")}>
+                                  Created <LeadSortIcon column="created_at" />
+                                </th>
+                                <th className="px-4 py-3 text-left">Quotation</th>
+                                <th className="px-4 py-3 text-right">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {sortedLeads(company.allLeads).map((lead) => (
+                                <tr key={lead.id} className="border-t hover:bg-gray-50">
+                                  <td className="px-4 py-2 font-medium">{lead.contact_person}</td>
+                                  <td className="px-4 py-2">
+                                    <select
+                                      value={lead.status}
+                                      onChange={(e) => handleStatusChange(lead, lead.id, e.target.value)}
+                                      className="px-2 py-1 rounded border text-xs bg-blue-50 text-blue-800"
+                                    >
+                                      <option value="LOST">Lost</option>
+                                      <option value="PROSPECTIVE">Prospective</option>
+                                      <option value="QUALIFIED">Qualified</option>
+                                      <option value="CONVERTED">Converted</option>
+                                      <option value="NEGOTIATION">Negotiation</option>
+                                    </select>
+                                  </td>
+                                  <td className="px-4 py-2">{lead.lead_source || "-"}</td>
+                                  <td className="px-4 py-2">
+                                    <div className="flex items-center gap-2">
+                                      <span>{lead.assigned_to?.name || "Unassigned"}</span>
+                                      <button onClick={() => handleOpenAssignModal(lead)} className="text-gray-400 hover:text-blue-600">
+                                        <ArrowRightLeft className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  </td>
+                                  <td className="px-4 py-2">{new Date(lead.created_at).toLocaleDateString()}</td>
+                                  <td className="px-4 py-2">
+                                    {lead.file_url ? (
+                                      <a href={lead.file_url} target="_blank" rel="noreferrer" className="text-xs bg-green-700 text-white px-2 py-1 rounded">Download</a>
+                                    ) : (
+                                      <button onClick={() => navigate(`/quotations/edit/${lead.quotation}`)} className="text-xs bg-green-700 text-white px-2 py-1 rounded">Create</button>
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-2 text-right">
+                                    <div className="flex justify-end gap-2">
+                                      <Link to={`/leads/view/${lead.id}`} className="p-1 hover:bg-gray-100 rounded"><Eye className="w-4 h-4 text-gray-500" /></Link>
+                                      {permissions?.lead?.includes("delete") && (
+                                        <button onClick={() => handleDeleteLead(lead.id)} className="p-1 hover:bg-red-50 text-red-600 rounded"><Trash2 className="w-4 h-4" /></button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <CustomerViewModal customer={selectedCustomer} isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} />
-
       <LeadViewModal lead={selectedLead} isOpen={viewModalOpen} onClose={() => setViewModalOpen(false)} />
-      <QuotationEditModal
-        quotation={selectedQuotation}
-        isOpen={editQuotationOpen}
-        onClose={() => setEditQuotationOpen(false)}
-        onSave={(updatedQuotation) => {
-
-          setEditQuotationOpen(false)
-        }}
-      />
-      <AssignLeadModal
-        isOpen={isAssigneeModalOpen}
-        onClose={() => setIsAssigneeModalOpen(false)}
-        lead={leadToReassign}
-        salespersons={salespersons}
-      />
+      <QuotationEditModal quotation={selectedQuotation} isOpen={editQuotationOpen} onClose={() => setEditQuotationOpen(false)} onSave={() => setEditQuotationOpen(false)} />
+      <AssignLeadModal isOpen={isAssigneeModalOpen} onClose={() => setIsAssigneeModalOpen(false)} lead={leadToReassign} salespersons={salespersons} />
     </div>
   )
 }
