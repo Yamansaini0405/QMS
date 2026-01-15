@@ -30,6 +30,7 @@ import TodaysFollowups from "./pages/TodaysFollowups"
 import CompanyQuotations from "./pages/CompanyQuotations"
 import CompanyLeads from "./pages/CompanyLeads"
 import ExportData from "./pages/ExportData"
+import LostLeadPage from "./pages/LostLeadPage"
 
 
 function App() {
@@ -85,6 +86,7 @@ function App() {
               <Route path="/profile" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><ProfilePage /></ProtectedRoute>} /> 
               <Route path="/leads/converted" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><ConvertedLeadsPage /></ProtectedRoute>} />
               <Route path="/leads/followups" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><TodaysFollowups /></ProtectedRoute>} />
+              <Route path="/leads/lost" element={<ProtectedRoute allowedRoles={["ADMIN", "SALESPERSON"]}><LostLeadPage /></ProtectedRoute>} />
               <Route path="/export" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ExportData /></ProtectedRoute>} />
               {/* ...other admin routes... */}
             </Routes>

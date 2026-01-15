@@ -20,6 +20,7 @@ import {
   TargetIcon,
   Building2,
   Database,
+  FileXIcon,
 } from "lucide-react"
 
 
@@ -73,6 +74,7 @@ const Sidebar = ({ open, onClose }) => {
         { title: "Company Leads", path: "/leads/company", icon: Building2 },
         { title: "Leads", path: "/leads", icon: LayoutDashboard },
         { title: "Converted Leads", path: "/leads/converted", icon: TargetIcon },
+        { title: "Lost Leads", path: "/leads/lost", icon: FileXIcon },
       ],
     },
     {

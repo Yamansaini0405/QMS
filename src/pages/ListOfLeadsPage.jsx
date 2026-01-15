@@ -401,7 +401,7 @@ export default function ListOfLeadsPage() {
                                 <tbody>
                                     {currentLeads.map((lead, index) => (
                                         <tr key={lead.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 text-sm font-semibold text-gray-900">{lead.quotation_number}</td>
+                                            <td className="px-6 py-4 text-sm font-semibold text-gray-900">{lead.lead_number}</td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold ${getAvatarColor(lead.customer.name)}`}>

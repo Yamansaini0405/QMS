@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Search, Download, CheckCircle, TrendingUp, Clock, AlertCircle, ChevronLeft, ChevronRight, Phone, Trash, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react"
+import { Search, Download, CheckCircle, TrendingUp, Clock, AlertCircle, ChevronLeft, ChevronRight, Phone, Trash, ArrowUpDown, ChevronUp, ChevronDown, X, FileXIcon } from "lucide-react"
 import Swal from "sweetalert2"
 import { Link } from "react-router-dom"
 import { getUserPermissions } from "@/utils/permissions"
@@ -10,7 +10,7 @@ const baseUrl = import.meta.env.VITE_BASE_URL
 const STATUS_OPTIONS = ["PROSPECTIVE", "QUALIFIED", "LOST", "CONVERTED", "NEGOTIATION"];
 const PRIORITY_OPTIONS = ["LOW", "MEDIUM", "HIGH"];
 
-export default function ListOfLeadsPage() {
+export default function LostLeadPage() {
     const [leads, setLeads] = useState([])
     const [filteredLeads, setFilteredLeads] = useState([])
     const [searchTerm, setSearchTerm] = useState("")
@@ -30,7 +30,7 @@ export default function ListOfLeadsPage() {
         const fetchConvertedLeads = async () => {
             try {
                 setLoading(true)
-                const response = await fetch(`${baseUrl}/quotations/api/leads/?filter=converted`, {
+                const response = await fetch(`${baseUrl}/quotations/api/leads/?filter=lost`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -179,12 +179,12 @@ export default function ListOfLeadsPage() {
                 <div className="flex items-center justify-between max-w-7xl mx-auto">
                     <div>
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                                <CheckCircle className="w-6 h-6 text-green-600" />
+                            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                <FileXIcon className="w-6 h-6 text-red-600" />
                             </div>
-                            <h1 className="text-3xl font-bold text-gray-900">Converted Leads</h1>
+                            <h1 className="text-3xl font-bold text-gray-900">Lost Leads</h1>
                         </div>
-                        <p className="text-gray-600">Track and manage successfully converted leads</p>
+                        <p className="text-gray-600">Track and manage Lost leads</p>
                     </div>
                 </div>
             </div>

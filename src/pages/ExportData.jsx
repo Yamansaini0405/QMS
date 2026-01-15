@@ -217,12 +217,12 @@ const ExportData = () => {
           <p className="text-gray-600 mt-2">Select entity, fields, and date range to export data</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {Object.entries(ENTITY_CONFIG).map(([key, config]) => (
             <button
               key={key}
               onClick={() => handleEntityChange(key)}
-              className={`p-4 rounded-lg border-2 transition-all text-left ${
+              className={`p-4 flex space-x-2 items-center justify-start rounded-lg border-2 transition-all text-left ${
                 selectedEntity === key
                   ? "border-orange-500 bg-orange-50"
                   : "border-gray-200 bg-white hover:border-orange-300"
