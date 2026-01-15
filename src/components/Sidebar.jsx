@@ -19,6 +19,7 @@ import {
   Menu,
   TargetIcon,
   Building2,
+  Database,
 } from "lucide-react"
 
 
@@ -116,6 +117,17 @@ const Sidebar = ({ open, onClose }) => {
       subItems: [
         { title: "Create Terms", path: "/terms/create", icon: Plus },
         { title: "View Terms", path: "/terms", icon: Eye },
+      ],
+    },
+    {
+      key: "Export",
+      title: "Export",
+      icon: Database,
+      hasSubmenu: true,
+      roles: ["ADMIN"], // only admin
+      subItems: [
+        { title: "Export Data", path: "/export", icon: Plus },
+        
       ],
     },
   ]
