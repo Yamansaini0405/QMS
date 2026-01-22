@@ -62,10 +62,6 @@ export default function AddCustomer() {
       case "fullName":
         if (!value.trim()) msg = "Full name is required"
         break
-      case "email":
-        if (!value.trim()) msg = "Email is required"
-        else if (!/\S+@\S+\.\S+/.test(value)) msg = "Invalid email format"
-        break
       case "phoneNumber": {
         const digits = value.replace(/\D/g, "")
         if (!digits) {

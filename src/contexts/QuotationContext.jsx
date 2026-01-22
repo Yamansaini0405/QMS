@@ -379,15 +379,18 @@ export const QuotationProvider = ({ children }) => {
                     body: JSON.stringify(payload),
                 }
             );
+            const result = await response.json();
 
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(
                     `Failed to create quotation: ${response.status} - ${errorText}`
                 );
+            }else {
+                window.open(result.data.pdf_url, '_blank');
             }
 
-            const result = await response.json();
+            // const result = await response.json();
             Swal.fire(id ? location.pathname.startsWith('/quotations/edit') ? "Updated" : "Duplicated" : "Created!", `The Quotation has been ${id ? location.pathname.startsWith('/quotations/edit') ? "updated" : "duplicated" : "created"}.`, "success")
             setFormData({
                 quotationDate: formatDate(new Date()),

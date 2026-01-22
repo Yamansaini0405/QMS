@@ -148,18 +148,22 @@ export default function LeadDetailsPage() {
                     </button>
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
+
                             <h1 className="text-xl md:text-2xl font-bold text-gray-900">{lead.customer?.name}</h1>
                             <p className="text-sm text-gray-500">{lead.customer?.company_name}</p>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(lead.status)}`}>
-                                {lead.status}
-                            </span>
-                            {lead.priority && (
-                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700 uppercase tracking-wider">
-                                    {lead.priority}
+                        <div className=" gap-2">
+                            <span className="text-sm font-semibold text-orange-500">Unique No: {lead.lead_number}</span>
+                            <div>
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(lead.status)}`}>
+                                    {lead.status}
                                 </span>
-                            )}
+                                {lead.priority && (
+                                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700 uppercase tracking-wider">
+                                        {lead.priority}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -204,20 +208,20 @@ export default function LeadDetailsPage() {
                                         </span>
                                     </div>
                                     {lead.quotation.pdf_url ? (
-                                        <button 
+                                        <button
                                             onClick={() => window.open(lead.quotation.pdf_url, '_blank')}
                                             className="w-full mt-2 flex items-center justify-center gap-2 text-xs text-blue-600 hover:bg-blue-50 py-2 border border-blue-100 rounded-lg transition-all"
                                         >
                                             <Eye className="w-4 h-4" /> View Original PDF
                                         </button>
-                                    ): (
+                                    ) : (
                                         <button
-                                          onClick={() => navigate(`/quotations/edit/${lead.quotation.id}`)}
-                                          className="w-full text-white hover:underline bg-green-700 px-2 py-1 rounded-lg"
+                                            onClick={() => navigate(`/quotations/edit/${lead.quotation.id}`)}
+                                            className="w-full text-white hover:underline bg-green-700 px-2 py-1 rounded-lg"
                                         >
-                                          Create
+                                            Create
                                         </button>
-                                      )}
+                                    )}
                                 </div>
                             </div>
                         )}
