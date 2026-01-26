@@ -96,6 +96,12 @@ export default function Products() {
     fetchCategories()
   }, [])
 
+  const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString("en-US", {
+            year: "numeric", month: "short", day: "numeric",
+        })
+    }
+
 
 
   const totalProducts = products.length
@@ -490,7 +496,7 @@ if (!result.isConfirmed) return
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{product.created_at.split("T")[0]}</span>
+                    <span className="text-sm text-gray-600">{formatDate(product.created_at)}</span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">

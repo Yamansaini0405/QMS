@@ -1,6 +1,6 @@
 "use client"
 
-import { Package, Plus } from "lucide-react"
+import { Package, Plus, X } from "lucide-react"
 import { useQuotation } from "../../contexts/QuotationContext"
 import { useState, useEffect } from "react"
 
@@ -47,12 +47,12 @@ export default function ProductTable() {
     calculateTotals(formData.products)
   }, [showPercentageDiscount, setShowPercentageDiscount])
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
       <div className="flex items-center space-x-2 mb-6">
         <Package className="w-5 h-5 text-gray-600" />
-        <h2 className="text-lg font-semibold text-gray-900">Add Products/Services</h2>
+        <h2 className="text-base md:text-lg font-semibold text-gray-900">Add Products/Services</h2>
       </div>
-      <div className="flex items-center space-x-4 mb-4">
+      <div className="flex items-center space-x-2 mb-4">
         <div className="flex items-center space-x-2">
           <input
             type="checkbox"
@@ -61,151 +61,290 @@ export default function ProductTable() {
             onChange={(e) => setShowPercentageDiscount(e.target.checked)}
             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
-          <label htmlFor="percentage-discount" className="text-sm text-gray-600">
+          <label htmlFor="percentage-discount" className="text-xs md:text-sm text-gray-600">
             Enable Percentage Discount Column
           </label>
         </div>
       </div>
-      <table className="w-full ">
-        <thead>
-          <tr className="border-b border-gray-200">
-            <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">S.No.</th>
-            <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">Product/Service</th>
-            <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">Quantity</th>
-            <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">Rate</th>
-            {showPercentageDiscount && (
-              <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">Discount %</th>
-            )}
-            <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">Amount</th>
-            <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {formData.products.map((product, index) => (
-            <tr key={index} className="border-b border-gray-100 ">
-              <td className="py-3 px-2 text-sm text-gray-600">{index + 1}</td>
-              <td className="py-3 px-2">
-                <div className="flex items-center space-x-2">
-                  {product.imageUrl ? (
-                      <img
-                          src={product.imageUrl}
-                          alt={product.name}
-                          className="w-10 h-10 object-cover rounded-md border border-gray-200"
-                      />
-                  ) : (
-                      <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">
-                          <Package className="w-5 h-5 text-gray-400" />
-                      </div>
-                  )}
-                  <div className="relative">
-                    <input
-                      placeholder="Search and select product..."
-                      value={productSearchStates[index]?.query || product.name}
-                      onChange={(e) => handleProductSearchChange(e, index)}
-                      onFocus={() => {
-                        const currentQuery = productSearchStates[index]?.query || product.name
-                        if (currentQuery.trim()) {
-                          setProductSearchStates((prev) => ({
-                            ...prev,
-                            [index]: {
-                              ...prev[index],
-                              showResults: true,
-                            },
-                          }))
-                        }
-                      }}
-                      onBlur={() => setTimeout(() => setProductSearchStates((prev) => ({
-                        ...prev,
-                        [index]: {
-                          ...prev[index],
-                          showResults: false,
-                        },
-                      })), 150)}
 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    {productSearchStates[index]?.showResults && (
-                      <div className="absolute z-100 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-scroll ">
-                        {isSearchingProducts[index] ? (
-                          <div className="px-4 py-3 text-sm text-gray-500">Searching products...</div>
-                        ) : productSearchResults[index]?.length > 0 ? (
-                          productSearchResults[index].map((searchProduct) => (
-                            <div
-                              key={searchProduct.id}
-                              onMouseDown={() => selectProduct(searchProduct, index)}
-                              className="px-4 py-3  hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                            >
-                              <div className="font-medium text-gray-900">{searchProduct.name}</div>
-                              <div className="text-sm text-gray-600">Rs. {searchProduct.selling_price}</div>
-                            </div>
-                          ))
-                        ) : (productSearchStates[index]?.query || product.name).trim() ? (
-                          <div className="px-4 py-3 text-sm text-gray-500">No products found</div>
-                        ) : null}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </td>
-              <td className="py-3 px-2">
-                <input
-                  type="number"
-                  value={product.quantity}
-                  name="quantity"
-                  onChange={(e) => handleChangeProductDetail(e, index)}
-                  className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  min="1"
-                />
-              </td>
-              <td className="py-3 px-2">
-                <input
-                  type="text"
-                  value={product.selling_price}
-                  placeholder="0"
-                  name="selling_price"
-                  onChange={(e) => handleChangeProductDetail(e, index)}
-                  className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  step="0.01"
-                  min="0"
-                />
-              </td>
+      {/* Desktop Table View */}
+      <div className="hidden md:block">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-200">
+              <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">S.No.</th>
+              <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">Product/Service</th>
+              <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">Quantity</th>
+              <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">Rate</th>
               {showPercentageDiscount && (
+                <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">Discount %</th>
+              )}
+              <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">Amount</th>
+              <th className="text-left py-3 px-2 text-sm font-medium text-gray-600">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {formData.products.map((product, index) => (
+              <tr key={index} className="border-b border-gray-100">
+                <td className="py-3 px-2 text-sm text-gray-600">{index + 1}</td>
                 <td className="py-3 px-2">
+                  <div className="flex items-center space-x-2">
+                    {product.imageUrl ? (
+                        <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-10 h-10 object-cover rounded-md border border-gray-200"
+                        />
+                    ) : (
+                        <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">
+                            <Package className="w-5 h-5 text-gray-400" />
+                        </div>
+                    )}
+                    <div className="relative">
+                      <input
+                        placeholder="Search and select product..."
+                        value={productSearchStates[index]?.query || product.name}
+                        onChange={(e) => handleProductSearchChange(e, index)}
+                        onFocus={() => {
+                          const currentQuery = productSearchStates[index]?.query || product.name
+                          if (currentQuery.trim()) {
+                            setProductSearchStates((prev) => ({
+                              ...prev,
+                              [index]: {
+                                ...prev[index],
+                                showResults: true,
+                              },
+                            }))
+                          }
+                        }}
+                        onBlur={() => setTimeout(() => setProductSearchStates((prev) => ({
+                          ...prev,
+                          [index]: {
+                            ...prev[index],
+                            showResults: false,
+                          },
+                        })), 150)}
+
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      {productSearchStates[index]?.showResults && (
+                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-scroll">
+                          {isSearchingProducts[index] ? (
+                            <div className="px-4 py-3 text-sm text-gray-500">Searching products...</div>
+                          ) : productSearchResults[index]?.length > 0 ? (
+                            productSearchResults[index].map((searchProduct) => (
+                              <div
+                                key={searchProduct.id}
+                                onMouseDown={() => selectProduct(searchProduct, index)}
+                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                              >
+                                <div className="font-medium text-gray-900">{searchProduct.name}</div>
+                                <div className="text-sm text-gray-600">Rs. {searchProduct.selling_price}</div>
+                              </div>
+                            ))
+                          ) : (productSearchStates[index]?.query || product.name).trim() ? (
+                            <div className="px-4 py-3 text-sm text-gray-500">No products found</div>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </td>
+                <td className="py-3 px-2">
+                  <input
+                    type="number"
+                    value={product.quantity}
+                    name="quantity"
+                    onChange={(e) => handleChangeProductDetail(e, index)}
+                    className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    min="1"
+                  />
+                </td>
+                <td className="py-3 px-2">
+                  <input
+                    type="text"
+                    value={product.selling_price}
+                    placeholder="0"
+                    name="selling_price"
+                    onChange={(e) => handleChangeProductDetail(e, index)}
+                    className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    step="0.01"
+                    min="0"
+                  />
+                </td>
+                {showPercentageDiscount && (
+                  <td className="py-3 px-2">
+                    <input
+                      type="number"
+                      value={product.percentage_discount || ""}
+                      name="percentage_discount"
+                      onChange={(e) => handleChangeProductDetail(e, index)}
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                    />
+                  </td>
+                )}
+                <td className="py-3 px-2 text-sm font-medium">Rs. {calculateFinalAmount(product).toFixed(2)}</td>
+                <td className="py-3 px-2">
+                  {formData.products.length > 1 && (
+                    <button
+                      onClick={() => removeProductRow(index)}
+                      className="px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {formData.products.map((product, index) => (
+          <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center space-x-2 flex-1">
+                {product.imageUrl ? (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="w-8 h-8 object-cover rounded-md border border-gray-200"
+                  />
+                ) : (
+                  <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">
+                    <Package className="w-4 h-4 text-gray-400" />
+                  </div>
+                )}
+                <span className="text-xs font-medium text-gray-500">#{index + 1}</span>
+              </div>
+              {formData.products.length > 1 && (
+                <button
+                  onClick={() => removeProductRow(index)}
+                  className="text-red-600 hover:text-red-700 p-1"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-gray-600">Product/Service</label>
+                <div className="relative mt-1">
+                  <input
+                    placeholder="Search product..."
+                    value={productSearchStates[index]?.query || product.name}
+                    onChange={(e) => handleProductSearchChange(e, index)}
+                    onFocus={() => {
+                      const currentQuery = productSearchStates[index]?.query || product.name
+                      if (currentQuery.trim()) {
+                        setProductSearchStates((prev) => ({
+                          ...prev,
+                          [index]: {
+                            ...prev[index],
+                            showResults: true,
+                          },
+                        }))
+                      }
+                    }}
+                    onBlur={() => setTimeout(() => setProductSearchStates((prev) => ({
+                      ...prev,
+                      [index]: {
+                        ...prev[index],
+                        showResults: false,
+                      },
+                    })), 150)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  {productSearchStates[index]?.showResults && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-scroll">
+                      {isSearchingProducts[index] ? (
+                        <div className="px-3 py-2 text-xs text-gray-500">Searching...</div>
+                      ) : productSearchResults[index]?.length > 0 ? (
+                        productSearchResults[index].map((searchProduct) => (
+                          <div
+                            key={searchProduct.id}
+                            onMouseDown={() => selectProduct(searchProduct, index)}
+                            className="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-sm"
+                          >
+                            <div className="font-medium text-gray-900 text-xs">{searchProduct.name}</div>
+                            <div className="text-xs text-gray-600">Rs. {searchProduct.selling_price}</div>
+                          </div>
+                        ))
+                      ) : (productSearchStates[index]?.query || product.name).trim() ? (
+                        <div className="px-3 py-2 text-xs text-gray-500">No products found</div>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs font-medium text-gray-600">Quantity</label>
+                  <input
+                    type="number"
+                    value={product.quantity}
+                    name="quantity"
+                    onChange={(e) => handleChangeProductDetail(e, index)}
+                    className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-1"
+                    min="1"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600">Rate</label>
+                  <input
+                    type="text"
+                    value={product.selling_price}
+                    placeholder="0"
+                    name="selling_price"
+                    onChange={(e) => handleChangeProductDetail(e, index)}
+                    className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-1"
+                    step="0.01"
+                    min="0"
+                  />
+                </div>
+              </div>
+
+              {showPercentageDiscount && (
+                <div>
+                  <label className="text-xs font-medium text-gray-600">Discount %</label>
                   <input
                     type="number"
                     value={product.percentage_discount || ""}
                     name="percentage_discount"
                     onChange={(e) => handleChangeProductDetail(e, index)}
-                    className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-1"
                     placeholder="0"
                     min="0"
                     max="100"
                     step="0.01"
                   />
-                </td>
+                </div>
               )}
-              <td className="py-3 px-2 text-sm font-medium">Rs. {calculateFinalAmount(product).toFixed(2)}</td>
-              <td className="py-3 px-2">
-                {formData.products.length > 1 && (
-                  <button
-                    onClick={() => removeProductRow(index)}
-                    className="px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
-                  >
-                    Remove
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+              <div className="bg-white p-2 rounded-md border border-gray-200">
+                <div className="text-xs text-gray-600">Amount</div>
+                <div className="text-sm font-semibold text-gray-900">Rs. {calculateFinalAmount(product).toFixed(2)}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="flex items-center justify-between mt-4">
-        <div className="text-sm text-gray-600">
+        <div className="text-xs md:text-sm text-gray-600">
           Total: <span className="font-semibold">Rs. {formData.subtotal}</span>
         </div>
         <button
           onClick={addProductRow}
-          className="flex items-center space-x-2 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+          className="flex items-center space-x-2 px-3 py-2 text-xs md:text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
         >
           <Plus className="w-4 h-4" />
           <span>Add Product Row</span>

@@ -29,6 +29,10 @@ export default function CustomerInfoForm() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setShowCompanyDropdown]);
 
+  const distinctCompanies = Array.from(new Set(companySearchResults.map(c => c.company_name))).map(name => {
+    return companySearchResults.find(c => c.company_name === name);
+  });
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center space-x-2 mb-6">
@@ -114,9 +118,9 @@ export default function CustomerInfoForm() {
             />
 
             {/* Suggestions Dropdown */}
-            {showCompanyDropdown && companySearchResults.length > 0 && (
+            {showCompanyDropdown && distinctCompanies.length > 0 && (
               <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-xl max-h-60 overflow-y-auto">
-                {companySearchResults.map((customer, index) => (
+                {distinctCompanies.map((customer, index) => (
                   <div
                     key={customer.id || index}
                     onMouseDown={() => selectCustomerCompany(customer)}
