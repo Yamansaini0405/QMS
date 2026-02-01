@@ -17,6 +17,7 @@ export default function LeadDetailsPage() {
     const [loading, setLoading] = useState(true)
     const [addingDescription, setAddingDescription] = useState(false)
     const [formData, setFormData] = useState({ description: "", next_date: "" })
+    const [leadQuotations, setLeadQuotations] = useState([]);
 
     useEffect(() => {
         const fetchLeadDetails = async () => {
@@ -52,10 +53,27 @@ export default function LeadDetailsPage() {
                 console.error("Error fetching descriptions:", error)
             }
         }
+        const fetchLeadQuotations = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const res = await fetch(`${baseUrl}/quotations/api/leads/${id}/quotations/`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (!res.ok) throw new Error("Failed to fetch quotations");
+                const data = await res.json();
+                setLeadQuotations(data.data || []);
+            } catch (error) {
+                console.error("Error fetching lead quotations:", error);
+            }
+        };
 
         if (id) {
             fetchLeadDetails()
             fetchDescriptions()
+            fetchLeadQuotations();
         }
     }, [id])
 
@@ -173,59 +191,6 @@ export default function LeadDetailsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left Sidebar */}
                     <div className="space-y-6">
-                        {/* Source Quotation Details */}
-                        {lead.quotation && (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
-                                <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                    <Tag className="w-5 h-5 text-orange-600" />
-                                    <span>Source Quotation</span>
-                                </h3>
-                                <div className="space-y-3">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Quote Number</span>
-                                        <span className="font-bold text-gray-900">{lead.quotation.quotation_number}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Quote Date</span>
-                                        <span className="text-gray-900">{new Date(lead.quotation.created_at).toLocaleDateString()}</span>
-                                    </div>
-                                    <div className="pt-2 border-t border-gray-100">
-                                        <span className="text-xs font-semibold text-gray-400 uppercase">Products</span>
-                                        <div className="mt-2 space-y-2">
-                                            {lead.quotation.items?.map((item) => (
-                                                <div key={item.id} className="flex justify-between items-center text-xs bg-gray-50 p-2 rounded">
-                                                    <span className="font-medium text-gray-800">{item.product?.name}</span>
-                                                    <span className="text-gray-500">Qty: {item.quantity}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
-                                        <span className="text-sm font-semibold text-gray-600">Total Value</span>
-                                        <span className="text-lg font-bold text-orange-600 flex items-center">
-                                            <IndianRupee className="w-4 h-4 mr-0.5" />
-                                            {lead.quotation.total?.toLocaleString()}
-                                        </span>
-                                    </div>
-                                    {lead.quotation.pdf_url ? (
-                                        <button
-                                            onClick={() => window.open(lead.quotation.pdf_url, '_blank')}
-                                            className="w-full mt-2 flex items-center justify-center gap-2 text-xs text-blue-600 hover:bg-blue-50 py-2 border border-blue-100 rounded-lg transition-all"
-                                        >
-                                            <Eye className="w-4 h-4" /> View Original PDF
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => navigate(`/quotations/edit/${lead.quotation.id}`)}
-                                            className="w-full text-white hover:underline bg-green-700 px-2 py-1 rounded-lg"
-                                        >
-                                            Create
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
                         {/* Customer Details */}
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
                             <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -269,8 +234,11 @@ export default function LeadDetailsPage() {
                             </div>
                         </div>
 
+                         
+
                         {/* Lead Description */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
+                        {lead.notes && (
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
                             <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                 <Notebook className="w-5 h-5 text-orange-600" />
                                 <span>Lead Notes</span>
@@ -278,7 +246,85 @@ export default function LeadDetailsPage() {
                             <div className="space-y-4">
                                 <p className="text-sm text-gray-700 leading-relaxed italic border-l-2 border-orange-200 pl-4">{lead.notes}</p>
                             </div>
+                        </div>) }
+
+
+                        {/* Source Quotation Details - Multi-support */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 md:p-6">
+                            <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Tag className="w-5 h-5 text-orange-600" />
+                                    <span>Associated Quotations</span>
+                                </div>
+                                <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                                    {leadQuotations.length}
+                                </span>
+                            </h3>
+
+                            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+                                {leadQuotations.length > 0 ? (
+                                    leadQuotations.map((qtn) => (
+                                        <div key={qtn.id} className="p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-orange-200 transition-colors">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <p className="text-sm font-bold text-gray-900">{qtn.quotation_number}</p>
+                                                    <p className="text-[10px] text-gray-400">
+                                                        {new Date(qtn.created_at).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${qtn.status === 'REVISED' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'
+                                                    }`}>
+                                                    {qtn.status}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex justify-between items-center mb-3">
+                                                <span className="text-xs text-gray-500">Total Value</span>
+                                                <span className="text-sm font-bold text-gray-900 flex items-center">
+                                                    <IndianRupee className="w-3 h-3 mr-0.5" />
+                                                    {qtn.total?.toLocaleString()}
+                                                </span>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {qtn.url ? (
+                                                    <button
+                                                        onClick={() => window.open(qtn.url, '_blank')}
+                                                        className="flex items-center justify-center gap-1 text-[10px] font-bold text-blue-600 bg-white border border-blue-100 py-1.5 rounded hover:bg-blue-50 transition-all"
+                                                    >
+                                                        <Eye className="w-3 h-3" /> VIEW PDF
+                                                    </button>
+                                                ) : (
+                                                    <div className="text-[10px] text-gray-400 italic flex items-center justify-center">
+                                                        No PDF
+                                                    </div>
+                                                )}
+                                                <button
+                                                    onClick={() => navigate(`/quotations/edit/${qtn.id}`)}
+                                                    className="flex items-center justify-center gap-1 text-[10px] font-bold text-orange-600 bg-white border border-orange-100 py-1.5 rounded hover:bg-orange-50 transition-all"
+                                                >
+                                                    <FileText className="w-3 h-3" /> EDIT/VIEW
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-6">
+                                        <FileText className="w-8 h-8 text-gray-200 mx-auto mb-2" />
+                                        <p className="text-xs text-gray-400">No quotations found for this lead.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={() => navigate('/quotations/create')} // Optional: Link to create new for this customer
+                                className="w-full mt-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-orange-600 py-2.5 rounded-lg hover:bg-orange-700 transition-all"
+                            >
+                                <Plus className="w-4 h-4" /> CREATE NEW QUOTATION
+                            </button>
                         </div>
+
+                       
                     </div>
 
                     {/* Right Content */}

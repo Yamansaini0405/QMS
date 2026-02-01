@@ -11,6 +11,7 @@ import QuotationTemplate from "../components/QuotationTemplate";
 import { FileText, Eye, Send, EyeOff, SaveAll } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import QuickAddProductForm from "@/components/NewQuotationPageComponents/QuickAddProductForm";
+import LeadSelection from "@/components/NewQuotationPageComponents/LeadSelection";
 
 
 function NewQuotationPageContent() {
@@ -104,6 +105,7 @@ function NewQuotationPageContent() {
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="lg:col-span-2 space-y-6">
+                {id ? null : <LeadSelection />}
                 <CustomerInfoForm />
                 <ProductTable />
                 <QuickAddProductForm/>

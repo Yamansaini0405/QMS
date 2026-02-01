@@ -74,6 +74,11 @@ export const QuotationProvider = ({ children }) => {
     const [formErrors, setFormErrors] = useState({});
     const [pageLoading, setPageLoading] = useState(false);
 
+    const [leadSearchQuery, setLeadSearchQuery] = useState("");
+    const [leadSearchResults, setLeadSearchResults] = useState([]);
+    const [isSearchingLeads, setIsSearchingLeads] = useState(false);
+    const [showLeadSearch, setShowLeadSearch] = useState(false);
+
     const [formData, setFormData] = useState({
         quotationDate: formatDate(new Date()), // Auto-set to today's date
         validUntil: formatDate(new Date()),
@@ -100,6 +105,8 @@ export const QuotationProvider = ({ children }) => {
         createdBy: localStorage.getItem("role"),
         digitalSignature: "",
         send_immediately: false,
+        lead_id: null,
+        is_tax_inclusive: false,
     });
 
 
@@ -109,7 +116,7 @@ export const QuotationProvider = ({ children }) => {
 
     useEffect(() => {
         calculateTotals();
-    }, [formData.products, formData.taxRate, formData.discount, formData.discountType, formData.additional_charge_amount]);
+    }, [formData.products, formData.taxRate, formData.discount, formData.discountType, formData.additional_charge_amount, formData.is_tax_inclusive]);
 
     useEffect(() => {
         if (!id) {
@@ -138,12 +145,55 @@ export const QuotationProvider = ({ children }) => {
                 status: "",
                 createdBy: localStorage.getItem("role"),
                 digitalSignature: "",
+                lead_id: null,
+                is_tax_inclusive: false,
             })
 
         } else {
             fetchQuotation();
         }
     }, [id]);
+
+    const searchLeads = async (query) => {
+        if (!query.trim()) {
+            setLeadSearchResults([]);
+            return;
+        }
+        setIsSearchingLeads(true);
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${baseUrl}/quotations/api/leads/`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const result = await response.json();
+
+            const filtered = (result.data || []).filter((lead) =>
+                lead.lead_number.toLowerCase().includes(query.toLowerCase()) ||
+                lead.quotation_number?.toLowerCase().includes(query.toLowerCase()) ||
+                lead.customer?.name.toLowerCase().includes(query.toLowerCase()) ||
+                lead.customer?.phone.includes(query) ||
+                lead.customer?.email.toLowerCase().includes(query.toLowerCase())
+            );
+            setLeadSearchResults(filtered);
+        } catch (error) {
+            console.error("Error fetching leads:", error);
+        } finally {
+            setIsSearchingLeads(false);
+        }
+    };
+
+    const selectLead = (lead) => {
+        setFormData((prev) => ({
+            ...prev,
+            lead_id: lead.id,
+            customerName: lead.customer.name,
+            companyName: lead.customer.company_name,
+            email: lead.customer.email,
+            phone: lead.customer.phone,
+        }));
+        setLeadSearchQuery(lead.lead_number);
+        setShowLeadSearch(false);
+    };
 
 
     const fetchQuotation = async () => {
@@ -180,7 +230,7 @@ export const QuotationProvider = ({ children }) => {
                     quantity: item.quantity,
                     selling_price: item.unit_price || "",
                     percentage_discount: item.discount || 0,
-                    imageUrl: item.product.image_url ||  "",
+                    imageUrl: item.product.image_url || "",
                 })) || [],
                 subtotal: data.data.subtotal || "0.00",
                 discount: data.data.discount || "",
@@ -193,7 +243,8 @@ export const QuotationProvider = ({ children }) => {
                 createdBy: data.data.created_by || localStorage.getItem("role"),
                 digitalSignature: data.data.digital_signature || "",
                 specialDiscountEnabled: data.data.discount && data.data.discount !== 0 ? true : false,
-
+                lead_id: data.data.lead ? data.data.lead.id : null,
+                is_tax_inclusive: data.data.is_tax_inclusive || false,
             }
 
             if (!data.data.discount || data.data.discount === 0) {
@@ -203,6 +254,7 @@ export const QuotationProvider = ({ children }) => {
             }
             setFormData(qutations);
             setSelectedTerms(data.data.terms || [])
+            setLeadSearchQuery(data.data.lead ? data.data.lead.lead_number : "");
 
         } catch (err) {
             console.error("Error fetching quotation:", err);
@@ -362,8 +414,9 @@ export const QuotationProvider = ({ children }) => {
                 digitalSignature: formData.digitalSignature,
                 additionalNotes: formData.additionalNotes,
                 additional_charge_name: formData.additional_charge_name || "",
-                additional_charge_amount: formData.additional_charge_amount || 0
-
+                additional_charge_amount: formData.additional_charge_amount || 0,
+                lead_id: formData.lead_id || null,
+                is_tax_inclusive: formData.is_tax_inclusive,
             };
 
 
@@ -386,7 +439,7 @@ export const QuotationProvider = ({ children }) => {
                 throw new Error(
                     `Failed to create quotation: ${response.status} - ${errorText}`
                 );
-            }else {
+            } else {
                 window.open(result.data.pdf_url, '_blank');
             }
 
@@ -419,6 +472,7 @@ export const QuotationProvider = ({ children }) => {
                 createdBy: localStorage.getItem("role"),
                 digitalSignature: "",
                 send_immediately: false,
+                lead_id: null,
             });
 
             setSelectedTerms([]); // also reset terms if needed
@@ -533,7 +587,9 @@ export const QuotationProvider = ({ children }) => {
                 send_immediately: false,
                 createdBy: localStorage.getItem("user"),
                 digitalSignature: formData.digitalSignature,
-                additionalNotes: formData.additionalNotes
+                additionalNotes: formData.additionalNotes,
+                lead_id: formData.lead_id || null,
+                is_tax_inclusive: formData.is_tax_inclusive,
             };
 
 
@@ -586,6 +642,7 @@ export const QuotationProvider = ({ children }) => {
                 createdBy: localStorage.getItem("role"),
                 digitalSignature: "",
                 send_immediately: false,
+                is_tax_inclusive: false,
             });
 
             setSelectedTerms([]); // also reset terms if needed
@@ -684,6 +741,7 @@ export const QuotationProvider = ({ children }) => {
             createdBy: localStorage.getItem("role"),
             digitalSignature: "",
             send_immediately: false,
+            is_tax_inclusive: false,
         });
     };
 
@@ -840,8 +898,6 @@ export const QuotationProvider = ({ children }) => {
             return sum + (baseAmount - discount)
         }, 0)
 
-
-
         let globalDiscount = 0
         if (formData.specialDiscountEnabled) {
             const discountValue = Number.parseFloat(formData.discount) || 0
@@ -854,8 +910,19 @@ export const QuotationProvider = ({ children }) => {
         const additionalCharge = Number.parseFloat(formData.additional_charge_amount) || 0
         const newSubtotal = subtotal - globalDiscount + additionalCharge;
         const taxRate = Number.parseFloat(formData.taxRate) || 0
-        const tax = (newSubtotal * taxRate) / 100
-        const totalAmount = newSubtotal + tax
+        
+        // Only calculate and add tax if is_tax_inclusive is false
+        let tax = 0
+        let totalAmount = newSubtotal
+        
+        if (!formData.is_tax_inclusive) {
+            tax = (newSubtotal * taxRate) / 100
+            totalAmount = newSubtotal + tax
+        } else {
+            // If tax is inclusive, set tax to 0 and totalAmount to newSubtotal
+            tax = 0;
+            totalAmount = newSubtotal;
+        }
 
         setFormData((prev) => ({
             ...prev,
@@ -963,7 +1030,7 @@ export const QuotationProvider = ({ children }) => {
     };
 
     // 3. Make sure to update selectCustomer to close the company dropdown
-    
+
 
     const handleTermSelection = (termId) => {
         const updatedSelectedTerms = selectedTerms.includes(termId)
@@ -1051,7 +1118,11 @@ export const QuotationProvider = ({ children }) => {
                 isSearchingProducts, setIsSearchingProducts,
                 showCompanyDropdown, setShowCompanyDropdown,
                 companySearchResults, setCompanySearchResults,
-                handleCompanySearchChange,selectCustomerCompany,
+                handleCompanySearchChange, selectCustomerCompany,
+                leadSearchQuery, setLeadSearchQuery,
+                leadSearchResults, isSearchingLeads,
+                showLeadSearch, setShowLeadSearch,
+                searchLeads, selectLead,
                 formData, setFormData, resetFormData,
                 updateFormData,
                 updateProduct,

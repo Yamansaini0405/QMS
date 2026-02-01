@@ -148,22 +148,37 @@ export default function QuotationSummary() {
         </div>
 
         {/* GROUP 5: Tax Rate */}
-        <div className="bg-white px-4 py-4 rounded-lg border border-gray-200 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
-            <span className="text-md text-gray-600">Tax Rate:</span>
-            <input
-              className="w-12 h-7 px-1 text-sm border bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              type="text"
-              value={formData.taxRate}
-              onChange={(e) => {
-                updateFormData("taxRate", e.target.value)
-                calculateTotals(formData.products)
-              }}
-            />
-            <span className="text-xs text-gray-500">%</span>
+        <div className="bg-white px-4 py-4 rounded-lg border border-gray-200 space-y-3">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+              <span className="text-md text-gray-600">Tax Rate:</span>
+              <input
+                className="w-12 h-7 px-1 text-sm border bg-white border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                type="text"
+                value={formData.taxRate}
+                onChange={(e) => {
+                  updateFormData("taxRate", e.target.value)
+                  calculateTotals(formData.products)
+                }}
+              />
+              <span className="text-xs text-gray-500">%</span>
+            </div>
+            <span className="text-md font-medium text-gray-900"> {formData.tax == 0 ? "(Inclusive)" : `Rs. ${formData.tax}`}</span>
           </div>
-          <span className="text-md font-medium text-gray-900">Rs. {formData.tax}</span>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="tax-inclusive"
+              checked={formData.is_tax_inclusive || false}
+              onChange={(e) => updateFormData("is_tax_inclusive", e.target.checked)}
+              className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="tax-inclusive" className="text-sm text-gray-600">
+              Tax Inclusive
+            </label>
+          </div>
         </div>
 
         {/* GROUP 6: Total Amount */}
