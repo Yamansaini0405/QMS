@@ -170,6 +170,12 @@ const CompanyQuotations = () => {
       } else if (quotationSortConfig.key === "total") {
         valueA = parseFloat(a.total) || 0
         valueB = parseFloat(b.total) || 0
+      } else if (quotationSortConfig.key === "status") {
+        valueA = (valueA ?? "").toString().toLowerCase()
+        valueB = (valueB ?? "").toString().toLowerCase()
+      } else if (quotationSortConfig.key === "assigned_to") {
+        valueA = (a.assigned_to?.name ?? "").toLowerCase()
+        valueB = (b.assigned_to?.name ?? "").toLowerCase()
       } else {
         valueA = (valueA ?? "").toString().toLowerCase()
         valueB = (valueB ?? "").toString().toLowerCase()
@@ -333,6 +339,63 @@ const CompanyQuotations = () => {
     return 0;
   });
 
+  const handleDeleteQuotation = async (id) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This quotation will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    })
+
+    if (!result.isConfirmed) return
+
+    try {
+      Swal.fire({
+        title: "Deleting...",
+        text: "Please wait while we delete your Quotation.",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        },
+      })
+
+      const token = localStorage.getItem("token")
+      const response = await fetch(`${baseUrl}/quotations/api/quotations/${id}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        Swal.fire("Error!", `Failed to delete: ${errorText}`, "error")
+        throw new Error(`Delete failed: ${response.status} - ${errorText}`)
+      }
+
+      setCustomers(prev => prev.map(cust => ({
+        ...cust,
+        quotations: cust.quotations.filter(q => q.id !== id)
+      })))
+
+      Swal.fire("Deleted!", "The quotation has been deleted.", "success")
+    } catch (error) {
+      console.error("Failed to delete quotation:", error)
+      Swal.fire("Error!", "Something went wrong while deleting.", "error")
+    }
+  }
+
+  const handleViewLogs = async (activityLogs, quotationNumber) => {
+    setSelectedQuotationLogs({
+      logs: activityLogs || [],
+      quotationNumber: quotationNumber || "",
+    })
+    setIsLogsModalOpen(true)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -485,18 +548,24 @@ const CompanyQuotations = () => {
                               <table className="w-full text-sm">
                                 <thead className="text-gray-500 border-b bg-gray-50">
                                   <tr>
-                                    <th className="px-4 py-2 text-left" onClick={() => handleQuotationSort("contact_person")}>Customer Name<QuotationSortIcon column="customer_name" /></th>
-                                    <th className="px-4 py-2 text-left cursor-pointer" onClick={() => handleQuotationSort("quotation_number")}>
+                                    <th className="px-4 py-2 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("contact_person")}>
+                                      Customer Name <QuotationSortIcon column="contact_person" />
+                                    </th>
+                                    <th className="px-4 py-2 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("quotation_number")}>
                                       Quote ID <QuotationSortIcon column="quotation_number" />
                                     </th>
-                                    <th className="px-4 py-2 text-left cursor-pointer" onClick={() => handleQuotationSort("total")}>
+                                    <th className="px-4 py-2 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("total")}>
                                       Amount <QuotationSortIcon column="total" />
                                     </th>
-                                    <th className="px-4 py-2 text-left">Status</th>
-                                    <th className="px-4 py-2 text-left cursor-pointer" onClick={() => handleQuotationSort("created_at")}>
+                                    <th className="px-4 py-2 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("status")}>
+                                      Status <QuotationSortIcon column="status" />
+                                    </th>
+                                    <th className="px-4 py-2 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("created_at")}>
                                       Created At <QuotationSortIcon column="created_at" />
                                     </th>
-                                    <th className="px-4 py-2 text-left">Assigned To</th>
+                                    <th className="px-4 py-2 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("assigned_to")}>
+                                      Assigned To <QuotationSortIcon column="assigned_to" />
+                                    </th>
                                     <th className="px-4 py-2 text-right">Actions</th>
                                   </tr>
                                 </thead>
@@ -535,13 +604,31 @@ const CompanyQuotations = () => {
                                         ) : <span className="text-gray-400 italic">Unassigned</span>}
                                       </td>
                                       <td className="px-4 py-3 text-right">
-                                        <button
-                                          onClick={() => handleViewQuotation(quotation)}
-                                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
-                                          title="View PDF"
+                                        <select 
+                                          className="border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-700 shadow-sm hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-xs"
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === "view_pdf") {
+                                              handleViewQuotation(quotation);
+                                            } else if (value === "duplicate") {
+                                              navigate(`/quotations/duplicate/${quotation.id}`);
+                                            } else if (value === "delete") {
+                                              handleDeleteQuotation(quotation.id);
+                                            } else if (value === "edit") {
+                                              navigate(`/quotations/edit/${quotation.id}`);
+                                            } else if (value === "logs") {
+                                              handleViewLogs(quotation.activity_logs, quotation.quotation_number);
+                                            }
+                                            e.target.value = "";
+                                          }}
                                         >
-                                          <Eye className="w-4 h-4" />
-                                        </button>
+                                          <option value="">Action</option>
+                                          <option value="view_pdf">View PDF</option>
+                                          <option value="edit">Edit</option>
+                                          <option value="duplicate">Duplicate</option>
+                                          <option value="delete">Delete</option>
+                                          <option value="logs">View Logs</option>
+                                        </select>
                                       </td>
                                     </tr>
                                   ))}
