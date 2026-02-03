@@ -535,12 +535,12 @@ const navigate = useNavigate();
                                       value={lead.status}
                                       onChange={(e) => handleStatusChange(lead, lead.id, e.target.value)}
                                       className="px-2 py-1 rounded border text-xs bg-blue-50 text-blue-800"
-                                    >
-                                      <option value="LOST">Lost</option>
+                                    > 
                                       <option value="PROSPECTIVE">Prospective</option>
                                       <option value="QUALIFIED">Qualified</option>
                                       <option value="CONVERTED">Converted</option>
                                       <option value="NEGOTIATION">Negotiation</option>
+                                      <option value="LOST">Lost</option>
                                     </select>
                                   </td>
                                   <td className="px-4 py-2">{lead.lead_source || "-"}</td>
