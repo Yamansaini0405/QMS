@@ -105,14 +105,16 @@ function NewQuotationPageContent() {
           <>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                {id ? null : <LeadSelection />}
+                
                 <CustomerInfoForm />
                 <ProductTable />
                 <QuickAddProductForm/>
                 <QuotationSummary />
                 <TermsAndConditionsSelector />
                 <AdditionalSettings />
+                {id ? null : <LeadSelection />}
                 <CreatorInfo />
+                
               </div>
             </div>
             <BottomActions />
