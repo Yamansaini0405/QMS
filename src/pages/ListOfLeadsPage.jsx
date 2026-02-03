@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { Search, Download, CheckCircle, TrendingUp, Clock, AlertCircle, ChevronLeft, ChevronRight, Phone, Trash, ArrowRightLeft, X, Building, Building2, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react"
 import Swal from "sweetalert2"
-import { Link } from "react-router-dom"
+import { Link, Navigate, useNavigate } from "react-router-dom"
 import { getUserPermissions } from "@/utils/permissions"
 
 const baseUrl = import.meta.env.VITE_BASE_URL
@@ -121,6 +121,8 @@ export default function ListOfLeadsPage() {
 
     const [statusFilter, setStatusFilter] = useState("ALL")
     const [priorityFilter, setPriorityFilter] = useState("ALL")
+
+    const navigate = useNavigate();
 
     // --- SORTING STATE ---
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -400,7 +402,7 @@ export default function ListOfLeadsPage() {
                                 </thead>
                                 <tbody>
                                     {currentLeads.map((lead, index) => (
-                                        <tr key={lead.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                                        <tr key={lead.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => navigate(`/leads/view/${lead.id}`)}>
                                             <td className="px-6 py-4 text-sm font-semibold text-gray-900">{lead.lead_number}</td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
