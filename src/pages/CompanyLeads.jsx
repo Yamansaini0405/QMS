@@ -2,7 +2,7 @@
 import React from "react"
 
 import { useState, useEffect } from "react"
-import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trash2, Building2, FileText, ArrowRightLeft, X, TrendingDown } from "lucide-react"
+import { Target, TrendingUp, Users, CheckCircle, Search, Download, Eye, Trash, ArrowUp, ArrowDown, ChevronRight, ChevronDown, Trash2, Building2, FileText, ArrowRightLeft, X, TrendingDown, ArrowUpDown, ChevronUp } from "lucide-react"
 import LeadViewModal from "../components/LeadViewModal"
 import { Link, useNavigate } from "react-router-dom"
 import QuotationEditModal from "@/components/QuotationEditModel"
@@ -110,10 +110,8 @@ const AssignLeadModal = ({ isOpen, onClose, lead, salespersons }) => {
   )
 }
 
-
 export default function CompanyLeads() {
-
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("")
   const [customers, setCustomers] = useState([])
@@ -193,7 +191,6 @@ const navigate = useNavigate();
     { title: "Pending", value: pendingLeads.toString(), icon: CheckCircle, color: "text-green-600", bgColor: "bg-green-50" },
   ]
 
-  // Sorting Logic for Company Table
   const handleSortCust = (key) => {
     let direction = "asc"
     if (sortConfig.key === key && sortConfig.direction === "asc") {
@@ -211,7 +208,6 @@ const navigate = useNavigate();
     )
   }
 
-  // Sorting Logic for Leads List
   const handleSortLead = (key) => {
     let direction = "asc"
     if (leadSortConfig.key === key && leadSortConfig.direction === "asc") {
@@ -221,11 +217,11 @@ const navigate = useNavigate();
   }
 
   const LeadSortIcon = ({ column }) => {
-    if (leadSortConfig.key !== column) return <ArrowUp className="inline w-3 h-3 ml-1 text-gray-300" />
+    if (leadSortConfig.key !== column) return <ArrowUpDown className="inline w-3 h-3 ml-1 text-gray-400" />
     return leadSortConfig.direction === "asc" ? (
-      <ArrowUp className="inline w-3 h-3 ml-1 text-orange-600" />
+      <ChevronUp className="inline w-3 h-3 ml-1 text-green-600" />
     ) : (
-      <ArrowDown className="inline w-3 h-3 ml-1 text-orange-600" />
+      <ChevronDown className="inline w-3 h-3 ml-1 text-green-600" />
     )
   }
 
@@ -319,7 +315,6 @@ const navigate = useNavigate();
     XLSX.writeFile(wb, "Company_Leads.xlsx")
   }
 
-  // Grouping and Filtering
   const groupedByCompany = customers.reduce((acc, customer) => {
     const companyKey = customer.company_name || "No Company";
     if (!acc[companyKey]) {
@@ -339,7 +334,6 @@ const navigate = useNavigate();
     company.contacts.some(c => c.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Apply sorting to Company Table
   const sortedCompanies = [...filteredCompanies].sort((a, b) => {
     if (!sortConfig.key) return 0
     let valA = a[sortConfig.key]
@@ -358,7 +352,6 @@ const navigate = useNavigate();
     return 0
   });
 
-  // Function to sort nested leads
   const sortedLeads = (leads) => {
     return [...leads].sort((a, b) => {
       if (!leadSortConfig.key) return 0
@@ -368,7 +361,7 @@ const navigate = useNavigate();
       if (leadSortConfig.key === "created_at") {
         valA = new Date(valA);
         valB = new Date(valB);
-      } else if (leadSortConfig.key === "assignee") {
+      } else if (leadSortConfig.key === "assigned_to") {
         valA = (a.assigned_to?.name ?? "").toLowerCase();
         valB = (b.assigned_to?.name ?? "").toLowerCase();
       } else {
@@ -443,48 +436,42 @@ const navigate = useNavigate();
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          {localStorage.getItem("role") === "ADMIN" && (
-            <button onClick={handleExportExcel} className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg border">
-              <Download className="w-4 h-4" />
-              <span>Export All Leads</span>
-            </button>
-          )}
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Sno.</th>
                 <th 
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSortCust("company_name")}
                 >
                   Company Name <SortIcon column="company_name" />
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Associated Contacts</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Associated Contacts</th>
                 <th 
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSortCust("total_leads")}
                 >
                   Total Leads <SortIcon column="total_leads" />
                 </th>
-                <th className="px-6 py-4"></th>
+                <th className="px-6 py-3 text-right"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {sortedCompanies.map((company, index) => (
                 <React.Fragment key={company.company_name}>
                   <tr className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer" onClick={() => toggleExpand(company.company_name)}>
-                    <td className="px-6 py-4 text-gray-600">{index + 1}</td>
-                    <td className="px-6 py-4 font-bold text-gray-900">
-                      <div className="flex items-center justify-start gap-2">
-                        <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+                    <td className="px-6 py-4 text-gray-600 text-sm">{index + 1}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
                           <Building2 className="w-4 h-4 text-white" />
                         </div>
-                        {company.company_name}
+                        <span className="font-semibold text-gray-900">{company.company_name}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -494,84 +481,100 @@ const navigate = useNavigate();
                         ))}
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-semibold text-orange-600">{company.allLeads.length} Leads</td>
+                    <td className="px-6 py-4 font-semibold text-orange-600 text-sm">{company.allLeads.length} Leads</td>
                     <td className="px-6 py-4 text-right">
-                      <button className="text-gray-500">
-                        {expandedCustomer === company.company_name ? <ChevronDown /> : <ChevronRight />}
+                      <button className="text-gray-400 hover:text-gray-600">
+                        {expandedCustomer === company.company_name ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                       </button>
                     </td>
                   </tr>
 
                   {expandedCustomer === company.company_name && (
-                    <tr className="bg-gray-50">
-                      <td colSpan={5} className="px-6 py-4">
+                    <tr className="bg-gray-50 border-t-2 border-gray-200">
+                      <td colSpan={5} className="px-6 py-6">
                         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                          <table className="w-full text-sm">
-                            <thead className="bg-gray-100">
-                              <tr>
-                                <th className="px-4 py-3 text-left cursor-pointer hover:bg-gray-200" onClick={() => handleSortLead("contact_person")}>
-                                  Contact Person <LeadSortIcon column="contact_person" />
-                                </th>
-                                <th className="px-4 py-3 text-left cursor-pointer hover:bg-gray-200" onClick={() => handleSortLead("status")}>
-                                  Status <LeadSortIcon column="status" />
-                                </th>
-                                <th className="px-4 py-3 text-left">Source</th>
-                                <th className="px-4 py-3 text-left cursor-pointer hover:bg-gray-200" onClick={() => handleSortLead("assignee")}>
-                                  Assignee <LeadSortIcon column="assignee" />
-                                </th>
-                                <th className="px-4 py-3 text-left cursor-pointer hover:bg-gray-200" onClick={() => handleSortLead("created_at")}>
-                                  Created <LeadSortIcon column="created_at" />
-                                </th>
-                                <th className="px-4 py-3 text-left">Quotation</th>
-                                <th className="px-4 py-3 text-right">Actions</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {sortedLeads(company.allLeads).map((lead) => (
-                                <tr key={lead.id} className="border-t hover:bg-gray-50">
-                                  <td className="px-4 py-2 font-medium">{lead.contact_person}</td>
-                                  <td className="px-4 py-2">
-                                    <select
-                                      value={lead.status}
-                                      onChange={(e) => handleStatusChange(lead, lead.id, e.target.value)}
-                                      className="px-2 py-1 rounded border text-xs bg-blue-50 text-blue-800"
-                                    > 
-                                      <option value="PROSPECTIVE">Prospective</option>
-                                      <option value="QUALIFIED">Qualified</option>
-                                      <option value="CONVERTED">Converted</option>
-                                      <option value="NEGOTIATION">Negotiation</option>
-                                      <option value="LOST">Lost</option>
-                                    </select>
-                                  </td>
-                                  <td className="px-4 py-2">{lead.lead_source || "-"}</td>
-                                  <td className="px-4 py-2">
-                                    <div className="flex items-center gap-2">
-                                      <span>{lead.assigned_to?.name || "Unassigned"}</span>
-                                      <button onClick={() => handleOpenAssignModal(lead)} className="text-gray-400 hover:text-blue-600">
-                                        <ArrowRightLeft className="w-3 h-3" />
-                                      </button>
-                                    </div>
-                                  </td>
-                                  <td className="px-4 py-2">{new Date(lead.created_at).toLocaleDateString()}</td>
-                                  <td className="px-4 py-2">
-                                    {lead.file_url ? (
-                                      <a href={lead.file_url} target="_blank" rel="noreferrer" className="text-xs bg-green-700 text-white px-2 py-1 rounded">Download</a>
-                                    ) : (
-                                      <button onClick={() => navigate(`/quotations/edit/${lead.quotation}`)} className="text-xs bg-green-700 text-white px-2 py-1 rounded">Create</button>
-                                    )}
-                                  </td>
-                                  <td className="px-4 py-2 text-right">
-                                    <div className="flex justify-end gap-2">
-                                      <Link to={`/leads/view/${lead.id}`} className="p-1 hover:bg-gray-100 rounded"><Eye className="w-4 h-4 text-gray-500" /></Link>
-                                      {permissions?.lead?.includes("delete") && (
-                                        <button onClick={() => handleDeleteLead(lead.id)} className="p-1 hover:bg-red-50 text-red-600 rounded"><Trash2 className="w-4 h-4" /></button>
-                                      )}
-                                    </div>
-                                  </td>
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead className="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleSortLead("contact_person")}>
+                                    Contact Person <LeadSortIcon column="contact_person" />
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleSortLead("status")}>
+                                    Status <LeadSortIcon column="status" />
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Source</th>
+                                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleSortLead("assigned_to")}>
+                                    Assigned To <LeadSortIcon column="assigned_to" />
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleSortLead("created_at")}>
+                                    Created <LeadSortIcon column="created_at" />
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Quotation</th>
+                                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">Actions</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody className="divide-y divide-gray-200">
+                                {sortedLeads(company.allLeads).map((lead) => (
+                                  <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{lead.contact_person}</td>
+                                    <td className="px-6 py-4">
+                                      <select
+                                        value={lead.status}
+                                        onChange={(e) => handleStatusChange(lead, lead.id, e.target.value)}
+                                        className="px-2 py-1 text-sm border border-gray-300 rounded bg-blue-50 text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                                      > 
+                                        <option value="PROSPECTIVE">Prospective</option>
+                                        <option value="QUALIFIED">Qualified</option>
+                                        <option value="CONVERTED">Converted</option>
+                                        <option value="NEGOTIATION">Negotiation</option>
+                                        <option value="LOST">Lost</option>
+                                      </select>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">{lead.lead_source || "-"}</td>
+                                    <td className="px-6 py-4">
+                                      <div className="flex items-center space-x-2">
+                                        <span className="text-sm text-gray-900">{lead.assigned_to?.name || "Unassigned"}</span>
+                                        <button 
+                                          onClick={() => handleOpenAssignModal(lead)} 
+                                          className="p-1 text-gray-400 hover:text-orange-600 rounded-full hover:bg-orange-100 transition-colors"
+                                        >
+                                          <ArrowRightLeft className="w-4 h-4" />
+                                        </button>
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                      {new Date(lead.created_at).toLocaleDateString("en-IN", {
+                                        day: '2-digit', month: 'short', year: 'numeric'
+                                      })}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm">
+                                      {lead.file_url ? (
+                                        <a href={lead.file_url} target="_blank" rel="noreferrer" className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-medium">Download</a>
+                                      ) : (
+                                        <button onClick={() => navigate(`/quotations/edit/${lead.quotation}`)} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-medium hover:bg-green-200">Create</button>
+                                      )}
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                      <div className="flex items-center justify-end space-x-2">
+                                        <Link to={`/leads/view/${lead.id}`} className="p-1 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50">
+                                          <Eye className="w-4 h-4" />
+                                        </Link>
+                                        {permissions?.lead?.includes("delete") && (
+                                          <button 
+                                            onClick={() => handleDeleteLead(lead.id)} 
+                                            className="p-1 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-50"
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
                       </td>
                     </tr>
