@@ -154,7 +154,7 @@ export const QuotationProvider = ({ children }) => {
         }
     }, [id]);
 
-    const searchLeads = async (query) => {
+    const searchLeads = async (query, customerName) => {
         if (!query.trim()) {
             setLeadSearchResults([]);
             return;
@@ -167,13 +167,21 @@ export const QuotationProvider = ({ children }) => {
             });
             const result = await response.json();
 
-            const filtered = (result.data || []).filter((lead) =>
-                lead.lead_number.toLowerCase().includes(query.toLowerCase()) ||
-                lead.quotation_number?.toLowerCase().includes(query.toLowerCase()) ||
-                lead.customer?.name.toLowerCase().includes(query.toLowerCase()) ||
-                lead.customer?.phone.includes(query) ||
-                lead.customer?.email.toLowerCase().includes(query.toLowerCase())
-            );
+            // Filter leads by customer name first
+            const filtered = (result.data || []).filter((lead) => {
+                const customerMatch = customerName 
+                    ? lead.customer?.name.toLowerCase() === customerName.toLowerCase()
+                    : true;
+
+                const queryMatch = 
+                    lead.lead_number.toLowerCase().includes(query.toLowerCase()) ||
+                    lead.quotation_number?.toLowerCase().includes(query.toLowerCase()) ||
+                    lead.customer?.name.toLowerCase().includes(query.toLowerCase()) ||
+                    lead.customer?.phone.includes(query) ||
+                    lead.customer?.email.toLowerCase().includes(query.toLowerCase());
+
+                return customerMatch && queryMatch;
+            });
             setLeadSearchResults(filtered);
         } catch (error) {
             console.error("Error fetching leads:", error);
@@ -433,6 +441,7 @@ export const QuotationProvider = ({ children }) => {
                 }
             );
             const result = await response.json();
+            console.log(result)
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -440,7 +449,7 @@ export const QuotationProvider = ({ children }) => {
                     `Failed to create quotation: ${response.status} - ${errorText}`
                 );
             } else {
-                window.open(result.data.pdf_url, '_blank');
+                window.open(result?.data.pdf_url, '_blank');
             }
 
             // const result = await response.json();
