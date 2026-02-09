@@ -21,20 +21,101 @@ import {
   Building2,
   XCircle,
   AlertCircle,
-  ArrowLeftRight
+  ArrowLeftRight,
+  X
 } from "lucide-react"
 import QuotationEditModel from "../components/QuotationEditModel"
 import Swal from "sweetalert2"
 import ViewLogsModal from "@/components/ViewLogsModal"
 import { useQuotation } from "@/contexts/QuotationContext"
 
+const AssignQuotationModal = ({ isOpen, onClose, quotation, salespersons }) => {
+  if (!isOpen) return null
 
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedSalespersonId, setSelectedSalespersonId] = useState(null)
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+
+  const filteredSalespersons = salespersons.filter((sp) =>
+    sp?.username?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const handleConfirm = async () => {
+    if (!selectedSalespersonId) return
+
+    try {
+      Swal.fire({
+        title: "Reassigning...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      })
+
+      const response = await fetch(`${baseUrl}/quotations/api/quotations/${quotation.id}/assign/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ assigned_to_id: selectedSalespersonId }),
+      })
+
+      if (!response.ok) throw new Error("Reassignment failed")
+      
+      Swal.fire("Success!", "Quotation has been reassigned.", "success")
+      onClose()
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to assign quotation:", error)
+      Swal.fire("Error!", "Could not reassign quotation.", "error")
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Reassign Quotation</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <input
+          type="text"
+          placeholder="Search salesperson..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg mb-4"
+        />
+        <div className="max-h-50 overflow-y-auto border rounded-lg">
+          {filteredSalespersons.map((sp) => (
+            <div
+              key={sp.id}
+              onClick={() => setSelectedSalespersonId(sp.id)}
+              className={`p-3 cursor-pointer hover:bg-gray-100 ${selectedSalespersonId === sp.id ? "bg-purple-100 font-semibold" : ""}`}
+            >
+              {sp.username} ({sp.role})
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex justify-end space-x-3">
+          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg outline-none">Cancel</button>
+          <button
+            onClick={handleConfirm}
+            disabled={!selectedSalespersonId}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg disabled:bg-gray-400"
+          >
+            Confirm Assignment
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+// ====================================================================
 
 const Quotations = () => {
   const baseUrl = import.meta.env.VITE_BASE_URL;
-
   const { setFormData, updateFormData } = useQuotation()
-
 
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("All Status")
@@ -47,7 +128,9 @@ const Quotations = () => {
   const [expandedCustomer, setExpandedCustomer] = useState(null)
   const [isLogsModalOpen, setIsLogsModalOpen] = useState(false)
   const [selectedQuotationLogs, setSelectedQuotationLogs] = useState(null)
-  const [openDropdown, setOpenDropdown] = useState(null)
+  const [isAssigneeModalOpen, setIsAssigneeModalOpen] = useState(false)
+  const [quotationToReassign, setQuotationToReassign] = useState(null)
+  const [salespersons, setSalespersons] = useState([])
 
   const navigate = useNavigate()
 
@@ -72,20 +155,16 @@ const Quotations = () => {
         const result = await response.json()
 
         if (result.data && Array.isArray(result.data)) {
-          // Apply the same filtering logic here
           const filteredCustomers = result.data
             .map(customer => {
-              // For each customer, filter out their draft quotations
               const nonDraftQuotations = (customer.quotations || []).filter(
                 q => q.status !== "DRAFT"
               )
-              // Return a new customer object with the filtered quotations
               return {
                 ...customer,
                 quotations: nonDraftQuotations,
               }
             })
-            // Then, filter out any customer who no longer has any quotations
             .filter(customer => customer.quotations.length > 0)
 
           setCustomers(filteredCustomers)
@@ -101,6 +180,27 @@ const Quotations = () => {
     }
     fetchCustomers()
   }, [])
+
+  useEffect(() => {
+    const fetchSalespersons = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        const res = await fetch(`${baseUrl}/accounts/api/users/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = await res.json()
+        setSalespersons(data.data.filter((sp) => sp.phone_number !== null) || [])
+      } catch (error) {
+        console.error("❌ Error fetching salespeople:", error)
+      }
+    }
+    fetchSalespersons()
+  }, [])
+
+  const handleOpenAssignModal = (quotation) => {
+    setQuotationToReassign(quotation)
+    setIsAssigneeModalOpen(true)
+  }
 
   const allQuotations = customers.flatMap((customer) => (customer.quotations || []).filter((q) => q.status !== "DRAFT"))
 
@@ -247,11 +347,11 @@ const Quotations = () => {
   }
 
   const QuotationSortIcon = ({ column }) => {
-    if (quotationSortConfig.key !== column) return null
+    if (quotationSortConfig.key !== column) return <ArrowUp className="inline w-3 h-3 ml-1 text-gray-300" />
     return quotationSortConfig.direction === "asc" ? (
-      <ArrowUp className="inline w-4 h-4 ml-1" />
+      <ArrowUp className="inline w-3 h-3 ml-1 text-blue-600" />
     ) : (
-      <ArrowDown className="inline w-4 h-4 ml-1" />
+      <ArrowDown className="inline w-3 h-3 ml-1 text-blue-600" />
     )
   }
 
@@ -266,34 +366,103 @@ const Quotations = () => {
   }
 
   const SortIcon = ({ column }) => {
-    if (sortConfig.key !== column) return null
+    if (sortConfig.key !== column) return <ArrowUp className="inline w-4 h-4 ml-1 text-gray-300" />
     return sortConfig.direction === "asc" ? (
-      <ArrowUp className="inline w-4 h-4 ml-1" />
+      <ArrowUp className="inline w-4 h-4 ml-1 text-purple-600" />
     ) : (
-      <ArrowDown className="inline w-4 h-4 ml-1" />
+      <ArrowDown className="inline w-4 h-4 ml-1 text-purple-600" />
     )
+  }
+
+  const getStatusBadge = (status) => {
+    const baseClasses = "px-3 py-1 rounded-full text-xs font-medium"
+    switch (status) {
+      case "SENT": return `${baseClasses} bg-blue-100 text-blue-800`
+      case "ACCEPTED": return `${baseClasses} bg-green-100 text-green-800`
+      case "REJECTED": return `${baseClasses} bg-red-100 text-red-800`
+      case "REVISED": return `${baseClasses} bg-black text-white`
+      default: return `${baseClasses} bg-gray-100 text-gray-800`
+    }
+  }
+
+  const handleStatusChange = async (quotation, id, newStatus) => {
+    try {
+      Swal.fire({
+        title: "Updating...",
+        text: "Updating status.",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      })
+
+      const res = await fetch(`${baseUrl}/accounts/api/quotations/${id}/status/`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (!res.ok) throw new Error("Failed to update status")
+      
+      setCustomers((prev) =>
+        prev.map((customer) => ({
+          ...customer,
+          quotations: customer.quotations.map((q) => (q.id === id ? { ...q, status: newStatus } : q)),
+        })),
+      )
+
+      Swal.fire("Updated!", "Status updated.", "success")
+    } catch (err) {
+      console.error("❌ Error updating quotation status:", err)
+      Swal.fire("Error!", "Error updating status. Please try again.", "error")
+    }
+  }
+
+  const handleExport = async () => {
+    const pdfUrls = filteredCustomers
+      .flatMap((customer) => customer.quotations || [])
+      .map((q) => q.url)
+      .filter((url) => !!url)
+
+    if (pdfUrls.length === 0) {
+      Swal.fire("Missing Url", "No PDF URLs available to export.", "warning")
+      return
+    }
+
+    try {
+      const response = await fetch(`${baseUrl}/quotations/api/merge/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ pdf_urls: pdfUrls }),
+      })
+
+      if (!response.ok) throw new Error("Failed to export")
+      const data = await response.json()
+      if (data.final_url) window.open(data.final_url, "_blank")
+    } catch (error) {
+      Swal.fire("Error!", "Export failed.", "error")
+    }
+  }
+
+  const handleViewLogs = async (quotation) => {
+    setSelectedQuotationLogs({
+      quotation,
+      logs: quotation.activity_logs || [],
+    })
+    setIsLogsModalOpen(true)
   }
 
   const sortedCustomers = [...customers].sort((a, b) => {
     if (!sortConfig.key) return 0
-    let valueA, valueB
-
-    if (sortConfig.key === "name") {
-      valueA = a.name ?? ""
-      valueB = b.name ?? ""
-    } else if (sortConfig.key === "company_name") {
-      valueA = a.company_name ?? ""
-      valueB = b.company_name ?? ""
-    } else if (sortConfig.key === "email") {
-      valueA = a.email ?? ""
-      valueB = b.email ?? ""
-    } else if (sortConfig.key === "phone") {
-      valueA = a.phone ?? ""
-      valueB = b.phone ?? ""
-    } else {
-      valueA = a[sortConfig.key] ?? ""
-      valueB = b[sortConfig.key] ?? ""
-    }
+    let valueA = a[sortConfig.key] ?? ""
+    let valueB = b[sortConfig.key] ?? ""
+    
+    valueA = valueA.toString().toLowerCase()
+    valueB = valueB.toString().toLowerCase()
 
     if (valueA < valueB) return sortConfig.direction === "asc" ? -1 : 1
     if (valueA > valueB) return sortConfig.direction === "asc" ? 1 : -1
@@ -348,122 +517,6 @@ const Quotations = () => {
     }
   }
 
-  const getStatusBadge = (status) => {
-    const baseClasses = "px-3 py-1 rounded-full text-xs font-medium"
-    switch (status) {
-      case "SENT":
-        return `${baseClasses} bg-blue-100 text-blue-800`
-      case "ACCEPTED":
-        return `${baseClasses} bg-green-100 text-green-800`
-      case "REJECTED":
-        return `${baseClasses} bg-red-100 text-red-800`
-      case "REVISED":
-        return `${baseClasses} bg-black text-white`
-      default:
-        return `${baseClasses} bg-gray-100 text-gray-800`
-    }
-  }
-
-  const handleStatusChange = async (quotation, id, newStatus) => {
-    const payload = {
-      status: newStatus,
-    }
-
-
-    try {
-
-      Swal.fire({
-        title: "Updating...",
-        text: "Please wait while we update your Quotation status.",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading()
-        },
-      })
-
-      const res = await fetch(`${baseUrl}/accounts/api/quotations/${id}/status/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      })
-
-      if (!res.ok) {
-        throw new Error("Failed to update quotation status")
-      }
-      setCustomers((prev) =>
-        prev.map((customer) => ({
-          ...customer,
-          quotations: customer.quotations.map((q) => (q.id === id ? { ...q, status: newStatus } : q)),
-        })),
-      )
-
-      Swal.fire("Updated!", "Status updated.", "success")
-    } catch (err) {
-      console.error("❌ Error updating quotation status:", err)
-      Swal.fire("Error!", "Error updating status. Please try again.", "error")
-    }
-  }
-
-  const handleExport = async () => {
-    const pdfUrls = filteredCustomers
-      .flatMap((customer) => customer.quotations || [])
-      .map((q) => q.url)
-      .filter((url) => !!url)
-
-    if (pdfUrls.length === 0) {
-      Swal.fire("Missing Url", "No PDF URLs available to export.", "warning")
-      return
-    }
-
-    const payload = {
-      pdf_urls: pdfUrls,
-    }
-
-    try {
-
-
-      const response = await fetch(`${baseUrl}/quotations/api/merge/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to export PDFs")
-      }
-
-      const data = await response.json()
-      Swal.fire("Exported!!", "All Quotation are successfully exported", "success")
-
-      if (data.final_url) {
-        window.open(data.final_url, "_blank")
-      } else {
-        Swal.fire("Error!", "Export failed: no final PDF URL received.", "error")
-      }
-    } catch (error) {
-      console.error("❌ Export failed:", error)
-      Swal.fire("Error!", "Export failed. Please try again.", "error")
-    }
-  }
-
-  const handleViewLogs = async (quotation) => {
-    setSelectedQuotationLogs({
-      quotation,
-      logs: quotation.activity_logs || [],
-    })
-    setIsLogsModalOpen(true)
-    closeDropdown()
-  }
-
-
-
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -517,13 +570,6 @@ const Quotations = () => {
 
       {/* Filters & Search */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-            <Search className="w-5 h-5" />
-            <span>Filters & Search</span>
-          </h2>
-        </div>
-
         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 md:space-x-4">
           <div className="flex-1">
             <div className="relative">
@@ -537,64 +583,35 @@ const Quotations = () => {
               />
             </div>
           </div>
-
-          <div className="flex items-center space-x-4">
-
-
-            {localStorage.getItem("role") === "ADMIN" ? <button
-              onClick={handleExport}
-              className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-            >
+          {localStorage.getItem("role") === "ADMIN" && (
+            <button onClick={handleExport} className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg border">
               <Download className="w-4 h-4" />
-              <span>Export All  ({filteredCustomers.reduce((total, customer) => {
-                return total + (customer.quotations ? customer.quotations.length : 0)
-              }, 0)})</span>
-            </button> : ""}
-          </div>
+              <span>Export All</span>
+            </button>
+          )}
         </div>
-
-        <p className="text-sm text-gray-500 mt-4">
-          Showing {filteredCustomers.length} customers with {filteredCustomers.reduce((total, customer) => {
-            return total + (customer.quotations ? customer.quotations.filter((prev) => prev.status !== "DRAFT").length : 0)
-          }, 0)} total quotations
-
-        </p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Main Table */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
-                <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("name")}
-                >
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Sno.</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleSort("name")}>
                   Customer <SortIcon column="name" />
                 </th>
-                <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("company_name")}
-                >
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleSort("company_name")}>
                   Company <SortIcon column="company_name" />
                 </th>
-                <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("email")}
-                >
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleSort("email")}>
                   Email <SortIcon column="email" />
                 </th>
-                <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                  onClick={() => handleSort("phone")}
-                >
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleSort("phone")}>
                   Phone <SortIcon column="phone" />
                 </th>
-
-
-
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900"></th>
+                <th className="px-6 py-3 text-right"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -602,129 +619,135 @@ const Quotations = () => {
                 .filter((c) => c.quotations && c.quotations.filter(q => q.status !== "DRAFT").length > 0)
                 .map((customer, index) => (
                   <>
-                    {/* Customer Row */}
-                    <tr key={customer.id} className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer" onClick={() => toggleExpand(customer.id)}>
-                      <td className="px-6 py-4 text-gray-600">{index + 1}</td>
-                      <td className="px-6 py-4 font-medium text-gray-900 flex items-center justify-start gap-2">
-                        <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                          <Users className="w-4 h-4 text-white" />
+                    <tr className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer" onClick={() => toggleExpand(customer.id)}>
+                      <td className="px-6 py-4 text-gray-600 text-sm">{index + 1}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Users className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="font-semibold text-gray-900">{customer.name}</span>
                         </div>
-                        {customer.name}
                       </td>
-                      <td className="px-6 py-4 text-gray-700">
-                        <div className="flex items-center justify-start gap-2">
-                          <Building2 className="w-4 h-4 text-gray-400" />
+                      <td className="px-6 py-4">
+                        <div className="flex items-center text-sm text-gray-700">
+                          <Building2 className="w-4 h-4 text-gray-400 mr-2" />
                           {customer.company_name}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-gray-600">{customer.email}</td>
-                      <td className="px-6 py-4 text-gray-600">{customer.phone}</td>
-                      <td className="px-6 py-4">
-                        <button onClick={() => toggleExpand(customer.id)} className="text-gray-500 hover:text-gray-800">
-                          {expandedCustomer === customer.id ? (
-                            <ChevronDown className="w-5 h-5" />
-                          ) : (
-                            <ChevronRight className="w-5 h-5" />
-                          )}
+                      <td className="px-6 py-4 text-gray-600 text-sm">{customer.email}</td>
+                      <td className="px-6 py-4 text-gray-600 text-sm">{customer.phone}</td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="text-gray-400 hover:text-gray-600">
+                          {expandedCustomer === customer.id ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                         </button>
                       </td>
                     </tr>
 
-                    {/* Expanded Quotations Sublist */}
                     {expandedCustomer === customer.id && (
-                      <tr className="bg-gray-50">
-                        <td colSpan={6} className="px-6 py-4">
-                          {customer.quotations && customer.quotations.length > 0 ? (
-                            <table className="w-full text-sm border border-gray-200 rounded-lg">
-                              <thead className="bg-gray-200">
-                                <tr>
-                                  <th
-                                    className="px-4 py-3 text-left cursor-pointer hover:bg-gray-300 transition-colors"
-                                    onClick={() => handleQuotationSort("quotation_number")}
-                                  >
-                                    Quote ID <QuotationSortIcon column="quotation_number" />
-                                  </th>
-                                  <th
-                                    className="px-4 py-3 text-left cursor-pointer hover:bg-gray-300 transition-colors"
-                                    onClick={() => handleQuotationSort("total")}
-                                  >
-                                    Amount <QuotationSortIcon column="total" />
-                                  </th>
-                                  <th
-                                    className="px-4 py-3 text-left cursor-pointer hover:bg-gray-300 transition-colors"
-                                    onClick={() => handleQuotationSort("status")}
-                                  >
-                                    Status <QuotationSortIcon column="status" />
-                                  </th>
-                                  <th
-                                    className="px-4 py-3 text-left cursor-pointer hover:bg-gray-300 transition-colors"
-                                    onClick={() => handleQuotationSort("created_at")}
-                                  >
-                                    Created <QuotationSortIcon column="created_at" />
-                                  </th>
-                                  <th
-                                    className="px-4 py-3 text-left cursor-pointer hover:bg-gray-300 transition-colors"
-                                    onClick={() => handleQuotationSort("follow_up_date")}
-                                  >
-                                    Valid Until <QuotationSortIcon column="follow_up_date" />
-                                  </th>
-                                  <th
-                                    className="px-4 py-3 text-left cursor-pointer hover:bg-gray-300 transition-colors"
-                                    onClick={() => handleQuotationSort("assigned_to")}
-                                  >
-                                    <div className="flex items-center">
-                                      Assigned To
-                                      <QuotationSortIcon column="assigned_to" />
-                                    </div>
-                                  </th>
-                                  <th className="px-4 py-3 text-left hover:bg-gray-300 transition-colors">Actions</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-
-                                {sortQuotations(customer.quotations.filter(q => q.status !== "DRAFT")).map((quotation) => (
-                                  <tr key={quotation.id} className="border-t hover:bg-white">
-                                    <td className="px-4 py-2 font-medium text-gray-900">{quotation.quotation_number}</td>
-                                    <td className="px-4 py-2 font-semibold text-gray-900">₹{quotation.total}</td>
-
-                                    <td className="px-4 py-2">
-                                      <select
-                                        value={quotation.status}
-                                        onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
-                                        className={`${getStatusBadge(quotation.status)} text-md px-3 py-2  rounded-md focus:ring-2 `}
-                                      >
-                                        <option value="SENT">{getStatusIcon("SENT")}Sent</option>
-                                        <option value="PENDING">{getStatusIcon("PENDING")}Pending</option>
-                                        <option value="ACCEPTED">{getStatusIcon("ACCEPTED")}Accepted</option>
-                                        <option value="REJECTED">{getStatusIcon("REJECTED")}Rejected</option>
-                                        <option value="REVISED">{getStatusIcon("REVISED")}Revised</option>
-                                      </select>
-                                    </td>
-                                    <td className="px-4 py-2">{new Date(quotation.created_at).toLocaleDateString()}</td>
-                                    <td className="px-4 py-2">{quotation.follow_up_date || "-"}</td>
-                                    <td className="px-4 py-2">{quotation.assigned_to?.name || "N/A"}</td>
-                                    <td className="px-4 py-2 flex space-x-2">
-                                      <div className="flex items-center text-center space-x-2">
-                                        {/* Primary Actions - Always Visible */}
-                                        <button
-                                          onClick={() => handleViewQuotation(quotation)}
-                                          className="p-1 text-gray-400 hover:text-blue-600"
-                                          title="View Quotation"
-                                        >
-                                          <Eye className="w-4 h-4" />
-                                        </button>
-
-
-
-                                      </div>
-                                    </td>
+                      <tr className="bg-gray-50 border-t-2 border-gray-200">
+                        <td colSpan={6} className="px-6 py-6">
+                          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                            <div className="overflow-x-auto">
+                              <table className="w-full">
+                                <thead className="bg-gray-50 border-b border-gray-200">
+                                  <tr>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("quotation_number")}>
+                                      Quotation <QuotationSortIcon column="quotation_number" />
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("total")}>
+                                      Amount <QuotationSortIcon column="total" />
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("status")}>
+                                      Status <QuotationSortIcon column="status" />
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("created_at")}>
+                                      Created <QuotationSortIcon column="created_at" />
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("assigned_to")}>
+                                      Assigned To <QuotationSortIcon column="assigned_to" />
+                                    </th>
+                                    <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">Actions</th>
                                   </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          ) : (
-                            <p className="text-gray-500">No quotations found for this customer.</p>
-                          )}
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                  {sortQuotations(customer.quotations.filter(q => q.status !== "DRAFT")).map((quotation) => (
+                                    <tr key={quotation.id} className="hover:bg-gray-50 transition-colors">
+                                      <td className="px-6 py-4">
+                                        <div className="flex items-center space-x-2">
+                                          <div className="w-6 h-6 bg-purple-100 rounded-md flex items-center justify-center flex-shrink-0">
+                                            <FileText className="w-3 h-3 text-purple-600" />
+                                          </div>
+                                          <span className="font-medium text-gray-900">{quotation.quotation_number}</span>
+                                        </div>
+                                      </td>
+                                      <td className="px-6 py-4 font-semibold text-gray-900">₹{quotation.total}</td>
+                                      <td className="px-6 py-4">
+                                        <select
+                                          value={quotation.status}
+                                          onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
+                                          className={`${getStatusBadge(quotation.status)} text-sm font-medium px-3 py-1.5 rounded-md focus:outline-none focus:ring-2 cursor-pointer`}
+                                        >
+                                          <option value="SENT">Sent</option>
+                                          <option value="PENDING">Pending</option>
+                                          <option value="ACCEPTED">Accepted</option>
+                                          <option value="REJECTED">Rejected</option>
+                                          <option value="REVISED">Revised</option>
+                                        </select>
+                                      </td>
+                                      <td className="px-6 py-4 text-sm text-gray-600">
+                                        {new Date(quotation.created_at).toLocaleDateString("en-IN", {
+                                          day: '2-digit', month: 'short', year: 'numeric'
+                                        })}
+                                      </td>
+                                      <td className="px-6 py-4">
+                                        <div className="flex items-center space-x-2">
+                                          <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <Users className="w-2.5 h-2.5 text-gray-700" />
+                                          </div>
+                                          <span className="text-sm text-gray-900">{quotation.assigned_to?.name || "Unassigned"}</span>
+                                          <button
+                                            onClick={() => handleOpenAssignModal(quotation)}
+                                            title="Reassign Quotation"
+                                            className="p-1 text-gray-400 hover:text-purple-600 rounded-full hover:bg-purple-100 transition-colors"
+                                          >
+                                            <ArrowLeftRight className="w-4 h-4" />
+                                          </button>
+                                        </div>
+                                      </td>
+                                      <td className="px-6 py-4 text-right">
+                                        <select 
+                                          className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 shadow-sm hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === "view_pdf") {
+                                              handleViewQuotation(quotation);
+                                            } else if (value === "duplicate") {
+                                              navigate(`/quotations/duplicate/${quotation.id}`);
+                                            } else if (value === "delete") {
+                                              handleDeleteQuotation(quotation.id);
+                                            } else if (value === "edit") {
+                                              navigate(`/quotations/edit/${quotation.id}`);
+                                            } else if (value === "logs") {
+                                              handleViewLogs(quotation);
+                                            }
+                                            e.target.value = "";
+                                          }}
+                                        >
+                                          <option value="">Action</option>
+                                          <option value="view_pdf">View PDF</option>
+                                          <option value="edit">Edit</option>
+                                          <option value="duplicate">Duplicate</option>
+                                          <option value="delete">Delete</option>
+                                          <option value="logs">View Logs</option>
+                                        </select>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -745,12 +768,18 @@ const Quotations = () => {
         quotation={selectedQuotation}
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        onSave={handleSaveQuotation}
+        onSave={() => setCustomers(prev => prev)}
       />
       <ViewLogsModal
         quotationLogs={selectedQuotationLogs}
         isOpen={isLogsModalOpen}
         onClose={() => setIsLogsModalOpen(false)}
+      />
+      <AssignQuotationModal
+        isOpen={isAssigneeModalOpen}
+        onClose={() => setIsAssigneeModalOpen(false)}
+        quotation={quotationToReassign}
+        salespersons={salespersons}
       />
     </div>
   )

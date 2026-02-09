@@ -22,12 +22,114 @@ import {
   Building2,
   XCircle,
   AlertCircle,
-  ArrowLeftRight
+  ArrowLeftRight,
+  X
 } from "lucide-react"
 import QuotationEditModel from "../components/QuotationEditModel"
 import Swal from "sweetalert2"
 import ViewLogsModal from "@/components/ViewLogsModal"
 import { useQuotation } from "../contexts/QuotationContext"
+
+// ====================================================================
+// AssignQuotationModal
+// ====================================================================
+const AssignQuotationModal = ({ isOpen, onClose, quotation, salespersons }) => {
+  if (!isOpen) return null
+
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedSalespersonId, setSelectedSalespersonId] = useState(null)
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+
+  const filteredSalespersons = salespersons.filter((sp) =>
+    sp?.username?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const handleConfirm = async () => {
+    if (!selectedSalespersonId) {
+      console.error("No salesperson selected.")
+      return
+    }
+
+    try {
+      Swal.fire({
+        title: "Reassigning...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      })
+
+      const payload = { assigned_to_id: selectedSalespersonId }
+      const response = await fetch(`${baseUrl}/quotations/api/quotations/${quotation.id}/assign/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || `Error: ${response.status}`)
+      }
+      Swal.fire("Success!", "Quotation has been reassigned.", "success")
+      onClose()
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to assign quotation:", error)
+      Swal.fire("Error!", "Could not reassign quotation. Please try again.", "error")
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Reassign Quotation</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <p className="mb-4 text-gray-600">
+          Reassigning Quotation:{" "}
+          <span className="font-medium text-gray-800">{quotation.quotation_number}</span> for{" "}
+          <span className="font-medium text-gray-800">{quotation.contact_person}</span>
+        </p>
+        <input
+          type="text"
+          placeholder="Search salesperson..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg mb-4"
+        />
+        <div className="max-h-50 overflow-y-auto border rounded-lg">
+          {filteredSalespersons.map((sp) => (
+            <div
+              key={sp.id}
+              onClick={() => setSelectedSalespersonId(sp.id)}
+              className={`p-3 cursor-pointer hover:bg-gray-100 ${selectedSalespersonId === sp.id ? "bg-purple-100 font-semibold" : ""
+                }`}
+            >
+              {sp.username} ({sp.role})
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex justify-end space-x-3">
+          <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={!selectedSalespersonId}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg disabled:bg-gray-400 hover:bg-purple-700"
+          >
+            Confirm Assignment
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+// ====================================================================
 
 const CompanyQuotations = () => {
   const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -46,6 +148,9 @@ const CompanyQuotations = () => {
   const [isLogsModalOpen, setIsLogsModalOpen] = useState(false)
   const [selectedQuotationLogs, setSelectedQuotationLogs] = useState(null)
   const [openDropdown, setOpenDropdown] = useState(null)
+  const [isAssigneeModalOpen, setIsAssigneeModalOpen] = useState(false)
+  const [quotationToReassign, setQuotationToReassign] = useState(null)
+  const [salespersons, setSalespersons] = useState([])
 
   const navigate = useNavigate()
 
@@ -96,6 +201,30 @@ const CompanyQuotations = () => {
     }
     fetchCustomers()
   }, [])
+
+  useEffect(() => {
+    const fetchSalespersons = async () => {
+      try {
+        const token = localStorage.getItem("token")
+        const res = await fetch(`${baseUrl}/accounts/api/users/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (!res.ok) throw new Error("Failed to fetch salespeople")
+        const data = await res.json()
+        setSalespersons(data.data.filter((sp) => sp.phone_number !== null) || [])
+      } catch (error) {
+        console.error("❌ Error fetching salespeople:", error)
+      }
+    }
+    fetchSalespersons()
+  }, [])
+
+  const handleOpenAssignModal = (quotation) => {
+    setQuotationToReassign(quotation)
+    setIsAssigneeModalOpen(true)
+  }
 
   const allQuotations = customers.flatMap((customer) => (customer.quotations || []).filter((q) => q.status !== "DRAFT"))
 
@@ -256,7 +385,7 @@ const CompanyQuotations = () => {
   }
 
   const handleExport = async () => {
-    const pdfUrls = filteredCustomers
+    const pdfUrls = filteredCompanies
       .flatMap((customer) => customer.quotations || [])
       .map((q) => q.url)
       .filter((url) => !!url)
@@ -471,170 +600,191 @@ const CompanyQuotations = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Main Table */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Sno.</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Sno.</th>
                 <th 
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort("company_name")}
                 >
                   Company Name <SortIcon column="company_name" />
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Contacts</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Contacts</th>
                 <th 
-                   className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                   className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
                    onClick={() => handleSort("total_quotes")}
                 >
                   Total Quotes <SortIcon column="total_quotes" />
                 </th>
                 <th 
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort("latest_quote")}
                 >
                   Latest Quote Date <SortIcon column="latest_quote" />
                 </th>
-                <th className="px-6 py-4"></th>
+                <th className="px-6 py-3 text-right"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {sortedCompanies.map((company, index) => (
                 <React.Fragment key={company.company_name}>
                   <tr
-                    className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer bg-slate-50/30"
+                    className="hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
                     onClick={() => toggleExpand(company.company_name)}
                   >
-                    <td className="px-6 py-4 text-gray-600">{index + 1}</td>
-                    <td className="px-6 py-4 font-bold text-gray-900">
-                      <div className="flex items-center justify-start gap-2">
-                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <td className="px-6 py-4 text-gray-600 text-sm">{index + 1}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
                           <Building2 className="w-4 h-4 text-purple-600" />
                         </div>
-                        {company.company_name}
+                        <span className="font-semibold text-gray-900">{company.company_name}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {company.contacts.map((contact, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs font-medium border border-purple-100">
+                      <div className="flex flex-wrap gap-2">
+                        {company.contacts.slice(0, 2).map((contact, i) => (
+                          <span key={i} className="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-100">
                             {contact.name}
                           </span>
                         ))}
+                        {company.contacts.length > 2 && (
+                          <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                            +{company.contacts.length - 2} more
+                          </span>
+                        )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-semibold text-blue-600">
-                      {company.allQuotations.length} Quotations
+                    <td className="px-6 py-4">
+                      <span className="font-semibold text-blue-600 text-sm">{company.allQuotations.length} Quotations</span>
                     </td>
                     <td className="px-6 py-4 text-gray-600 text-sm">
                       {company.latestDate !== 0 ? new Date(company.latestDate).toLocaleDateString() : "-"}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="text-gray-500 hover:text-gray-800">
-                        {expandedCustomer === company.company_name ? <ChevronDown /> : <ChevronRight />}
+                      <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                        {expandedCustomer === company.company_name ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                       </button>
                     </td>
                   </tr>
                   {expandedCustomer === company.company_name && (
-                    <tr className="bg-white">
-                      <td colSpan={6} className="px-6 py-4">
-                        <div className="border rounded-xl overflow-hidden shadow-sm bg-white">
-                          <div className="p-4">
-                            <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-purple-600" /> Quotations List
-                            </h4>
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <thead className="text-gray-500 border-b bg-gray-50">
-                                  <tr>
-                                    <th className="px-4 py-2 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("contact_person")}>
-                                      Customer Name <QuotationSortIcon column="contact_person" />
-                                    </th>
-                                    <th className="px-4 py-2 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("quotation_number")}>
-                                      Quote ID <QuotationSortIcon column="quotation_number" />
-                                    </th>
-                                    <th className="px-4 py-2 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("total")}>
-                                      Amount <QuotationSortIcon column="total" />
-                                    </th>
-                                    <th className="px-4 py-2 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("status")}>
-                                      Status <QuotationSortIcon column="status" />
-                                    </th>
-                                    <th className="px-4 py-2 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("created_at")}>
-                                      Created At <QuotationSortIcon column="created_at" />
-                                    </th>
-                                    <th className="px-4 py-2 text-left cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("assigned_to")}>
-                                      Assigned To <QuotationSortIcon column="assigned_to" />
-                                    </th>
-                                    <th className="px-4 py-2 text-right">Actions</th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                  {console.log(company)}
-                                  {sortQuotations(company.allQuotations).map((quotation) => (
-                                    <tr key={quotation.id} className="hover:bg-gray-50 transition-colors">
-                                      <td className="px-4 py-3 text-gray-700 font-medium">
-                                        {quotation.contact_person}
-                                      </td>
-                                      <td className="px-4 py-3 text-gray-900">{quotation.quotation_number}</td>
-                                      <td className="px-4 py-3 font-bold text-gray-900">₹{quotation.total}</td>
-                                      <td className="px-4 py-3">
-                                        <select
-                                          value={quotation.status}
-                                          onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
-                                          className={`${getStatusBadge(quotation.status)} text-xs px-2 py-1 rounded-md outline-none cursor-pointer border-none shadow-sm`}
-                                        >
-                                          <option value="SENT">Sent</option>
-                                          <option value="PENDING">Pending</option>
-                                          <option value="ACCEPTED">Accepted</option>
-                                          <option value="REJECTED">Rejected</option>
-                                          <option value="REVISED">Revised</option>
-                                        </select>
-                                      </td>
-                                      <td className="px-4 py-3 text-gray-500">
+                    <tr className="bg-gray-50 border-t-2 border-gray-200">
+                      <td colSpan={6} className="px-6 py-6">
+                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead className="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("quotation_number")}>
+                                    Quotation <QuotationSortIcon column="quotation_number" />
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("contact_person")}>
+                                    Customer Name <QuotationSortIcon column="contact_person" />
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("total")}>
+                                    Amount <QuotationSortIcon column="total" />
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("status")}>
+                                    Status <QuotationSortIcon column="status" />
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("created_at")}>
+                                    Created <QuotationSortIcon column="created_at" />
+                                  </th>
+                                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100" onClick={() => handleQuotationSort("assigned_to")}>
+                                    Assigned To <QuotationSortIcon column="assigned_to" />
+                                  </th>
+                                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-200">
+                                {sortQuotations(company.allQuotations).map((quotation) => (
+                                  <tr key={quotation.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-6 py-4">
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-6 h-6 bg-purple-100 rounded-md flex items-center justify-center flex-shrink-0">
+                                          <FileText className="w-3 h-3 text-purple-600" />
+                                        </div>
+                                        <span className="font-medium text-gray-900">{quotation.quotation_number}</span>
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <p className="font-medium text-gray-900">{quotation.contact_person}</p>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <div>
+                                        <p className="font-semibold text-gray-900">₹{quotation.total}</p>
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <select
+                                        value={quotation.status}
+                                        onChange={(e) => handleStatusChange(quotation, quotation.id, e.target.value)}
+                                        className={`${getStatusBadge(quotation.status)} text-sm font-medium px-3 py-1.5 rounded-md focus:outline-none focus:ring-2 cursor-pointer`}
+                                      >
+                                        <option value="SENT">Sent</option>
+                                        <option value="PENDING">Pending</option>
+                                        <option value="ACCEPTED">Accepted</option>
+                                        <option value="REJECTED">Rejected</option>
+                                        <option value="REVISED">Revised</option>
+                                      </select>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <p className="text-sm text-gray-600">
                                         {new Date(quotation.created_at).toLocaleDateString("en-IN", {
                                           day: '2-digit', month: 'short', year: 'numeric'
                                         })}
-                                      </td>
-                                      <td className="px-4 py-3">
-                                        {quotation.assigned_to?.name ? (
-                                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">
-                                            <Users className="w-3 h-3 mr-1" /> {quotation.assigned_to.name}
-                                          </span>
-                                        ) : <span className="text-gray-400 italic">Unassigned</span>}
-                                      </td>
-                                      <td className="px-4 py-3 text-right">
-                                        <select 
-                                          className="border border-gray-300 rounded-lg px-2 py-1 bg-white text-gray-700 shadow-sm hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-xs"
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (value === "view_pdf") {
-                                              handleViewQuotation(quotation);
-                                            } else if (value === "duplicate") {
-                                              navigate(`/quotations/duplicate/${quotation.id}`);
-                                            } else if (value === "delete") {
-                                              handleDeleteQuotation(quotation.id);
-                                            } else if (value === "edit") {
-                                              navigate(`/quotations/edit/${quotation.id}`);
-                                            } else if (value === "logs") {
-                                              handleViewLogs(quotation.activity_logs, quotation.quotation_number);
-                                            }
-                                            e.target.value = "";
-                                          }}
+                                      </p>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                                          <Users className="w-2.5 h-2.5 text-gray-700" />
+                                        </div>
+                                        <span className="text-sm text-gray-900">{quotation.assigned_to?.name || "Unassigned"}</span>
+                                        <button
+                                          onClick={() => handleOpenAssignModal(quotation)}
+                                          title="Reassign Quotation"
+                                          className="p-1 text-gray-400 hover:text-purple-600 rounded-full hover:bg-purple-100"
                                         >
-                                          <option value="">Action</option>
-                                          <option value="view_pdf">View PDF</option>
-                                          <option value="edit">Edit</option>
-                                          <option value="duplicate">Duplicate</option>
-                                          <option value="delete">Delete</option>
-                                          <option value="logs">View Logs</option>
-                                        </select>
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
+                                          <ArrowLeftRight className="w-4 h-4" />
+                                        </button>
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                      <select 
+                                        className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 shadow-sm hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          if (value === "view_pdf") {
+                                            handleViewQuotation(quotation);
+                                          } else if (value === "duplicate") {
+                                            navigate(`/quotations/duplicate/${quotation.id}`);
+                                          } else if (value === "delete") {
+                                            handleDeleteQuotation(quotation.id);
+                                          } else if (value === "edit") {
+                                            navigate(`/quotations/edit/${quotation.id}`);
+                                          } else if (value === "logs") {
+                                            handleViewLogs(quotation.activity_logs, quotation.quotation_number);
+                                          }
+                                          e.target.value = "";
+                                        }}
+                                      >
+                                        <option value="">Action</option>
+                                        <option value="view_pdf">View PDF</option>
+                                        <option value="edit">Edit</option>
+                                        <option value="duplicate">Duplicate</option>
+                                        <option value="delete">Delete</option>
+                                        <option value="logs">View Logs</option>
+                                      </select>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
                         </div>
                       </td>
@@ -657,6 +807,12 @@ const CompanyQuotations = () => {
         quotationLogs={selectedQuotationLogs}
         isOpen={isLogsModalOpen}
         onClose={() => setIsLogsModalOpen(false)}
+      />
+      <AssignQuotationModal
+        isOpen={isAssigneeModalOpen}
+        onClose={() => setIsAssigneeModalOpen(false)}
+        quotation={quotationToReassign}
+        salespersons={salespersons}
       />
     </div>
   )
