@@ -7,6 +7,7 @@ import TermEditModal from "../components/TermEditModal"
 import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
 import { fetchUserPermissions, getUserPermissions } from "@/utils/permissions"
+import { formatDateGlobal } from "@/utils/dateFormat"
 
 
 
@@ -274,7 +275,7 @@ export default function ViewTermsAndCondition() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{new Date(term.created_at).toLocaleDateString()}</span>
+                    <span className="text-sm text-gray-600">{formatDateGlobal(term.created_at)}</span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">

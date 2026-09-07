@@ -23,6 +23,7 @@ import { Link } from "react-router-dom"
 import Swal from "sweetalert2"
 import * as XLSX from "xlsx"
 import { fetchUserPermissions, getUserPermissions } from "@/utils/permissions"
+import { formatDateGlobal } from "@/utils/dateFormat"
 
 export default function CustomersPage() {
   const baseUrl = import.meta.env.VITE_BASE_URL
@@ -402,42 +403,42 @@ export default function CustomersPage() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  className="px-5 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
                   onClick={() => handleSort("name")}
                 >
                   Customer <SortIcon column="name" />
                 </th>
                 <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  className="px-5 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
                   onClick={() => handleSort("company_name")}
                 >
                   Company <SortIcon column="company_name" />
                 </th>
                 <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  className="px-5 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
                   onClick={() => handleSort("email")}
                 >
                   Contact Info <SortIcon column="email" />
                 </th>
                 <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  className="px-5 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
                   onClick={() => handleSort("address")}
                 >
                   Address <SortIcon column="address" />
                 </th>
                 <th
-                  className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                  className="px-5 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer"
                   onClick={() => handleSort("created_at")}
                 >
                   Added <SortIcon column="created_at" />
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
+                <th className="px-5 py-4 text-left text-sm font-semibold text-gray-900">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredCustomers.map((cust, index) => (
                 <tr key={index} className="hover:bg-gray-50 transition-colors duration-200">
-                  <td className="px-6 py-4">
+                  <td className="px-5 py-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
                         <Users className="w-4 h-4 text-white" />
@@ -448,25 +449,25 @@ export default function CustomersPage() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-5 py-4">
                     <div className="flex items-center space-x-2">
                       <Building2 className="w-4 h-4 text-gray-400" />
                       <span className="text-sm text-gray-900">{cust.company_name}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-5 py-4">
                     <div>
                       <p className="text-sm text-gray-900">{cust.email}</p>
                       <p className="text-sm text-gray-500">{cust.phone}</p>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-5 py-4">
                     <span className="text-sm text-gray-600">{cust.primary_address}</span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">{new Date(cust.created_at).toLocaleString()}</span>
+                  <td className="px-5 py-4">
+                    <span className="text-sm text-gray-600">{formatDateGlobal(cust.created_at)}</span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-5 py-4">
                     {/* <ActionDropdown customer={cust} isOpen={c === cust.id} /> */}
 
                     <select

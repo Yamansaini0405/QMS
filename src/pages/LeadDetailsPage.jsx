@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { ArrowLeft, Phone, Mail, MapPin, User, FileText, Calendar, Plus, AlertCircle, MessageSquare, History, Eye, Tag, IndianRupee, Notebook } from "lucide-react"
 import { useParams, useNavigate } from "react-router-dom"
 import Swal from "sweetalert2"
+import { formatDateGlobal } from "@/utils/dateFormat"
 
 const baseUrl = import.meta.env.VITE_BASE_URL
 const STATUS_OPTIONS = ["PROSPECTIVE", "QUALIFIED", "LOST", "CONVERTED", "NEGOTIATION"];
@@ -269,7 +270,7 @@ export default function LeadDetailsPage() {
                                                 <div>
                                                     <p className="text-sm font-bold text-gray-900">{qtn.quotation_number}</p>
                                                     <p className="text-[10px] text-gray-400">
-                                                        {new Date(qtn.created_at).toLocaleDateString()}
+                                                        {formatDateGlobal(qtn.created_at)}
                                                     </p>
                                                 </div>
                                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${qtn.status === 'REVISED' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'

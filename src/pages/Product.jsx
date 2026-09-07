@@ -22,6 +22,7 @@ import ProductViewModal from "../components/ProductViewModel"
 import ProductEditModal from "../components/ProductEditModel"
 import * as XLSX from "xlsx"
 import { fetchUserPermissions, getUserPermissions } from "@/utils/permissions"
+import { formatDateGlobal } from "@/utils/dateFormat"
 
 
 
@@ -97,9 +98,7 @@ export default function Products() {
   }, [])
 
   const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString("en-US", {
-            year: "numeric", month: "short", day: "numeric",
-        })
+        return formatDateGlobal(dateString);
     }
 
 

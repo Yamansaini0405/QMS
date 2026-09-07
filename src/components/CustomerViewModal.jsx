@@ -1,5 +1,6 @@
 "use client"
 
+import { formatDateGlobal } from "@/utils/dateFormat"
 import { X, User, Building2, Mail, Phone, MapPin, Globe, FileText } from "lucide-react"
 
 export default function CustomerViewModal({ customer, isOpen, onClose }) {
@@ -118,7 +119,7 @@ export default function CustomerViewModal({ customer, isOpen, onClose }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date Added</label>
-                <p className="text-gray-900">{new Date(customer.created_at).toLocaleDateString()}</p>
+                <p className="text-gray-900">{formatDateGlobal(customer.created_at)}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Customer ID</label>

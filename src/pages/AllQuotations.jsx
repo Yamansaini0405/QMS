@@ -29,6 +29,7 @@ import Swal from "sweetalert2"
 import ViewLogsModal from "@/components/ViewLogsModal";
 import { useNavigate } from "react-router-dom";
 import { fetchUserPermissions, getUserPermissions } from "@/utils/permissions";
+import { formatDateGlobal } from "@/utils/dateFormat";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 // ====================================================================
@@ -480,7 +481,7 @@ export default function AllQuotations() {
 
 
   
-  const totalValue = quotations.reduce((sum, q) => sum + (q.total || 0), 0)
+  const totalValue = quotations.filter((q) => q.status?.toLowerCase() === "accepted").reduce((sum, q) => sum + (q.total || 0), 0)
   const sentCount = quotations.filter((q) => q.status === "SENT").length
   const acceptedCount = quotations.filter((q) => q.status === "ACCEPTED").length
   const rejectedCount = quotations.filter((q) => q.status === "REJECTED").length
@@ -719,10 +720,10 @@ export default function AllQuotations() {
                       <div className="flex items-center space-x-2">
 
                         <div>
-                          <p className="text-sm text-gray-900">{new Date(quotation.created_at).toLocaleDateString()}</p>
+                          <p className="text-sm text-gray-900">{formatDateGlobal(quotation.created_at)}</p>
                           {quotation.emailed_at && (
                             <p className="text-xs text-gray-500">
-                              Emailed: {new Date(quotation.emailed_at).toLocaleDateString()}
+                              Emailed: {formatDateGlobal(quotation.emailed_at)}
                             </p>
                           )}
                         </div>

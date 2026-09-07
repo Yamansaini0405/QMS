@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
+import { formatDateGlobal } from "@/utils/dateFormat"
 import {
   Users,
   FileText,
@@ -204,7 +205,7 @@ const Quotations = () => {
 
   const allQuotations = customers.flatMap((customer) => (customer.quotations || []).filter((q) => q.status !== "DRAFT"))
 
-  const totalValue = allQuotations.reduce((sum, q) => {
+  const totalValue = allQuotations.filter((q) => q.status?.toLowerCase() === "accepted").reduce((sum, q) => {
     const value = typeof q.total === "string" ? Number.parseFloat(q.total.replace(/[^\d.]/g, "")) : Number(q.total) || 0
     return sum + value
   }, 0)
@@ -696,9 +697,7 @@ const Quotations = () => {
                                         </select>
                                       </td>
                                       <td className="px-6 py-4 text-sm text-gray-600">
-                                        {new Date(quotation.created_at).toLocaleDateString("en-IN", {
-                                          day: '2-digit', month: 'short', year: 'numeric'
-                                        })}
+                                        {formatDateGlobal(quotation.created_at)}
                                       </td>
                                       <td className="px-6 py-4">
                                         <div className="flex items-center space-x-2">

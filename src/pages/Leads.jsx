@@ -10,6 +10,7 @@ import Swal from "sweetalert2"
 import CustomerViewModal from "@/components/CustomerViewModal"
 import * as XLSX from "xlsx"
 import { fetchUserPermissions, getUserPermissions } from "@/utils/permissions"
+import { formatDateGlobal } from "@/utils/dateFormat"
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const AssignLeadModal = ({ isOpen, onClose, lead, salespersons }) => {
@@ -864,9 +865,7 @@ export default function Leads() {
 
                                         {/* Created Date */}
                                         <td className="px-6 py-4 text-sm text-gray-600">
-                                          {new Date(lead.created_at).toLocaleDateString("en-IN", {
-                                            day: '2-digit', month: 'short', year: 'numeric'
-                                          })}
+                                          {formatDateGlobal(lead.created_at)}
                                         </td>
 
                                         {/* Quotation Column */}

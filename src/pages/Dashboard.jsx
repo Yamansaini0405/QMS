@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import DashboardSkeleton from "@/components/DashboardSkeleton"
 import Swal from "sweetalert2"
+import { formatDateGlobal } from "@/utils/dateFormat"
 
 
 const Dashboard = () => {
@@ -87,7 +88,7 @@ const Dashboard = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `Sales_Performance_${new Date().toLocaleDateString()}.csv`);
+    link.setAttribute("download", `Sales_Performance_${formatDateGlobal(new Date())}.csv`);
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
@@ -316,7 +317,7 @@ const Dashboard = () => {
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 mb-1">{quotation.customer.company_name}</p>
-                    <p className="text-xs text-gray-500">{quotation.follow_up_date}</p>
+                    <p className="text-xs text-gray-500">{formatDateGlobal(quotation.created_at)}</p>
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-gray-900 mb-2">Rs {quotation.total.toFixed(2)}</p>

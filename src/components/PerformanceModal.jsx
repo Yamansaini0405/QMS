@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { X, User, BarChart3, TrendingUp, Calendar, Clock, Target, Award } from "lucide-react"
+import { formatDateGlobal } from "@/utils/dateFormat";
 
 export default function PerformanceModal({ isOpen, onClose, member }) {
   const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -36,11 +37,7 @@ export default function PerformanceModal({ isOpen, onClose, member }) {
   }
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    })
+    return formatDateGlobal(dateString)
   }
 
   const calculateConversionRate = (closed, total) => {

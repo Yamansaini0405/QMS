@@ -72,16 +72,7 @@ export default function CustomerActivityModal({ customer, isOpen, onClose }) {
     }
   }
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  }
+  // Using global formatDateTimeGlobal from dateFormat utility instead
 
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -158,7 +149,7 @@ export default function CustomerActivityModal({ customer, isOpen, onClose }) {
                               .toLowerCase()
                               .replace(/\b\w/g, (l) => l.toUpperCase())}
                           </h4>
-                          <span className="text-xs text-gray-500">{formatDate(log.created_at)}</span>
+                          <span className="text-xs text-gray-500">{formatDateTimeGlobal(log.created_at)}</span>
                         </div>
 
                         <p className="text-sm text-gray-700 mb-3">{log.message}</p>

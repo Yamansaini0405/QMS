@@ -6,6 +6,7 @@ import {
   PhoneCall, Lock, Eye, EyeOff, X, Save, Upload, Trash2, FileText 
 } from "lucide-react"
 import Swal from "sweetalert2"
+import { formatDateGlobal } from "@/utils/dateFormat"
 
 export default function ProfilePage() {
   const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -206,7 +207,7 @@ export default function ProfilePage() {
   };
 
   // Helper Functions
-  const formatDate = (dateString) => new Date(dateString).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  // Using global formatDateGlobal from dateFormat utility instead
   const getRoleColor = (role) => role === "ADMIN" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800";
   const handleInputChange = (field, value) => setEditFormData(prev => ({ ...prev, [field]: value }));
   const togglePasswordVisibility = (field) => setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
@@ -337,7 +338,7 @@ export default function ProfilePage() {
               <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold ${getRoleColor(userData.role)}`}>
                 <Shield className="w-4 h-4 mr-2" /> {userData.role}
               </div>
-              <p className="text-xs text-gray-500 mt-4">Joined on {formatDate(userData.date_joined)}</p>
+              <p className="text-xs text-gray-500 mt-4">Joined on {formatDateGlobal(userData.date_joined)}</p>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 "use client"
 
+import { formatDateGlobal } from "@/utils/dateFormat"
 import { Settings, LogOut, Users, Menu, Bell } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
@@ -30,7 +31,7 @@ const Header = ({ onMenuClick }) => {
       const result = await response.json()
 
       // Filter leads with today's follow-up date
-      const today = new Date().toISOString().split("T")[0]
+      const today = formatDateGlobal(new Date().toISOString().split("T")[0])
       const todayFollowups = result.data
 
       setNotificationCount(todayFollowups.length)

@@ -5,6 +5,7 @@ import { Search, Download, CheckCircle, TrendingUp, Clock, AlertCircle, ChevronL
 import Swal from "sweetalert2"
 import { Link, Navigate, useNavigate } from "react-router-dom"
 import { getUserPermissions } from "@/utils/permissions"
+import { formatDateGlobal } from "@/utils/dateFormat"
 
 const baseUrl = import.meta.env.VITE_BASE_URL
 const STATUS_OPTIONS = ["PROSPECTIVE", "QUALIFIED", "LOST", "CONVERTED", "NEGOTIATION"];
@@ -386,7 +387,7 @@ export default function ListOfLeadsPage() {
                                             <div className="flex items-center gap-2">Customer <SortIcon columnKey="customer.name" /></div>
                                         </th>
                                         <th onClick={() => requestSort('next_date')} className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100 transition-colors">
-                                            <div className="flex items-center gap-2">Follow Up <SortIcon columnKey="next_date" /></div>
+                                            <div className="flex items-center gap-2">Created At <SortIcon columnKey="next_date" /></div>
                                         </th>
                                         <th onClick={() => requestSort('status')} className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100 transition-colors">
                                             <div className="flex items-center gap-2">Status <SortIcon columnKey="status" /></div>
@@ -415,7 +416,7 @@ export default function ListOfLeadsPage() {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">{lead.next_date || "No Follow-up"}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-600">{formatDateGlobal(lead.created_at)}</td>
                                             <td className="px-6 py-4 text-sm text-gray-600">
                                                 <select
                                                     value={lead.status}

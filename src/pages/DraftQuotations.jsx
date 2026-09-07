@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import Swal from "sweetalert2";
+import { formatDateGlobal } from "@/utils/dateFormat";
 
 
 export default function DraftQuotations() {
@@ -348,12 +349,7 @@ export default function DraftQuotations() {
                                             <div className="flex items-center space-x-2">
 
                                                 <div>
-                                                    <p className="text-sm text-gray-900">{new Date(quotation.created_at).toLocaleDateString()}</p>
-                                                    {quotation.emailed_at && (
-                                                        <p className="text-xs text-gray-500">
-                                                            Emailed: {new Date(quotation.emailed_at).toLocaleDateString()}
-                                                        </p>
-                                                    )}
+                                                    <p className="text-sm text-gray-900">{formatDateGlobal(quotation.created_at)}</p>
                                                 </div>
                                             </div>
                                         </td>
