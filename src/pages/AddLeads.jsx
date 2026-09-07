@@ -1,9 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Target, User, FileText, Search, MessageSquare, UserCog } from "lucide-react"
+import { Target, User, FileText, Search, MessageSquare, UserCog, Building2 } from "lucide-react"
 import Swal from "sweetalert2"
-
 
 export default function AddLeads() {
   const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -36,29 +35,13 @@ export default function AddLeads() {
   const [role, setRole] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
-
   useEffect(() => {
     try {
       setRole(localStorage.getItem("role"))
     } catch { }
   }, [])
 
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     [name]: value,
-  //   }))
-  // }
-  // const updateFormData = (field, value) => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     [field]: value,
-  //   }))
-  // }
-
-
+  // Updated customer search function matching Quotation logic
   const searchCustomers = async (query) => {
     if (!query.trim()) {
       setCustomerSearchResults([])
@@ -66,20 +49,24 @@ export default function AddLeads() {
     }
 
     setIsSearchingCustomers(true)
-    // /api/customers?search=${encodeURIComponent(query)}
     try {
       const token = localStorage.getItem("token")
-      const response = await fetch(`${baseUrl}/quotations/api/customers/all/`, {
+      const response = await fetch(`${baseUrl}/quotations/api/customers/unfiltered/`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
       })
       const data = await response.json()
 
-      if (data) {
-        setCustomerSearchResults(data.data)
+      if (data && data.data) {
+        // Filter by Customer Name OR Company Name OR Phone Number
+        const filtered = data.data.filter((customer) =>
+          (customer.name && customer.name.toLowerCase().includes(query.toLowerCase())) ||
+          (customer.company_name && customer.company_name.toLowerCase().includes(query.toLowerCase())) ||
+          (customer.phone && customer.phone.toLowerCase().includes(query.toLowerCase()))
+        )
+        setCustomerSearchResults(filtered)
       } else {
-        console.error("Failed to search customers:", data.error)
         setCustomerSearchResults([])
       }
     } catch (error) {
@@ -93,20 +80,19 @@ export default function AddLeads() {
   const selectCustomer = (customer) => {
     setFormData((prev) => ({
       ...prev,
-      customerId: customer.id, // ✅ backend customer ID
-      customerName: customer.name,
-      companyName: customer.company_name,
-      email: customer.email,
-      phone: customer.phone,
-      address: customer.primary_address,
-      gst_number: customer.gst_number || "",
+      customerId: customer.id,
+      customerName: customer.name || "",
+      companyName: customer.company_name || "",
+      email: customer.email || "",
+      phone: customer.phone || "",
+      address: customer.primary_address || "",
+      gst_number: customer.gst_no || customer.gst_number || "",
     }));
 
-    setCustomerSearchQuery(customer.name);
+    setCustomerSearchQuery("");
     setShowCustomerSearch(false);
     setCustomerSearchResults([]);
   };
-
 
   const handleCustomerSearchChange = (e) => {
     const query = e.target.value
@@ -155,7 +141,6 @@ export default function AddLeads() {
           );
         });
 
-
         setSalespersonResults(filtered);
       } else {
         setSalespersonResults([]);
@@ -168,9 +153,6 @@ export default function AddLeads() {
     }
   };
 
-
-
-  // ---- Handle selection ----
   const selectSalesperson = (sp) => {
     const fullName = sp.username
 
@@ -189,8 +171,6 @@ export default function AddLeads() {
     setSalespersonResults([])
   }
 
-
-
   const handleSaveLead = async () => {
     validateField("email", formData.email)
     validateField("phone", formData.phone)
@@ -200,7 +180,6 @@ export default function AddLeads() {
       validateField("salespersonPhone", formData.salespersonPhone || "")
     }
 
-    // Stop if any errors exist
     if (Object.values(formErrors).some((err) => err)) {
       Swal.fire("Validation Error", "Please fix all errors before saving.", "error")
       return
@@ -222,10 +201,9 @@ export default function AddLeads() {
           ? followUpDate.split("-")
           : []
 
-        // if user somehow typed or you reformatted into DD-MM-YYYY
         if (year.length !== 4) {
           const [dd, mm, yyyy] = followUpDate.split("-")
-          followUpDate = `${yyyy}-${mm}-${dd}` // ✅ convert to YYYY-MM-DD
+          followUpDate = `${yyyy}-${mm}-${dd}`
         }
       }
 
@@ -244,7 +222,6 @@ export default function AddLeads() {
         priority: formData.priority,
       }
 
-
       const response = await fetch(
         `${baseUrl}/quotations/api/leads/create/`,
         {
@@ -262,12 +239,8 @@ export default function AddLeads() {
         throw new Error(`Failed to save lead: ${errorText}`)
       }
 
-      const result = await response.json()
-
       Swal.fire("Saved!", "Lead saved successfully!", "success")
 
-
-      // ✅ Reset form after success
       setFormData({
         customerName: "",
         companyName: "",
@@ -299,35 +272,27 @@ export default function AddLeads() {
 
   const handleRestFormData = () => {
     setFormData({
-        customerName: "",
-        companyName: "",
-        email: "",
-        phone: "",
-        address: "",
-        gst_number: "",
-        lead_status: "PROSPECTIVE",
-        lead_source: "WEBSITE",
-        priority: "MEDIUM",
-        assigned_to: "",
-        follow_up_date: "",
-        description: "",
-        additional_notes: "",
-      })
-      setCustomerSearchQuery("")
-      setSalespersonQuery("")
+      customerName: "",
+      companyName: "",
+      email: "",
+      phone: "",
+      address: "",
+      gst_number: "",
+      lead_status: "PROSPECTIVE",
+      lead_source: "WEBSITE",
+      priority: "MEDIUM",
+      assigned_to: "",
+      follow_up_date: "",
+      description: "",
+      additional_notes: "",
+    })
+    setCustomerSearchQuery("")
+    setSalespersonQuery("")
   }
 
   const validateField = (name, value) => {
     let error = ""
 
-    // Email validation
-    // if (name === "email" || name === "salespersonEmail") {
-    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    //   if (!value) error = "Email is required"
-    //   else if (!emailRegex.test(value)) error = "Invalid email address"
-    // }
-
-    // Phone validation
     if (name === "phone" || name === "salespersonPhone") {
       const phoneRegex = /^[6-9]\d{9}$/
       if (!value) error = "Phone number is required"
@@ -337,6 +302,7 @@ export default function AddLeads() {
 
     setFormErrors((prev) => ({ ...prev, [name]: error }))
   }
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -347,9 +313,6 @@ export default function AddLeads() {
     setFormData((prev) => ({ ...prev, [field]: value }))
     validateField(field, value)
   }
-
-
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -367,9 +330,12 @@ export default function AddLeads() {
               </div>
             </div>
           </div>
-            <button className="px-8 py-2 text-sm border border-gray-300 bg-gray-900 text-white rounded-md hover:bg-gray-100 transition-colors"
-            onClick={handleRestFormData}>Reset</button>
-
+          <button
+            className="px-8 py-2 text-sm border border-gray-300 bg-gray-900 text-white rounded-md hover:bg-gray-100 transition-colors"
+            onClick={handleRestFormData}
+          >
+            Reset
+          </button>
         </div>
       </div>
 
@@ -384,11 +350,12 @@ export default function AddLeads() {
             </div>
 
             <div className="space-y-4">
+              {/* Customer Search Dropdown */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Select Customer</label>
                 <div className="relative">
                   <input
-                    placeholder="Search and select customer..."
+                    placeholder="Search by name, company, or phone..."
                     value={customerSearchQuery}
                     onChange={handleCustomerSearchChange}
                     onFocus={() => {
@@ -396,29 +363,33 @@ export default function AddLeads() {
                         setShowCustomerSearch(true)
                       }
                     }}
-                    onBlur={() => setTimeout(() => setShowCustomerSearch(false), 150)}
+                    onBlur={() => setTimeout(() => setShowCustomerSearch(false), 200)}
                     className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2" />
 
                   {showCustomerSearch && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                       {isSearchingCustomers ? (
-                        <div className="px-4 py-3 text-sm text-gray-500">Searching customers...</div>
+                        <div className="px-4 py-3 text-sm text-gray-500 italic">Searching database...</div>
                       ) : customerSearchResults.length > 0 ? (
                         customerSearchResults.map((customer) => (
                           <div
                             key={customer.id}
                             onMouseDown={() => selectCustomer(customer)}
-                            className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                            className="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
                           >
-                            <div className="font-medium text-gray-900">{customer.name}</div>
-                            <div className="text-sm text-gray-600">{customer.company}</div>
-                            <div className="text-sm text-gray-500">{customer.email}</div>
+                            <div className="font-semibold text-gray-900">{customer.name}</div>
+                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                              <Building2 className="w-3 h-3" /> {customer.company_name || "N/A"} {customer.phone ? `• ${customer.phone}` : ""}
+                            </div>
+                            {customer.email && (
+                              <div className="text-xs text-gray-400 mt-0.5">{customer.email}</div>
+                            )}
                           </div>
                         ))
                       ) : customerSearchQuery.trim() ? (
-                        <div className="px-4 py-3 text-sm text-gray-500">No customers found</div>
+                        <div className="px-4 py-3 text-sm text-gray-500">No matching customers found</div>
                       ) : null}
                     </div>
                   )}
@@ -445,9 +416,6 @@ export default function AddLeads() {
                   />
                 </div>
 
-
-
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
                   <input
@@ -457,7 +425,7 @@ export default function AddLeads() {
                     onChange={handleInputChange}
                     placeholder="Enter phone"
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
-      ${formErrors.phone ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"}`}
+                      ${formErrors.phone ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"}`}
                   />
                   {formErrors.phone && <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>}
                 </div>
@@ -471,7 +439,7 @@ export default function AddLeads() {
                     placeholder="Enter email"
                     onChange={handleInputChange}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
-      ${formErrors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"}`}
+                      ${formErrors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"}`}
                   />
                   {formErrors.email && <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>}
                 </div>
@@ -494,9 +462,7 @@ export default function AddLeads() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-
               </div>
-
             </div>
           </div>
 
@@ -538,7 +504,6 @@ export default function AddLeads() {
                   <option value="REFERRAL">Referral</option>
                   <option value="SOCIAL_MEDIA">Social Media</option>
                   <option value="EMAIL">Email</option>
-
                 </select>
               </div>
 
@@ -555,7 +520,6 @@ export default function AddLeads() {
                   <option value="HIGH">High</option>
                 </select>
               </div>
-
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Follow-up Date</label>
@@ -587,7 +551,7 @@ export default function AddLeads() {
                       onChange={(e) => {
                         const q = e.target.value
                         setSalespersonQuery(q)
-                        setSalespersonSelected(false) // ✅ reset if typing again
+                        setSalespersonSelected(false)
                         setFormData((prev) => ({
                           ...prev,
                           salespersonName: q,
@@ -612,7 +576,6 @@ export default function AddLeads() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
 
-                    {/* Dropdown */}
                     {showSalespersonSearch && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                         {isSearchingSalesperson ? (
@@ -654,8 +617,8 @@ export default function AddLeads() {
                     onChange={(e) => updateFormData("salespersonPhone", e.target.value)}
                     readOnly={salespersonSelected}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
-      ${formErrors.salespersonPhone ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"} 
-      ${salespersonSelected ? "bg-gray-100" : ""}`}
+                      ${formErrors.salespersonPhone ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"} 
+                      ${salespersonSelected ? "bg-gray-100" : ""}`}
                   />
                   {formErrors.salespersonPhone && <p className="text-red-500 text-sm mt-1">{formErrors.salespersonPhone}</p>}
                 </div>
@@ -664,18 +627,16 @@ export default function AddLeads() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                   <input
                     name="salespersonEmail"
-
                     value={formData.salespersonEmail || ""}
-                    placeholder="Enter phone"
+                    placeholder="Enter email"
                     onChange={(e) => updateFormData("salespersonEmail", e.target.value)}
                     readOnly={salespersonSelected}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 
-      ${formErrors.salespersonEmail ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"} 
-      ${salespersonSelected ? "bg-gray-100" : ""}`}
+                      ${formErrors.salespersonEmail ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"} 
+                      ${salespersonSelected ? "bg-gray-100" : ""}`}
                   />
                   {formErrors.salespersonEmail && <p className="text-red-500 text-sm mt-1">{formErrors.salespersonEmail}</p>}
                 </div>
-
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
@@ -684,8 +645,9 @@ export default function AddLeads() {
                     value={formData.salespersonAddress || ""}
                     onChange={(e) => updateFormData("salespersonAddress", e.target.value)}
                     readOnly={salespersonSelected}
-                    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 ${salespersonSelected ? "bg-gray-100" : "focus:ring-blue-500"
-                      }`}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 ${
+                      salespersonSelected ? "bg-gray-100" : "focus:ring-blue-500"
+                    }`}
                   />
                 </div>
               </div>
@@ -701,7 +663,7 @@ export default function AddLeads() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                 <textarea
                   name="description"
                   value={formData.description}
@@ -711,74 +673,18 @@ export default function AddLeads() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 />
               </div>
-
-              {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
-                <textarea
-                  name="additional_notes"
-                  value={formData.additional_notes}
-                  onChange={handleInputChange}
-                  placeholder="Add any additional information about this lead..."
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                />
-              </div> */}
             </div>
           </div>
         </div>
-
-        {/* Right Column - Summary */}
-        {/* <div className="space-y-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <Target className="w-5 h-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Lead Summary</h2>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Status:</span>
-                <span
-                  className={`px-2 py-1 rounded-full text-sm ${formData.lead_status === "New"
-                    ? "bg-blue-100 text-blue-800"
-                    : formData.lead_status === "Qualified"
-                      ? "bg-purple-100 text-purple-800"
-                      : formData.lead_status === "Proposal"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
-                >
-                  {formData.lead_status}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Source:</span>
-                <span className="text-gray-900">{formData.lead_source}</span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Priority: </span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 flex items-center justify-center">
-                    <span className="text-gray-900 text-sm font-medium">{formData.priority}</span>
-                  </div>
-                </div>
-              </div>
-
-
-            </div>
-          </div>
-        </div> */}
       </div>
+
       <div className="mt-4 w-full">
         <button
           onClick={handleSaveLead}
           disabled={isLoading}
-          className={`w-full px-6 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors ${isLoading
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-gray-900 text-white hover:bg-gray-800"
-            }`}
+          className={`w-full px-6 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors ${
+            isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-gray-900 text-white hover:bg-gray-800"
+          }`}
         >
           {isLoading ? (
             <>
@@ -788,19 +694,8 @@ export default function AddLeads() {
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                ></path>
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
               </svg>
               Creating...
             </>
