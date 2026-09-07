@@ -318,11 +318,11 @@ export default function LeadDetailsPage() {
                             </div>
 
                             <button
-                                onClick={() => navigate('/quotations/create')} // Optional: Link to create new for this customer
+                                onClick={() => navigate('/quotations/new')} // Optional: Link to create new for this customer
                                 className="w-full mt-4 flex items-center justify-center gap-2 text-xs font-bold text-white bg-orange-600 py-2.5 rounded-lg hover:bg-orange-700 transition-all"
                             >
                                 <Plus className="w-4 h-4" /> CREATE NEW QUOTATION
-                            </button>
+                            </button>   
                         </div>
 
                        

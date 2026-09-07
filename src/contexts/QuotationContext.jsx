@@ -217,6 +217,27 @@ export const QuotationProvider = ({ children }) => {
             if (!res.ok) throw new Error("Failed to fetch quotation");
             const data = await res.json();
 
+            const fetchedItems = data.data?.items || [];
+            const initialProducts =
+                fetchedItems.length > 0
+                    ? fetchedItems.map((item) => ({
+                        id: item.product?.id || "",
+                        name: item.product?.name || item.description || "",
+                        quantity: item.quantity || 1,
+                        selling_price: item.unit_price || "",
+                        percentage_discount: item.discount || 0,
+                        imageUrl: item.product?.image_url || "",
+                    }))
+                    : [
+                        {
+                            id: "",
+                            name: "",
+                            quantity: 1,
+                            selling_price: "",
+                            percentage_discount: 0,
+                            imageUrl: "",
+                        },
+                    ];
 
             const qutations = {
                 quotationDate: formatDate(new Date(data.data.created_at)),
@@ -232,14 +253,7 @@ export const QuotationProvider = ({ children }) => {
                 gst_number: data.data.customer?.gst_no || "",
                 additional_charge_name: data.data.additional_charge_name || "",
                 additional_charge_amount: data.data.additional_charge_amount || 0,
-                products: data.data.items?.map((item) => ({
-                    id: item.product.id,
-                    name: item.product.name,
-                    quantity: item.quantity,
-                    selling_price: item.unit_price || "",
-                    percentage_discount: item.discount || 0,
-                    imageUrl: item.product.image_url || "",
-                })) || [],
+                products: initialProducts,
                 subtotal: data.data.subtotal || "0.00",
                 discount: data.data.discount || "",
                 tax: data.data.tax || "0.00",
@@ -270,6 +284,7 @@ export const QuotationProvider = ({ children }) => {
             setPageLoading(false);
         }
     };
+
     // Fetch terms on mount
     useEffect(() => {
         const fetchTerms = async () => {
@@ -296,8 +311,6 @@ export const QuotationProvider = ({ children }) => {
                 name: name,
                 selling_price: Number(selling_price),
             }
-
-
 
             const res = await fetch(
                 `${baseUrl}/quotations/api/products/create/`,
@@ -524,25 +537,22 @@ export const QuotationProvider = ({ children }) => {
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(`Failed to create quotation`);
-            } else if (result?.data?.pdf_url) {
-                window.open(result.data.pdf_url, "_blank");
+                throw new Error(result.message || "Failed to create quotation");
             }
-
-
 
             resetFormData();
             setSelectedTerms([]);
             Swal.close();
+
             if (result?.data?.pdf_url) {
                 window.open(result.data.pdf_url, "_blank");
             } else {
                 Swal.fire("Warning", "Quotation created but PDF URL was not returned.", "warning");
             }
-            
+
         } catch (error) {
             console.error("❌ Error creating quotation:", error);
-            Swal.fire("Error!", "Failed creating quotation. Please try again.", "error");
+            Swal.fire("Error!", error.message || "Failed creating quotation. Please try again.", "error");
         } finally {
             setIsGeneratingPDF(false);
         }
