@@ -112,7 +112,7 @@ function NewQuotationPageContent() {
                 <QuotationSummary />
                 <TermsAndConditionsSelector />
                 <AdditionalSettings />
-                {id ? null : <LeadSelection />}
+                
                 <CreatorInfo />
                 
               </div>

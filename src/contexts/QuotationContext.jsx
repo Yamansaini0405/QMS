@@ -169,11 +169,11 @@ export const QuotationProvider = ({ children }) => {
 
             // Filter leads by customer name first
             const filtered = (result.data || []).filter((lead) => {
-                const customerMatch = customerName 
+                const customerMatch = customerName
                     ? lead.customer?.name.toLowerCase() === customerName.toLowerCase()
                     : true;
 
-                const queryMatch = 
+                const queryMatch =
                     lead.lead_number.toLowerCase().includes(query.toLowerCase()) ||
                     lead.quotation_number?.toLowerCase().includes(query.toLowerCase()) ||
                     lead.customer?.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -322,68 +322,151 @@ export const QuotationProvider = ({ children }) => {
 
 
     const createQuotation = async () => {
-        setIsGeneratingPDF(true)
+        // 1. Validate Form First
+        const validationErrors = validateForm();
+        const hasErrors = Object.values(validationErrors).some((err) => err);
+
+        if (hasErrors) {
+            if (validationErrors.terms) {
+                Swal.fire("Validation Error", validationErrors.terms, "error");
+            } else {
+                Swal.fire("Validation Error", "Please fix errors in the form.", "error");
+            }
+            return;
+        }
+
+        if (formData.totalAmount < 0) {
+            Swal.fire("Warning!", "Total Amount must be greater than 0", "warning");
+            return;
+        }
+
+        let selectedLeadId = formData.lead_id;
+
+        // 2. Ask whether user wants to link a lead (if no lead selected yet & not in pure edit mode without lead reset)
+        const askLeadResult = await Swal.fire({
+            title: "Link Lead?",
+            text: "Do you want to connect/link a lead with this quotation?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Link Lead",
+            cancelButtonText: "No, Skip",
+            confirmButtonColor: "#2563eb",
+            cancelButtonColor: "#6b7280",
+        });
+
+        if (askLeadResult.isConfirmed) {
+            if (!formData.customerName) {
+                Swal.fire(
+                    "Customer Required",
+                    "Please select/enter customer name first to view associated leads.",
+                    "warning"
+                );
+                return;
+            }
+
+            // Fetch leads related to customer
+            Swal.fire({
+                title: "Fetching Customer Leads...",
+                text: "Please wait",
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+            });
+
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch(`${baseUrl}/quotations/api/leads/`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const result = await response.json();
+
+                // Filter leads belonging to the current customer
+                const customerLeads = (result.data || []).filter(
+                    (lead) =>
+                        lead.customer?.name.toLowerCase() ===
+                        formData.customerName.toLowerCase()
+                );
+
+                if (customerLeads.length === 0) {
+                    await Swal.fire({
+                        title: "No Leads Found",
+                        text: `No associated leads found for customer "${formData.customerName}".`,
+                        icon: "info",
+                    });
+                } else {
+                    // Construct select options for the modal dropdown
+                    const optionsHtml = customerLeads
+                        .map(
+                            (lead) =>
+                                `<option value="${lead.id}">Lead #${lead.lead_number} - Status: ${lead.status}</option>`
+                        )
+                        .join("");
+
+                    const leadSelectResult = await Swal.fire({
+                        title: "Select Lead",
+                        html: `
+              <p class="text-sm text-gray-600 mb-2">Select lead for customer <b>${formData.customerName}</b>:</p>
+              <select id="swal-lead-select" class="swal2-input w-full">
+                <option value="">-- Choose Lead --</option>
+                ${optionsHtml}
+              </select>
+            `,
+                        showCancelButton: true,
+                        confirmButtonText: "Select & Create",
+                        cancelButtonText: "Cancel",
+                        preConfirm: () => {
+                            const leadId = document.getElementById("swal-lead-select").value;
+                            if (!leadId) {
+                                Swal.showValidationMessage("Please select a lead to proceed");
+                            }
+                            return leadId;
+                        },
+                    });
+
+                    if (leadSelectResult.isDismissed) {
+                        return; // Cancelled flow
+                    }
+
+                    if (leadSelectResult.isConfirmed) {
+                        selectedLeadId = leadSelectResult.value;
+                        setFormData((prev) => ({ ...prev, lead_id: selectedLeadId }));
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching customer leads:", err);
+                Swal.fire("Error", "Failed to fetch customer leads", "error");
+                return;
+            }
+        }
+
+        // 3. Proceed with Quotation Creation
+        setIsGeneratingPDF(true);
 
         try {
+            Swal.fire({
+                title: id
+                    ? location.pathname.startsWith("/quotations/edit")
+                        ? "Updating..."
+                        : "Duplicating..."
+                    : "Creating...",
+                text: "Please wait while we prepare your Quotation.",
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+            });
 
-            const validationErrors = validateForm();
-            const hasErrors = Object.values(validationErrors).some((err) => err);
-
-            if (hasErrors) {
-                if (validationErrors.terms) {
-                    Swal.fire("Validation Error", validationErrors.terms, "error");
-                } else {
-                    Swal.fire("Validation Error", "Please fix errors in the form.", "error");
-                }
-                setIsGeneratingPDF(false);
-                return;
-            }
-
-            if (formData.totalAmount < 0) {
-                Swal.fire("Warning!", "Total Amount must be greater than 0", "warning")
-                return;
-            }
-
-            id ?
-
-                location.pathname.startsWith('/quotations/edit') ?
-                    Swal.fire({
-                        title: "Updating...",
-                        text: "Please wait while we update your Quotation.",
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading()
-                        },
-                    })
-
-                    :
-                    Swal.fire({
-                        title: "Duplicating...",
-                        text: "Please wait while we Duplicate your Quotation.",
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading()
-                        },
-                    })
-                : Swal.fire({
-                    title: "Creating...",
-                    text: "Please wait while we create your Quotation.",
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading()
-                    },
-                })
             const token = localStorage.getItem("token");
+
             const items = await Promise.all(
                 formData.products.map(async (p) => {
                     if (!p.id) {
-                        const id = await handleSaveProduct(p.name, p.selling_price);
+                        const newId = await handleSaveProduct(p.name, p.selling_price);
                         return {
-                            product: id,
+                            product: newId,
                             name: p.name,
                             quantity: p.quantity,
                             unit_price: p.selling_price ? Number(p.selling_price) : "",
-                            discount: p.percentage_discount ? Number(p.percentage_discount) : 0,
+                            discount: p.percentage_discount
+                                ? Number(p.percentage_discount)
+                                : 0,
                         };
                     } else {
                         return {
@@ -391,7 +474,9 @@ export const QuotationProvider = ({ children }) => {
                             name: p.name,
                             quantity: p.quantity,
                             unit_price: p.selling_price ? Number(p.selling_price) : 0,
-                            discount: p.percentage_discount ? Number(p.percentage_discount) : 0,
+                            discount: p.percentage_discount
+                                ? Number(p.percentage_discount)
+                                : 0,
                         };
                     }
                 })
@@ -406,8 +491,8 @@ export const QuotationProvider = ({ children }) => {
                     primary_address: formData.address,
                     gst_number: formData.gst_number,
                 },
-                additional_charge_name: "",
-                additional_charge_amount: 0,
+                additional_charge_name: formData.additional_charge_name || "",
+                additional_charge_amount: formData.additional_charge_amount || 0,
                 auto_assign: true,
                 status: id ? null : formData.status,
                 discount: formData.discount ? Number.parseFloat(formData.discount) : 0,
@@ -421,78 +506,45 @@ export const QuotationProvider = ({ children }) => {
                 createdBy: localStorage.getItem("user"),
                 digitalSignature: formData.digitalSignature,
                 additionalNotes: formData.additionalNotes,
-                additional_charge_name: formData.additional_charge_name || "",
-                additional_charge_amount: formData.additional_charge_amount || 0,
-                lead_id: formData.lead_id || null,
+                lead_id: selectedLeadId || null,
                 is_tax_inclusive: formData.is_tax_inclusive,
             };
 
-
-
-            const response = await fetch(
-                `${baseUrl}/quotations/api/quotations/create/`,
-                {
-                    method: location.pathname.startsWith('/quotations/edit') ? "PUT" : "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(payload),
-                }
-            );
-            const result = await response.json();
-            console.log(result)
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(
-                    `Failed to create quotation: ${response.status} - ${errorText}`
-                );
-            } else {
-                window.open(result?.data.pdf_url, '_blank');
-            }
-
-            // const result = await response.json();
-            Swal.fire(id ? location.pathname.startsWith('/quotations/edit') ? "Updated" : "Duplicated" : "Created!", `The Quotation has been ${id ? location.pathname.startsWith('/quotations/edit') ? "updated" : "duplicated" : "created"}.`, "success")
-            setFormData({
-                quotationDate: formatDate(new Date()),
-                validUntil: formatDate(new Date()),
-                validityNumber: 0,
-                validityType: "days",
-                followUpDate: "",
-                customerName: "",
-                companyName: "",
-                email: "",
-                phone: "",
-                address: "",
-                gst_number: "",
-                additional_charge_name: "",
-                additional_charge_amount: 0,
-                products: [
-                    { id: "", name: "", quantity: 1, selling_price: "", percentage_discount: 0, imageUrl: "" },
-                ],
-                subtotal: "0.00",
-                discount: "",
-                tax: "0.00",
-                taxRate: "18",
-                discountType: "amount",
-                totalAmount: "0.00",
-                additionalNotes: "",
-                createdBy: localStorage.getItem("role"),
-                digitalSignature: "",
-                send_immediately: false,
-                lead_id: null,
+            const response = await fetch(`${baseUrl}/quotations/api/quotations/create/`, {
+                method: location.pathname.startsWith("/quotations/edit")
+                    ? "PUT"
+                    : "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload),
             });
 
-            setSelectedTerms([]); // also reset terms if needed
+            const result = await response.json();
 
+            if (!response.ok) {
+                throw new Error(`Failed to create quotation`);
+            } else if (result?.data?.pdf_url) {
+                window.open(result.data.pdf_url, "_blank");
+            }
+
+
+
+            resetFormData();
+            setSelectedTerms([]);
+            Swal.close();
+            if (result?.data?.pdf_url) {
+                window.open(result.data.pdf_url, "_blank");
+            } else {
+                Swal.fire("Warning", "Quotation created but PDF URL was not returned.", "warning");
+            }
+            
         } catch (error) {
-
-            Swal.fire("Error!", "Failed creating quotation. Please try again.", "error")
-
             console.error("❌ Error creating quotation:", error);
+            Swal.fire("Error!", "Failed creating quotation. Please try again.", "error");
         } finally {
-            setIsGeneratingPDF(false)
+            setIsGeneratingPDF(false);
         }
     };
     const createDraft = async () => {
@@ -919,11 +971,11 @@ export const QuotationProvider = ({ children }) => {
         const additionalCharge = Number.parseFloat(formData.additional_charge_amount) || 0
         const newSubtotal = subtotal - globalDiscount + additionalCharge;
         const taxRate = Number.parseFloat(formData.taxRate) || 0
-        
+
         // Only calculate and add tax if is_tax_inclusive is false
         let tax = 0
         let totalAmount = newSubtotal
-        
+
         if (!formData.is_tax_inclusive) {
             tax = (newSubtotal * taxRate) / 100
             totalAmount = newSubtotal + tax
