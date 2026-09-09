@@ -130,6 +130,40 @@ export default function LeadDetailsPage() {
         }
     };
 
+    const handleStatusChange = async (quotationId, newStatus) => {
+        try {
+            Swal.fire({
+                title: "Updating...",
+                text: "Please wait while we update the quotation status.",
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${baseUrl}/accounts/api/quotations/${quotationId}/status/`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ status: newStatus }),
+            });
+
+            if (!res.ok) throw new Error("Failed to update quotation status");
+
+            setLeadQuotations((prevQuotations) =>
+                prevQuotations.map((q) =>
+                    q.id === quotationId ? { ...q, status: newStatus } : q
+                )
+            );
+
+            Swal.fire("Updated!", "Quotation status updated successfully.", "success");
+        } catch (err) {
+            console.error("Error updating quotation status:", err);
+            Swal.fire("Error!", "Failed to update quotation status. Please try again.", "error");
+        }
+    };
+
     const getStatusColor = (status) => {
         const colors = {
             QUALIFIED: "bg-green-100 text-green-700",
@@ -273,10 +307,18 @@ export default function LeadDetailsPage() {
                                                         {formatDateGlobal(qtn.created_at)}
                                                     </p>
                                                 </div>
-                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${qtn.status === 'REVISED' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'
-                                                    }`}>
-                                                    {qtn.status}
-                                                </span>
+                                                <select
+                                                    value={qtn.status}
+                                                    onChange={(e) => handleStatusChange(qtn.id, e.target.value)}
+                                                    className={`text-[12px] font-bold px-3 py-1.5 rounded-sm cursor-pointer border-0 outline-none focus:ring-1 focus:ring-orange-500 ${qtn.status === 'REVISED' ? 'bg-blue-100 text-blue-600' : qtn.status === 'ACCEPTED' ? 'bg-green-100 text-green-600' : qtn.status === 'REJECTED' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'
+                                                    }`}
+                                                >
+                                                    <option value="SENT">SENT</option>
+                                                    <option value="PENDING">PENDING</option>
+                                                    <option value="ACCEPTED">ACCEPTED</option>
+                                                    <option value="REJECTED">REJECTED</option>
+                                                    <option value="REVISED">REVISED</option>
+                                                </select>
                                             </div>
 
                                             <div className="flex justify-between items-center mb-3">
