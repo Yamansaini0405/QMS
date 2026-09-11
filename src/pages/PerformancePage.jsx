@@ -164,7 +164,7 @@ const PerformancePage = () => {
 											</Link>
 										) : (
                                             
-											<p className="text-sm font-semibold text-gray-900"
+											<p className="text-sm font-semibold text-gray-900 cursor-pointer"
                                             onClick={() => window.open(item.pdf_url)}>{item.quotation_number}</p>
 										)}
 										<p className="text-xs text-gray-500 mt-1">
