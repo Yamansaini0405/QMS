@@ -21,6 +21,7 @@ import {
   Building2,
   Database,
   FileXIcon,
+  Goal,
 } from "lucide-react"
 
 
@@ -129,6 +130,17 @@ const Sidebar = ({ open, onClose }) => {
       roles: ["ADMIN"], // only admin
       subItems: [
         { title: "Export Data", path: "/export", icon: Plus },
+        
+      ],
+    },
+    {
+      key: "Performance",
+      title: "Performance",
+      icon: Goal,
+      hasSubmenu: true,
+      roles: ["ADMIN"], // only admin
+      subItems: [
+        { title: "Performance Data", path: "/performance", icon: Plus },
         
       ],
     },
